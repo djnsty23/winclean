@@ -379,6 +379,19 @@
         <!-- Unified Control Panel -->
         <div class="control-panel">
             <h3>✨ Create Your Custom Optimization Script</h3>
+            
+            <div style="margin-bottom: 1rem; padding: 1rem; background: #e6f3ff; border-radius: 8px; border-left: 4px solid var(--primary);">
+                <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer;">
+                    <input type="checkbox" id="create-backup" checked style="width: 20px; height: 20px; cursor: pointer;">
+                    <div>
+                        <strong>💾 Auto-Backup Current State</strong>
+                        <div style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.3rem;">
+                            Automatically saves your current settings to Desktop before making changes, plus generates a restore script for easy reversal (no restore point needed!)
+                        </div>
+                    </div>
+                </label>
+            </div>
+
             <div class="cta-buttons">
                 <button class="btn btn-generate" onclick="generateScript(false, false)">
                     📜 Generate Script

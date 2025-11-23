@@ -60,6 +60,9 @@ function getTimestamp() {
 // ============================================
 
 function generateScript(previewMode = false, scheduleMode = false) {
+    // Check if backup is enabled
+    const createBackup = document.getElementById('create-backup')?.checked || false;
+    
     // Collect all selected options
     const selected = {
         temp: {
@@ -108,7 +111,7 @@ function generateScript(previewMode = false, scheduleMode = false) {
     }
 
     // Generate the script
-    const script = buildPowerShellScript(selected, previewMode, scheduleMode);
+    const script = buildPowerShellScript(selected, previewMode, scheduleMode, createBackup);
     
     if (previewMode) {
         // Show preview in modal
@@ -170,7 +173,7 @@ function escapeHtml(text) {
 // POWERSHELL SCRIPT BUILDER
 // ============================================
 
-function buildPowerShellScript(selected, previewMode, scheduleMode) {
+function buildPowerShellScript(selected, previewMode, scheduleMode, createBackup = false) {
     const mode = previewMode ? 'PREVIEW' : 'OPTIMIZATION';
     const whatIf = previewMode ? '-WhatIf' : '';
     
@@ -200,7 +203,9 @@ if (-not $isAdmin) {
 
 `;
 
-    if (!previewMode) {
+    if (!previewMode && createBackup) {
+        script += generateBackupSection(selected);
+    } else if (!previewMode) {
         script += `
 # Create System Restore Point
 Write-Host "🛡️  Creating System Restore Point..." -ForegroundColor Yellow
@@ -273,6 +278,207 @@ Read-Host "Press Enter to exit"
 `;
 
     return script;
+}
+
+// ============================================
+// BACKUP & RESTORE SYSTEM
+// ============================================
+
+function generateBackupSection(selected) {
+    return `
+# ============================================
+# BACKUP CURRENT STATE
+# ============================================
+
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+Write-Host "║                  BACKING UP CURRENT STATE                 ║" -ForegroundColor Cyan
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Host ""
+
+$backupTimestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+$backupPath = "$env:USERPROFILE\\Desktop\\Windows_Optimization_Backup_$backupTimestamp.json"
+$restoreScriptPath = "$env:USERPROFILE\\Desktop\\RESTORE_Windows_Settings_$backupTimestamp.ps1"
+
+Write-Host "💾 Creating backup of current settings..." -ForegroundColor Cyan
+
+$backup = @{
+    Timestamp = $backupTimestamp
+    ComputerName = $env:COMPUTERNAME
+    UserName = $env:USERNAME
+    Registry = @{}
+    Services = @{}
+    SystemSettings = @{}
+}
+
+# Backup Registry Settings
+Write-Host "   📋 Backing up registry settings..." -ForegroundColor Gray
+
+$regPaths = @(
+    @{Path="HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection"; Name="AllowTelemetry"},
+    @{Path="HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo"; Name="Enabled"},
+    @{Path="HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search"; Name="AllowCortana"},
+    @{Path="HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\location"; Name="Value"},
+    @{Path="HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects"; Name="VisualFXSetting"},
+    @{Path="HKCU:\\Software\\Microsoft\\GameBar"; Name="AutoGameModeEnabled"}
+)
+
+foreach ($reg in $regPaths) {
+    try {
+        if (Test-Path $reg.Path) {
+            $value = Get-ItemProperty -Path $reg.Path -Name $reg.Name -ErrorAction SilentlyContinue
+            if ($value) {
+                $key = "$($reg.Path)\\$($reg.Name)"
+                $backup.Registry[$key] = $value.$($reg.Name)
+            }
+        }
+    } catch {
+        # Path doesn't exist, skip
+    }
+}
+
+# Backup Service States
+Write-Host "   ⚙️  Backing up service states..." -ForegroundColor Gray
+
+$services = @("DiagTrack", "SysMain", "WSearch", "dmwappushservice", "MapsBroker", "XblAuthManager", "XblGameSave", "XboxGipSvc", "XboxNetApiSvc", "Spooler", "Fax")
+
+foreach ($serviceName in $services) {
+    try {
+        $service = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
+        if ($service) {
+            $backup.Services[$serviceName] = @{
+                StartType = (Get-Service -Name $serviceName | Select-Object -ExpandProperty StartType).ToString()
+                Status = $service.Status.ToString()
+            }
+        }
+    } catch {
+        # Service doesn't exist, skip
+    }
+}
+
+# Backup Hibernation State
+try {
+    $powerCfg = powercfg /a 2>&1
+    $backup.SystemSettings["HibernationEnabled"] = $powerCfg -match "Hibernate"
+} catch {
+    $backup.SystemSettings["HibernationEnabled"] = $false
+}
+
+# Save backup to JSON
+$backup | ConvertTo-Json -Depth 10 | Out-File -FilePath $backupPath -Encoding UTF8
+Write-Host "   ✓ Backup saved to: $backupPath" -ForegroundColor Green
+
+# Generate Restore Script
+Write-Host "   📝 Generating restore script..." -ForegroundColor Gray
+
+$restoreScript = @"
+#Requires -RunAsAdministrator
+# ============================================
+# RESTORE Windows Settings
+# Backup created: $backupTimestamp
+# ============================================
+
+Write-Host ""
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
+Write-Host "║           RESTORING WINDOWS SETTINGS                      ║" -ForegroundColor Magenta
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
+Write-Host ""
+
+`$backupFile = "$backupPath"
+
+if (-not (Test-Path `$backupFile)) {
+    Write-Host "❌ ERROR: Backup file not found: `$backupFile" -ForegroundColor Red
+    Read-Host "Press Enter to exit"
+    exit 1
+}
+
+Write-Host "📂 Loading backup from: `$backupFile" -ForegroundColor Cyan
+`$backup = Get-Content `$backupFile | ConvertFrom-Json
+
+Write-Host "   ℹ️  Backup created: `$(`$backup.Timestamp)" -ForegroundColor Gray
+Write-Host "   ℹ️  Computer: `$(`$backup.ComputerName)" -ForegroundColor Gray
+Write-Host ""
+
+`$restored = 0
+`$errors = 0
+
+# Restore Registry Settings
+Write-Host "📋 Restoring registry settings..." -ForegroundColor Yellow
+foreach (`$key in `$backup.Registry.PSObject.Properties) {
+    `$fullPath = `$key.Name
+    `$parts = `$fullPath -split '\\\\\\\\'
+    `$valueName = `$parts[-1]
+    `$regPath = `$parts[0..(`$parts.Length-2)] -join '\\\\'
+    
+    try {
+        if (-not (Test-Path `$regPath)) {
+            New-Item -Path `$regPath -Force | Out-Null
+        }
+        Set-ItemProperty -Path `$regPath -Name `$valueName -Value `$key.Value -ErrorAction Stop
+        Write-Host "   ✓ Restored: `$fullPath" -ForegroundColor Green
+        `$restored++
+    } catch {
+        Write-Host "   ❌ Failed: `$fullPath" -ForegroundColor Red
+        `$errors++
+    }
+}
+
+# Restore Services
+Write-Host ""
+Write-Host "⚙️  Restoring service states..." -ForegroundColor Yellow
+foreach (`$svc in `$backup.Services.PSObject.Properties) {
+    try {
+        `$service = Get-Service -Name `$svc.Name -ErrorAction Stop
+        `$startType = `$svc.Value.StartType
+        
+        Set-Service -Name `$svc.Name -StartupType `$startType -ErrorAction Stop
+        Write-Host "   ✓ Restored service: `$(`$svc.Name) -> `$startType" -ForegroundColor Green
+        `$restored++
+    } catch {
+        Write-Host "   ❌ Failed to restore service: `$(`$svc.Name)" -ForegroundColor Red
+        `$errors++
+    }
+}
+
+# Restore Hibernation
+Write-Host ""
+if (`$backup.SystemSettings.HibernationEnabled -eq `$true) {
+    Write-Host "🔋 Re-enabling hibernation..." -ForegroundColor Yellow
+    try {
+        powercfg -h on
+        Write-Host "   ✓ Hibernation enabled" -ForegroundColor Green
+        `$restored++
+    } catch {
+        Write-Host "   ❌ Could not enable hibernation" -ForegroundColor Red
+        `$errors++
+    }
+}
+
+Write-Host ""
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
+Write-Host "║                 RESTORE COMPLETE!                         ║" -ForegroundColor Green
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+Write-Host ""
+Write-Host "📊 Summary:" -ForegroundColor Cyan
+Write-Host "   • Settings restored: `$restored" -ForegroundColor White
+Write-Host "   • Errors: `$errors" -ForegroundColor White
+Write-Host ""
+Write-Host "✅ Your settings have been restored to their previous state!" -ForegroundColor Green
+Write-Host ""
+Read-Host "Press Enter to exit"
+"@
+
+$restoreScript | Out-File -FilePath $restoreScriptPath -Encoding UTF8
+Write-Host "   ✓ Restore script created: $restoreScriptPath" -ForegroundColor Green
+Write-Host ""
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
+Write-Host "║  ✅ BACKUP COMPLETE - Safe to proceed with optimization   ║" -ForegroundColor Green
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+Write-Host ""
+Write-Host "💡 To restore your settings later, just run:" -ForegroundColor Cyan
+Write-Host "   $restoreScriptPath" -ForegroundColor White
+Write-Host ""
+
+`;
 }
 
 // ============================================
