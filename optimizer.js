@@ -1,9 +1,14 @@
-// Windows 11 Optimization Portal - Enhanced Script Generator
-// Version 2.0 - With granular controls, validation, and better UX
+// Windows 11 Optimization Portal - Unified Script Generator
+// Version 3.0 - Cross-section script generation
 
 // ============================================
-// UTILITY FUNCTIONS
+// MODAL & UI FUNCTIONS
 // ============================================
+
+function closeModal() {
+    document.getElementById('scriptModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
 
 function showModal(title, content) {
     document.getElementById('modalTitle').textContent = title;
@@ -12,18 +17,27 @@ function showModal(title, content) {
     document.body.style.overflow = 'hidden';
 }
 
-function closeModal() {
-    document.getElementById('scriptModal').style.display = 'none';
-    document.body.style.overflow = 'auto';
-}
-
-function closeConfirmModal() {
-    document.getElementById('confirmModal').style.display = 'none';
-    document.body.style.overflow = 'auto';
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type}`;
+    notification.style.position = 'fixed';
+    notification.style.top = '20px';
+    notification.style.right = '20px';
+    notification.style.zIndex = '10000';
+    notification.style.minWidth = '300px';
+    notification.style.animation = 'slideIn 0.3s ease-out';
+    notification.innerHTML = `<div style="font-size:1.5rem">${type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️'}</div><div>${message}</div>`;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 300);
+    }, 5000);
 }
 
 function downloadScript(filename, content) {
-    const blob = new Blob([content], { type: 'text/plain; charset=utf-8' });
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -33,39 +47,117 @@ function downloadScript(filename, content) {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    // Show success message
     showNotification('✅ Script downloaded! Check your Downloads folder.', 'success');
-}
-
-function showNotification(message, type = 'info') {
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.className = `alert alert-${type}`;
-    notification.style.position = 'fixed';
-    notification.style.top = '20px';
-    notification.style.right = '20px';
-    notification.style.zIndex = '10000';
-    notification.style.minWidth = '300px';
-    notification.style.animation = 'slideIn 0.3s ease-out';
-    notification.innerHTML = `
-        <span class="alert-icon">${type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️'}</span>
-        <div>${message}</div>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-        notification.style.animation = 'slideOut 0.3s ease-in';
-        setTimeout(() => notification.remove(), 300);
-    }, 5000);
 }
 
 function getTimestamp() {
     const now = new Date();
-    return now.toISOString().replace(/[:.]/g, '-').split('T')[0] + '_' + 
-           now.getHours().toString().padStart(2, '0') + '-' +
-           now.getMinutes().toString().padStart(2, '0');
+    return now.toISOString().replace(/[:.]/g, '-').slice(0, 19).replace('T', '_');
+}
+
+// ============================================
+// MAIN SCRIPT GENERATION FUNCTION
+// ============================================
+
+function generateScript(previewMode = false, scheduleMode = false) {
+    // Collect all selected options
+    const selected = {
+        temp: {
+            user: document.getElementById('temp-user')?.checked || false,
+            windows: document.getElementById('temp-windows')?.checked || false,
+            prefetch: document.getElementById('temp-prefetch')?.checked || false,
+            thumbnail: document.getElementById('temp-thumbnail')?.checked || false,
+            recycle: document.getElementById('temp-recycle')?.checked || false
+        },
+        privacy: {
+            telemetry: document.getElementById('privacy-telemetry')?.checked || false,
+            ads: document.getElementById('privacy-ads')?.checked || false,
+            cortana: document.getElementById('privacy-cortana')?.checked || false,
+            location: document.getElementById('privacy-location')?.checked || false
+        },
+        performance: {
+            visual: document.getElementById('perf-visual')?.checked || false,
+            gamemode: document.getElementById('perf-gamemode')?.checked || false,
+            superfetch: document.getElementById('perf-superfetch')?.checked || false,
+            hibernation: document.getElementById('perf-hibernation')?.checked || false
+        },
+        disk: {
+            winsxs: document.getElementById('disk-winsxs')?.checked || false,
+            updates: document.getElementById('disk-updates')?.checked || false,
+            logs: document.getElementById('disk-logs')?.checked || false
+        },
+        startup: {
+            scan: document.getElementById('startup-scan')?.checked || false,
+            report: document.getElementById('startup-report')?.checked || false
+        },
+        services: {
+            diagtrack: document.getElementById('service-diagtrack')?.checked || false,
+            sysmain: document.getElementById('service-sysmain')?.checked || false,
+            wsearch: document.getElementById('service-wsearch')?.checked || false
+        }
+    };
+
+    // Check if anything is selected
+    const hasSelection = Object.values(selected).some(category => 
+        Object.values(category).some(value => value === true)
+    );
+
+    if (!hasSelection) {
+        showNotification('⚠️ Please select at least one optimization option!', 'warning');
+        return;
+    }
+
+    // Generate the script
+    const script = buildPowerShellScript(selected, previewMode, scheduleMode);
+    
+    if (previewMode) {
+        // Show preview in modal
+        const modalContent = `
+            <div class="alert alert-info">
+                <div style="font-size:1.5rem">ℹ️</div>
+                <div><strong>Preview Mode</strong><br>This script will analyze what would be cleaned without making changes.</div>
+            </div>
+            <div class="script-preview">${escapeHtml(script)}</div>
+            <div style="margin-top:1rem; display:flex; gap:1rem;">
+                <button class="btn btn-generate" onclick="downloadPreviewScript()">📥 Download Preview Script</button>
+                <button class="btn btn-preview" onclick="closeModal()">Close</button>
+            </div>
+        `;
+        showModal('Script Preview - Safe to Review', modalContent);
+        window.currentScript = script;
+    } else if (scheduleMode) {
+        // Generate scheduled task script
+        const taskScript = buildScheduledTaskScript(selected);
+        const modalContent = `
+            <div class="alert alert-info">
+                <div style="font-size:1.5rem">⏰</div>
+                <div><strong>Scheduled Task Creator</strong><br>This will create a weekly maintenance task that runs your selected optimizations automatically.</div>
+            </div>
+            <div class="script-preview">${escapeHtml(taskScript)}</div>
+            <div style="margin-top:1rem; display:flex; gap:1rem;">
+                <button class="btn btn-schedule" onclick="downloadScheduledScript()">📥 Download Task Scheduler</button>
+                <button class="btn btn-preview" onclick="closeModal()">Close</button>
+            </div>
+        `;
+        showModal('Weekly Maintenance Task', modalContent);
+        window.currentScript = taskScript;
+    } else {
+        // Regular mode - download immediately
+        const filename = `Windows_Optimizer_${getTimestamp()}.ps1`;
+        downloadScript(filename, script);
+    }
+}
+
+function downloadPreviewScript() {
+    const filename = `Windows_Optimizer_PREVIEW_${getTimestamp()}.ps1`;
+    downloadScript(filename, window.currentScript);
+    closeModal();
+}
+
+function downloadScheduledScript() {
+    const filename = `Windows_Optimizer_SCHEDULED_${getTimestamp()}.ps1`;
+    downloadScript(filename, window.currentScript);
+    closeModal();
 }
 
 function escapeHtml(text) {
@@ -75,1701 +167,668 @@ function escapeHtml(text) {
 }
 
 // ============================================
-// SELECTION COUNTER FUNCTIONS
+// POWERSHELL SCRIPT BUILDER
 // ============================================
 
-function updateCount(category) {
-    const containers = {
-        'temp': 'temp-options',
-        'startup': 'startup-options',
-        'privacy': 'privacy-options',
-        'perf': 'perf-options',
-        'services': 'services-options',
-        'disk': 'disk-options'
-    };
+function buildPowerShellScript(selected, previewMode, scheduleMode) {
+    const mode = previewMode ? 'PREVIEW' : 'OPTIMIZATION';
+    const whatIf = previewMode ? '-WhatIf' : '';
     
-    const container = document.getElementById(containers[category]);
-    if (!container) return;
-    
-    const checkboxes = container.querySelectorAll('input[type="checkbox"]');
-    const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
-    
-    const countElement = document.getElementById(`${category}-count`);
-    if (countElement) {
-        countElement.textContent = checkedCount;
-    }
-}
-
-function selectAll(category) {
-    const containers = {
-        'temp': 'temp-options',
-        'startup': 'startup-options',
-        'privacy': 'privacy-options',
-        'perf': 'perf-options',
-        'services': 'services-options',
-        'disk': 'disk-options'
-    };
-    
-    const container = document.getElementById(containers[category]);
-    if (!container) return;
-    
-    const checkboxes = container.querySelectorAll('input[type="checkbox"]');
-    checkboxes.forEach(cb => {
-        cb.checked = true;
-    });
-    
-    updateCount(category);
-}
-
-function selectNone(category) {
-    const containers = {
-        'temp': 'temp-options',
-        'startup': 'startup-options',
-        'privacy': 'privacy-options',
-        'perf': 'perf-options',
-        'services': 'services-options',
-        'disk': 'disk-options'
-    };
-    
-    const container = document.getElementById(containers[category]);
-    if (!container) return;
-    
-    const checkboxes = container.querySelectorAll('input[type="checkbox"]');
-    checkboxes.forEach(cb => {
-        cb.checked = false;
-    });
-    
-    updateCount(category);
-}
-
-// Initialize all counters on page load
-window.addEventListener('DOMContentLoaded', () => {
-    updateCount('temp');
-    updateCount('startup');
-    updateCount('privacy');
-    updateCount('perf');
-    updateCount('services');
-    updateCount('disk');
-});
-
-// ============================================
-// VALIDATION FUNCTIONS
-// ============================================
-
-function validateSelection(category, minRequired = 0) {
-    const containers = {
-        'temp': 'temp-options',
-        'startup': 'startup-options',
-        'privacy': 'privacy-options',
-        'perf': 'perf-options',
-        'disk': 'disk-options'
-    };
-    
-    const container = document.getElementById(containers[category]);
-    if (!container) return true;
-    
-    const checkboxes = container.querySelectorAll('input[type="checkbox"]');
-    const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
-    
-    if (checkedCount < minRequired) {
-        showNotification(`⚠️ Please select at least ${minRequired} option(s) for ${category} cleaning.`, 'warning');
-        return false;
-    }
-    
-    return true;
-}
-
-function showConfirmation(title, message, onConfirm) {
-    const modal = document.getElementById('confirmModal');
-    const body = document.getElementById('confirmBody');
-    
-    body.innerHTML = `
-        <div class="alert alert-warning">
-            <span class="alert-icon">⚠️</span>
-            <div>${message}</div>
-        </div>
-        <div class="btn-group">
-            <button class="btn btn-primary" onclick="confirmAndExecute()" style="flex: 1;">
-                ✓ Yes, Create Script
-            </button>
-            <button class="btn btn-secondary" onclick="closeConfirmModal()" style="flex: 1;">
-                ✕ Cancel
-            </button>
-        </div>
-    `;
-    
-    modal.style.display = 'block';
-    
-    // Store callback
-    window.confirmCallback = onConfirm;
-}
-
-function confirmAndExecute() {
-    closeConfirmModal();
-    if (window.confirmCallback) {
-        window.confirmCallback();
-        window.confirmCallback = null;
-    }
-}
-
-// ============================================
-// TEMP FILE CLEANER GENERATOR
-// ============================================
-
-function generateTempCleanerScript(previewOnly = false) {
-    const options = {
-        userTemp: document.getElementById('temp-user').checked,
-        windowsTemp: document.getElementById('temp-windows').checked,
-        prefetch: document.getElementById('temp-prefetch').checked,
-        recycle: document.getElementById('temp-recycle').checked,
-        thumbnail: document.getElementById('temp-thumbnail').checked,
-        log: document.getElementById('temp-log').checked,
-        previewOnly: previewOnly
-    };
-    
-    // Validation
-    if (!options.userTemp && !options.windowsTemp && !options.prefetch && !options.recycle && !options.thumbnail) {
-        showNotification('⚠️ Please select at least one cleanup option!', 'warning');
-        return;
-    }
-    
-    // Confirmation for destructive actions
-    if (options.recycle && !previewOnly) {
-        showConfirmation(
-            'Confirm Recycle Bin Deletion',
-            '<strong>Are you sure?</strong><br>You selected "Empty Recycle Bin". Files will be permanently deleted and cannot be recovered!<br><br>Make sure you don\'t need anything in your Recycle Bin before proceeding.',
-            () => createTempCleanerScript(options)
-        );
-        return;
-    }
-    
-    createTempCleanerScript(options);
-}
-
-function createTempCleanerScript(options) {
-    const script = `# Windows 11 Temp File Cleaner
+    let script = `#Requires -RunAsAdministrator
+# ============================================
+# Windows 11 ${mode} Script
 # Generated: ${new Date().toLocaleString()}
-# Mode: ${options.previewOnly ? 'PREVIEW ONLY - No files will be deleted' : 'CLEANUP MODE'}
-# Generated by Windows 11 Optimization Portal
+# ============================================
 
-#Requires -RunAsAdministrator
+Write-Host ""
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+Write-Host "║                                                           ║" -ForegroundColor Cyan
+Write-Host "║     Windows 11 ${mode.padEnd(36)} ║" -ForegroundColor Cyan
+Write-Host "║                                                           ║" -ForegroundColor Cyan
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Host ""
 
-# Set error handling
-$ErrorActionPreference = "Continue"
-
-# Check for Administrator privileges
-if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Host ""
-    Write-Host "╔════════════════════════════════════════════════════════╗" -ForegroundColor Red
-    Write-Host "║           ADMINISTRATOR RIGHTS REQUIRED                ║" -ForegroundColor Red
-    Write-Host "╚════════════════════════════════════════════════════════╝" -ForegroundColor Red
-    Write-Host ""
-    Write-Host "This script requires Administrator privileges to run." -ForegroundColor Yellow
-    Write-Host ""
-    Write-Host "To fix this:" -ForegroundColor Cyan
-    Write-Host "  1. Right-click this script file" -ForegroundColor White
-    Write-Host "  2. Select 'Run with PowerShell' or 'Run as Administrator'" -ForegroundColor White
+# Check for admin privileges
+$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+if (-not $isAdmin) {
+    Write-Host "❌ ERROR: This script requires Administrator privileges!" -ForegroundColor Red
+    Write-Host "   Right-click the script and select 'Run as Administrator'" -ForegroundColor Yellow
     Write-Host ""
     Read-Host "Press Enter to exit"
     exit 1
 }
 
-Write-Host ""
-Write-Host "╔════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║       Windows 11 Temp File Cleaner                     ║" -ForegroundColor Cyan
-Write-Host "║       ${options.previewOnly ? 'PREVIEW MODE - No Changes Made' : 'CLEANUP MODE - Files Will Be Deleted'}           ║" -ForegroundColor Cyan
-Write-Host "╚════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
-Write-Host ""
+`;
 
-# Initialize counters
-$totalFilesScanned = 0
-$totalFilesDeleted = 0
-$totalSpaceFreed = 0
-$errors = @()
-$logEntries = @()
-
-# Function to safely delete files
-function Remove-TempFiles {
-    param(
-        [string]$Path,
-        [string]$Description
-    )
-    
-    Write-Host "───────────────────────────────────────────────────────" -ForegroundColor Gray
-    Write-Host "📂 Scanning: $Description" -ForegroundColor Yellow
-    Write-Host "   Path: $Path" -ForegroundColor Gray
-    
-    if (-not (Test-Path $Path)) {
-        Write-Host "   ⚠️  Path not found, skipping." -ForegroundColor Yellow
-        return
-    }
-    
-    $filesScanned = 0
-    $sizeBefore = 0
-    $filesDeleted = 0
-    $spaceFreed = 0
-    
-    try {
-        # Get all items recursively
-        $items = @(Get-ChildItem -Path $Path -Recurse -Force -ErrorAction SilentlyContinue)
-        
-        if ($items.Count -eq 0) {
-            Write-Host "   ✓ No files found (already clean)" -ForegroundColor Green
-            return
-        }
-        
-        foreach ($item in $items) {
-            try {
-                if (-not $item.PSIsContainer) {
-                    $size = $item.Length
-                    $filesScanned++
-                    $sizeBefore += $size
-                    
-                    ${options.previewOnly ? `if ($filesScanned -le 10) {
-                        Write-Host "   [PREVIEW] Would delete: $($item.Name)" -ForegroundColor Gray
-                    }` : `
-                    Remove-Item -Path $item.FullName -Force -ErrorAction Stop
-                    $filesDeleted++
-                    $spaceFreed += $size`}
-                }
-            }
-            catch {
-                # File in use or access denied - skip silently
-                # This is normal and expected for system files
-            }
-        }
-        
-        ${!options.previewOnly ? `
-        # Try to remove empty directories
-        $directories = @(Get-ChildItem -Path $Path -Recurse -Force -Directory -ErrorAction SilentlyContinue | Sort-Object -Property FullName -Descending)
-        foreach ($dir in $directories) {
-            try {
-                Remove-Item -Path $dir.FullName -Force -ErrorAction Stop
-            }
-            catch {
-                # Directory not empty or in use - skip silently
-            }
-        }` : ''}
-        
-        $script:totalFilesScanned += $filesScanned
-        $script:totalFilesDeleted += $filesDeleted
-        $script:totalSpaceFreed += $spaceFreed
-        
-        Write-Host "   📊 Files scanned: $filesScanned" -ForegroundColor White
-        ${options.previewOnly ? 
-        `Write-Host "   💭 Would delete: $filesDeleted files" -ForegroundColor Cyan
-        if ($filesScanned -gt 10) {
-            Write-Host "   ℹ️  (showing first 10 files only)" -ForegroundColor Gray
-        }` :
-        `Write-Host "   ✓ Files deleted: $filesDeleted" -ForegroundColor Green`}
-        Write-Host "   💾 Space: $([math]::Round($spaceFreed / 1MB, 2)) MB ($([math]::Round($spaceFreed / 1GB, 3)) GB)" -ForegroundColor $(if ($spaceFreed -gt 100MB) { 'Green' } else { 'White' })
-        
-        $script:logEntries += [PSCustomObject]@{
-            Location = $Description
-            Path = $Path
-            FilesScanned = $filesScanned
-            FilesDeleted = $filesDeleted
-            SpaceFreedMB = [math]::Round($spaceFreed / 1MB, 2)
-        }
-    }
-    catch {
-        Write-Host "   ❌ Error accessing path: $($_.Exception.Message)" -ForegroundColor Red
-        $script:errors += "Failed to access: $Path - $($_.Exception.Message)"
-    }
-}
-
-# Start cleanup
-Write-Host "🚀 Starting cleanup process..." -ForegroundColor Cyan
-Write-Host ""
-
-${options.userTemp ? `
-# Clean User Temp Folder
-Remove-TempFiles -Path $env:TEMP -Description "User Temp Folder (%TEMP%)"
-` : ''}
-
-${options.windowsTemp ? `
-# Clean Windows Temp Folder
-Remove-TempFiles -Path "C:\\Windows\\Temp" -Description "Windows System Temp"
-` : ''}
-
-${options.prefetch ? `
-# Clean Prefetch
-Remove-TempFiles -Path "C:\\Windows\\Prefetch" -Description "Prefetch Cache"
-` : ''}
-
-${options.thumbnail ? `
-# Clear Thumbnail Cache
-Remove-TempFiles -Path "$env:LOCALAPPDATA\\Microsoft\\Windows\\Explorer" -Description "Thumbnail Cache"
-` : ''}
-
-${options.recycle && !options.previewOnly ? `
-# Empty Recycle Bin
-Write-Host "───────────────────────────────────────────────────────" -ForegroundColor Gray
-Write-Host "🗑️  Emptying Recycle Bin..." -ForegroundColor Yellow
+    if (!previewMode) {
+        script += `
+# Create System Restore Point
+Write-Host "🛡️  Creating System Restore Point..." -ForegroundColor Yellow
 try {
-    Clear-RecycleBin -Force -ErrorAction Stop
-    Write-Host "   ✓ Recycle Bin emptied successfully" -ForegroundColor Green
-}
-catch {
-    Write-Host "   ❌ Failed to empty Recycle Bin: $($_.Exception.Message)" -ForegroundColor Red
+    Enable-ComputerRestore -Drive "C:\\"
+    Checkpoint-Computer -Description "Before Optimization - $(Get-Date -Format 'yyyy-MM-dd HH:mm')" -RestorePointType "MODIFY_SETTINGS"
+    Write-Host "   ✓ Restore point created successfully!" -ForegroundColor Green
+} catch {
+    Write-Host "   ⚠️  Could not create restore point: $($_.Exception.Message)" -ForegroundColor Yellow
+    Write-Host "   Continuing anyway..." -ForegroundColor Gray
 }
 Write-Host ""
-` : ''}
 
-# Summary
-Write-Host ""
-Write-Host "╔════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║                  CLEANUP SUMMARY                        ║" -ForegroundColor Cyan
-Write-Host "╚════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "Total files scanned: $totalFilesScanned" -ForegroundColor White
-Write-Host "Total files ${options.previewOnly ? 'that would be deleted' : 'deleted'}: $totalFilesDeleted" -ForegroundColor $(if ($options.previewOnly) { 'Cyan' } else { 'Green' })
-Write-Host "Total space ${options.previewOnly ? 'that would be freed' : 'freed'}: $([math]::Round($totalSpaceFreed / 1MB, 2)) MB ($([math]::Round($totalSpaceFreed / 1GB, 3)) GB)" -ForegroundColor $(if ($options.previewOnly) { 'Cyan' } else { 'Green' })
-
-if ($errors.Count -gt 0) {
-    Write-Host ""
-    Write-Host "⚠️  Errors encountered: $($errors.Count)" -ForegroundColor Yellow
-    Write-Host "   (Most errors are normal - files in use by Windows)" -ForegroundColor Gray
-}
-
-${options.log && !options.previewOnly ? `
-# Save log to Desktop
-Write-Host ""
-Write-Host "📝 Saving cleanup log..." -ForegroundColor Yellow
-$logPath = "$env:USERPROFILE\\Desktop\\TempCleanup_${getTimestamp()}.txt"
-$logContent = @"
-════════════════════════════════════════════════════════
-    Windows 11 Temp File Cleaner - Detailed Log
-════════════════════════════════════════════════════════
-
-Generated: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
-Computer: $env:COMPUTERNAME
-User: $env:USERNAME
-
-════════════════════════════════════════════════════════
-                    SUMMARY
-════════════════════════════════════════════════════════
-
-Total Files Scanned: $totalFilesScanned
-Total Files Deleted: $totalFilesDeleted
-Total Space Freed: $([math]::Round($totalSpaceFreed / 1MB, 2)) MB ($([math]::Round($totalSpaceFreed / 1GB, 3)) GB)
-
-════════════════════════════════════════════════════════
-                DETAILED BREAKDOWN
-════════════════════════════════════════════════════════
-
-"@
-
-foreach ($entry in $logEntries) {
-    $logContent += @"
-
-Location: $($entry.Location)
-Path: $($entry.Path)
-Files Scanned: $($entry.FilesScanned)
-Files Deleted: $($entry.FilesDeleted)
-Space Freed: $($entry.SpaceFreedMB) MB
-
-"@
-}
-
-if ($errors.Count -gt 0) {
-    $logContent += @"
-
-════════════════════════════════════════════════════════
-                     ERRORS
-════════════════════════════════════════════════════════
-
-"@
-    foreach ($error in $errors) {
-        $logContent += "$error`n"
+`;
     }
-}
 
-$logContent | Out-File -FilePath $logPath -Encoding UTF8
-Write-Host "   ✓ Log saved to: $logPath" -ForegroundColor Green
-` : ''}
+    script += `$totalCleaned = 0
+$itemsCleaned = 0
+$errorCount = 0
 
+`;
+
+    // TEMP FILES SECTION
+    if (Object.values(selected.temp).some(v => v)) {
+        script += generateTempCleanupSection(selected.temp, whatIf);
+    }
+
+    // PRIVACY SECTION
+    if (Object.values(selected.privacy).some(v => v)) {
+        script += generatePrivacySection(selected.privacy, whatIf);
+    }
+
+    // PERFORMANCE SECTION
+    if (Object.values(selected.performance).some(v => v)) {
+        script += generatePerformanceSection(selected.performance, whatIf);
+    }
+
+    // SERVICES SECTION
+    if (Object.values(selected.services).some(v => v)) {
+        script += generateServicesSection(selected.services, whatIf);
+    }
+
+    // DISK CLEANUP SECTION
+    if (Object.values(selected.disk).some(v => v)) {
+        script += generateDiskCleanupSection(selected.disk, whatIf);
+    }
+
+    // STARTUP ANALYSIS SECTION
+    if (Object.values(selected.startup).some(v => v)) {
+        script += generateStartupSection(selected.startup);
+    }
+
+    // Summary
+    script += `
 Write-Host ""
-Write-Host "───────────────────────────────────────────────────────" -ForegroundColor Gray
-${options.previewOnly ? 
-`Write-Host "ℹ️  Preview complete! No files were deleted." -ForegroundColor Cyan
-Write-Host "   To actually clean files, run this script in cleanup mode." -ForegroundColor Gray` :
-`Write-Host "✓ Cleanup completed successfully!" -ForegroundColor Green
-Write-Host "  Your system should now have more free space." -ForegroundColor Gray`}
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
+Write-Host "║                  ${mode} COMPLETE!                     ║" -ForegroundColor Green
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+Write-Host ""
+Write-Host "📊 Summary:" -ForegroundColor Cyan
+Write-Host "   • Items processed: $itemsCleaned" -ForegroundColor White
+Write-Host "   • Space freed: $([math]::Round($totalCleaned / 1MB, 2)) MB" -ForegroundColor White
+if ($errorCount -gt 0) {
+    Write-Host "   • Errors (safe to ignore): $errorCount" -ForegroundColor Yellow
+}
+Write-Host ""
+Write-Host "✅ Your system has been optimized!" -ForegroundColor Green
 Write-Host ""
 Read-Host "Press Enter to exit"
 `;
 
-    // Show modal with script preview
-    const modalContent = `
-        <div class="alert ${options.previewOnly ? 'alert-info' : 'alert-warning'}">
-            <span class="alert-icon">${options.previewOnly ? 'ℹ️' : '⚠️'}</span>
-            <div>
-                <strong>${options.previewOnly ? 'Preview Mode' : 'Cleanup Mode'}</strong><br>
-                ${options.previewOnly ? 
-                    'This script will scan and show what would be deleted <strong>without actually removing files</strong>. Safe to run anytime!' :
-                    'This script will <strong>permanently delete temporary files</strong>. Files in use will be automatically skipped.'}
-            </div>
-        </div>
-        
-        <div class="alert alert-success">
-            <span class="alert-icon">✅</span>
-            <div>
-                <strong>Selected Options:</strong><br>
-                ${options.userTemp ? '✓ User Temp Folder (%TEMP%)<br>' : ''}
-                ${options.windowsTemp ? '✓ Windows Temp Folder<br>' : ''}
-                ${options.prefetch ? '✓ Prefetch Cache<br>' : ''}
-                ${options.recycle ? '✓ Empty Recycle Bin<br>' : ''}
-                ${options.thumbnail ? '✓ Thumbnail Cache<br>' : ''}
-                ${options.log ? '✓ Create Cleanup Log<br>' : ''}
-            </div>
-        </div>
-        
-        <div class="alert alert-info">
-            <span class="alert-icon">📋</span>
-            <div>
-                <strong>How to Run This Script:</strong><br>
-                1. Click "Download Script" below<br>
-                2. Find the downloaded .ps1 file (usually in Downloads folder)<br>
-                3. Right-click the file → "Run with PowerShell"<br>
-                4. If you see a security warning, click "Run anyway" or "Yes"<br>
-                5. Wait for the script to complete (may take 1-5 minutes)
-            </div>
-        </div>
-        
-        <h3>Script Preview:</h3>
-        <div class="script-preview">${escapeHtml(script)}</div>
-        
-        <div class="btn-group">
-            <button class="btn btn-success" onclick="downloadScript('TempCleaner_${options.previewOnly ? 'Preview' : 'Cleanup'}_${getTimestamp()}.ps1', \`${script.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">
-                💾 Download Script
-            </button>
-            <button class="btn btn-secondary" onclick="closeModal()">
-                Close Preview
-            </button>
-        </div>
-    `;
-    
-    showModal(`${options.previewOnly ? '👀 Preview Mode' : '🗑️ Temp Cleaner'} Script Ready`, modalContent);
+    return script;
 }
 
 // ============================================
-// STARTUP OPTIMIZER GENERATOR
+// SECTION GENERATORS
 // ============================================
 
-function generateStartupScript() {
-    const options = {
-        scan: document.getElementById('startup-scan').checked,
-        report: document.getElementById('startup-report').checked,
-        services: document.getElementById('startup-services').checked
-    };
+function generateTempCleanupSection(temp, whatIf) {
+    let section = `
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
+Write-Host "║                  TEMP FILES CLEANUP                       ║" -ForegroundColor Yellow
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
+Write-Host ""
+
+function Clean-Directory {
+    param([string]$Path, [string]$Description)
     
-    if (!options.scan && !options.report && !options.services) {
-        showNotification('⚠️ Please select at least one analysis option!', 'warning');
-        return;
+    if (-not (Test-Path $Path)) {
+        Write-Host "⚠️  $Description - Path not found: $Path" -ForegroundColor Yellow
+        return
     }
     
-    const script = `# Windows 11 Startup Optimizer & Analyzer
-# Generated: ${new Date().toLocaleString()}
-# Generated by Windows 11 Optimization Portal
+    Write-Host "🗑️  Cleaning $Description..." -ForegroundColor Cyan
+    $sizeBefore = 0
+    $filesRemoved = 0
+    
+    try {
+        $items = Get-ChildItem -Path $Path -Recurse -Force -ErrorAction SilentlyContinue
+        $sizeBefore = ($items | Measure-Object -Property Length -Sum -ErrorAction SilentlyContinue).Sum
+        
+        foreach ($item in $items) {
+            try {
+                Remove-Item $item.FullName -Force -Recurse ${whatIf} -ErrorAction Stop
+                $filesRemoved++
+            } catch {
+                # Skip files in use - this is expected
+            }
+        }
+        
+        $script:totalCleaned += $sizeBefore
+        $script:itemsCleaned += $filesRemoved
+        Write-Host "   ✓ Removed $filesRemoved items ($([math]::Round($sizeBefore / 1MB, 2)) MB)" -ForegroundColor Green
+        
+    } catch {
+        Write-Host "   ⚠️  Some files were in use (this is normal)" -ForegroundColor Yellow
+        $script:errorCount++
+    }
+}
 
-#Requires -RunAsAdministrator
+`;
 
+    if (temp.user) {
+        section += `Clean-Directory -Path $env:TEMP -Description "User Temp Folder (%TEMP%)"
+`;
+    }
+
+    if (temp.windows) {
+        section += `Clean-Directory -Path "C:\\Windows\\Temp" -Description "Windows Temp Folder"
+`;
+    }
+
+    if (temp.prefetch) {
+        section += `Clean-Directory -Path "C:\\Windows\\Prefetch" -Description "Prefetch Cache"
+`;
+    }
+
+    if (temp.thumbnail) {
+        section += `Clean-Directory -Path "$env:LOCALAPPDATA\\Microsoft\\Windows\\Explorer" -Description "Thumbnail Cache"
+`;
+    }
+
+    if (temp.recycle) {
+        section += `
+Write-Host "🗑️  Emptying Recycle Bin..." -ForegroundColor Cyan
+try {
+    Clear-RecycleBin -Force ${whatIf} -ErrorAction Stop
+    Write-Host "   ✓ Recycle Bin emptied" -ForegroundColor Green
+    $script:itemsCleaned++
+} catch {
+    Write-Host "   ⚠️  Could not empty recycle bin: $($_.Exception.Message)" -ForegroundColor Yellow
+}
+`;
+    }
+
+    section += "\nWrite-Host \"\"\n";
+    return section;
+}
+
+function generatePrivacySection(privacy, whatIf) {
+    let section = `
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
+Write-Host "║                  PRIVACY SETTINGS                         ║" -ForegroundColor Magenta
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
 Write-Host ""
-Write-Host "╔════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║        Startup Optimizer & Analyzer                    ║" -ForegroundColor Cyan
-Write-Host "╚════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+
+`;
+
+    if (privacy.telemetry) {
+        section += `
+Write-Host "🔒 Minimizing Telemetry..." -ForegroundColor Cyan
+try {
+    Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" -Name "AllowTelemetry" -Value 0 ${whatIf} -ErrorAction Stop
+    Write-Host "   ✓ Telemetry set to minimum" -ForegroundColor Green
+    $script:itemsCleaned++
+} catch {
+    Write-Host "   ⚠️  Could not modify telemetry settings" -ForegroundColor Yellow
+    $script:errorCount++
+}
+`;
+    }
+
+    if (privacy.ads) {
+        section += `
+Write-Host "🔒 Disabling Advertising ID..." -ForegroundColor Cyan
+try {
+    if (-not (Test-Path "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo")) {
+        New-Item -Path "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo" -Force ${whatIf} | Out-Null
+    }
+    Set-ItemProperty -Path "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo" -Name "Enabled" -Value 0 ${whatIf} -ErrorAction Stop
+    Write-Host "   ✓ Advertising ID disabled" -ForegroundColor Green
+    $script:itemsCleaned++
+} catch {
+    Write-Host "   ⚠️  Could not disable advertising ID" -ForegroundColor Yellow
+    $script:errorCount++
+}
+`;
+    }
+
+    if (privacy.cortana) {
+        section += `
+Write-Host "🔒 Disabling Cortana..." -ForegroundColor Cyan
+try {
+    if (-not (Test-Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search")) {
+        New-Item -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search" -Force ${whatIf} | Out-Null
+    }
+    Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search" -Name "AllowCortana" -Value 0 ${whatIf} -ErrorAction Stop
+    Write-Host "   ✓ Cortana disabled" -ForegroundColor Green
+    $script:itemsCleaned++
+} catch {
+    Write-Host "   ⚠️  Could not disable Cortana" -ForegroundColor Yellow
+    $script:errorCount++
+}
+`;
+    }
+
+    if (privacy.location) {
+        section += `
+Write-Host "🔒 Disabling Location Tracking..." -ForegroundColor Cyan
+try {
+    Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\location" -Name "Value" -Value "Deny" ${whatIf} -ErrorAction Stop
+    Write-Host "   ✓ Location tracking disabled" -ForegroundColor Green
+    $script:itemsCleaned++
+} catch {
+    Write-Host "   ⚠️  Could not disable location tracking" -ForegroundColor Yellow
+    $script:errorCount++
+}
+`;
+    }
+
+    section += "\nWrite-Host \"\"\n";
+    return section;
+}
+
+function generatePerformanceSection(perf, whatIf) {
+    let section = `
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Blue
+Write-Host "║                 PERFORMANCE TUNING                        ║" -ForegroundColor Blue
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Blue
 Write-Host ""
 
-${options.scan ? `
-# Get all startup programs
-Write-Host "🔍 Scanning startup programs..." -ForegroundColor Yellow
+`;
+
+    if (perf.visual) {
+        section += `
+Write-Host "🎯 Optimizing Visual Effects..." -ForegroundColor Cyan
+try {
+    Set-ItemProperty -Path "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects" -Name "VisualFXSetting" -Value 2 ${whatIf} -ErrorAction Stop
+    Write-Host "   ✓ Visual effects set to best performance" -ForegroundColor Green
+    $script:itemsCleaned++
+} catch {
+    Write-Host "   ⚠️  Could not modify visual effects" -ForegroundColor Yellow
+    $script:errorCount++
+}
+`;
+    }
+
+    if (perf.gamemode) {
+        section += `
+Write-Host "🎯 Enabling Game Mode..." -ForegroundColor Cyan
+try {
+    if (-not (Test-Path "HKCU:\\Software\\Microsoft\\GameBar")) {
+        New-Item -Path "HKCU:\\Software\\Microsoft\\GameBar" -Force ${whatIf} | Out-Null
+    }
+    Set-ItemProperty -Path "HKCU:\\Software\\Microsoft\\GameBar" -Name "AutoGameModeEnabled" -Value 1 ${whatIf} -ErrorAction Stop
+    Write-Host "   ✓ Game Mode enabled" -ForegroundColor Green
+    $script:itemsCleaned++
+} catch {
+    Write-Host "   ⚠️  Could not enable Game Mode" -ForegroundColor Yellow
+    $script:errorCount++
+}
+`;
+    }
+
+    if (perf.superfetch) {
+        section += `
+Write-Host "🎯 Disabling Superfetch (for SSD)..." -ForegroundColor Cyan
+try {
+    Set-Service -Name "SysMain" -StartupType Disabled ${whatIf} -ErrorAction Stop
+    Stop-Service -Name "SysMain" -Force ${whatIf} -ErrorAction SilentlyContinue
+    Write-Host "   ✓ Superfetch disabled" -ForegroundColor Green
+    $script:itemsCleaned++
+} catch {
+    Write-Host "   ⚠️  Could not disable Superfetch" -ForegroundColor Yellow
+    $script:errorCount++
+}
+`;
+    }
+
+    if (perf.hibernation) {
+        section += `
+Write-Host "🎯 Disabling Hibernation..." -ForegroundColor Cyan
+try {
+    powercfg -h off
+    Write-Host "   ✓ Hibernation disabled (hiberfil.sys deleted)" -ForegroundColor Green
+    $script:itemsCleaned++
+} catch {
+    Write-Host "   ⚠️  Could not disable hibernation" -ForegroundColor Yellow
+    $script:errorCount++
+}
+`;
+    }
+
+    section += "\nWrite-Host \"\"\n";
+    return section;
+}
+
+function generateServicesSection(services, whatIf) {
+    let section = `
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor DarkYellow
+Write-Host "║                  WINDOWS SERVICES                         ║" -ForegroundColor DarkYellow
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor DarkYellow
+Write-Host ""
+
+`;
+
+    if (services.diagtrack) {
+        section += `
+Write-Host "⚙️  Disabling Diagnostics Tracking Service..." -ForegroundColor Cyan
+try {
+    Set-Service -Name "DiagTrack" -StartupType Disabled ${whatIf} -ErrorAction Stop
+    Stop-Service -Name "DiagTrack" -Force ${whatIf} -ErrorAction SilentlyContinue
+    Write-Host "   ✓ DiagTrack service disabled" -ForegroundColor Green
+    $script:itemsCleaned++
+} catch {
+    Write-Host "   ⚠️  Could not modify DiagTrack service" -ForegroundColor Yellow
+    $script:errorCount++
+}
+`;
+    }
+
+    if (services.sysmain) {
+        section += `
+Write-Host "⚙️  Setting Superfetch to Manual..." -ForegroundColor Cyan
+try {
+    Set-Service -Name "SysMain" -StartupType Manual ${whatIf} -ErrorAction Stop
+    Write-Host "   ✓ SysMain (Superfetch) set to Manual" -ForegroundColor Green
+    $script:itemsCleaned++
+} catch {
+    Write-Host "   ⚠️  Could not modify SysMain service" -ForegroundColor Yellow
+    $script:errorCount++
+}
+`;
+    }
+
+    if (services.wsearch) {
+        section += `
+Write-Host "⚙️  Setting Windows Search to Manual..." -ForegroundColor Cyan
+try {
+    Set-Service -Name "WSearch" -StartupType Manual ${whatIf} -ErrorAction Stop
+    Write-Host "   ✓ Windows Search set to Manual (saves CPU/disk)" -ForegroundColor Green
+    $script:itemsCleaned++
+} catch {
+    Write-Host "   ⚠️  Could not modify Windows Search service" -ForegroundColor Yellow
+    $script:errorCount++
+}
+`;
+    }
+
+    section += "\nWrite-Host \"\"\n";
+    return section;
+}
+
+function generateDiskCleanupSection(disk, whatIf) {
+    let section = `
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor DarkCyan
+Write-Host "║                  DISK MAINTENANCE                         ║" -ForegroundColor DarkCyan
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor DarkCyan
+Write-Host ""
+
+`;
+
+    if (disk.winsxs) {
+        section += `
+Write-Host "💾 Cleaning Component Store (WinSxS)..." -ForegroundColor Cyan
+Write-Host "   ⏱️  This may take 5-10 minutes..." -ForegroundColor Gray
+try {
+    $result = Dism.exe /Online /Cleanup-Image /StartComponentCleanup /ResetBase
+    Write-Host "   ✓ Component Store cleaned" -ForegroundColor Green
+    $script:itemsCleaned++
+} catch {
+    Write-Host "   ⚠️  Could not clean component store" -ForegroundColor Yellow
+    $script:errorCount++
+}
+`;
+    }
+
+    if (disk.updates) {
+        section += `
+Write-Host "💾 Removing Old Windows Updates..." -ForegroundColor Cyan
+try {
+    $updatePath = "C:\\Windows\\SoftwareDistribution\\Download"
+    if (Test-Path $updatePath) {
+        $sizeBefore = (Get-ChildItem $updatePath -Recurse | Measure-Object -Property Length -Sum).Sum
+        Remove-Item "$updatePath\\*" -Recurse -Force ${whatIf} -ErrorAction Stop
+        $script:totalCleaned += $sizeBefore
+        Write-Host "   ✓ Old updates removed ($([math]::Round($sizeBefore / 1MB, 2)) MB)" -ForegroundColor Green
+        $script:itemsCleaned++
+    }
+} catch {
+    Write-Host "   ⚠️  Could not remove old updates" -ForegroundColor Yellow
+    $script:errorCount++
+}
+`;
+    }
+
+    if (disk.logs) {
+        section += `
+Write-Host "💾 Clearing Old System Logs..." -ForegroundColor Cyan
+try {
+    Get-EventLog -LogName * | ForEach-Object {
+        try {
+            Clear-EventLog -LogName $_.Log ${whatIf} -ErrorAction Stop
+        } catch {
+            # Some logs can't be cleared - skip them
+        }
+    }
+    Write-Host "   ✓ System logs cleared" -ForegroundColor Green
+    $script:itemsCleaned++
+} catch {
+    Write-Host "   ⚠️  Could not clear all logs" -ForegroundColor Yellow
+    $script:errorCount++
+}
+`;
+    }
+
+    section += "\nWrite-Host \"\"\n";
+    return section;
+}
+
+function generateStartupSection(startup) {
+    let section = `
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
+Write-Host "║                  STARTUP ANALYSIS                         ║" -ForegroundColor Green
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+Write-Host ""
+
+Write-Host "⚡ Scanning startup items..." -ForegroundColor Cyan
+
+`;
+
+    if (startup.scan && startup.report) {
+        section += `
 $startupItems = @()
 
-# Registry-based startup items
-$registryPaths = @(
-    @{Path="HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"; Scope="Machine (All Users)"},
-    @{Path="HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce"; Scope="Machine (Run Once)"},
-    @{Path="HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"; Scope="Current User"},
-    @{Path="HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce"; Scope="Current User (Run Once)"}
+# Registry startup locations
+$regPaths = @(
+    "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+    "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"
 )
 
-foreach ($regPath in $registryPaths) {
-    if (Test-Path $regPath.Path) {
-        try {
-            $items = Get-ItemProperty -Path $regPath.Path -ErrorAction Stop
-            $items.PSObject.Properties | Where-Object { $_.Name -notmatch '^PS' } | ForEach-Object {
+foreach ($path in $regPaths) {
+    if (Test-Path $path) {
+        Get-ItemProperty $path | ForEach-Object {
+            $_.PSObject.Properties | Where-Object { $_.Name -notlike "PS*" } | ForEach-Object {
                 $startupItems += [PSCustomObject]@{
                     Name = $_.Name
-                    Location = $regPath.Path
-                    Scope = $regPath.Scope
                     Command = $_.Value
-                    Type = "Registry"
+                    Location = $path
                 }
             }
         }
-        catch {
-            # Ignore access errors
-        }
     }
 }
 
-# Startup folder items
-$startupFolders = @(
-    @{Path="$env:APPDATA\\Microsoft\\Windows\\Start Menu\\Programs\\Startup"; Scope="Current User"},
-    @{Path="$env:ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Startup"; Scope="All Users"}
-)
-
-foreach ($folderInfo in $startupFolders) {
-    if (Test-Path $folderInfo.Path) {
-        Get-ChildItem -Path $folderInfo.Path -ErrorAction SilentlyContinue | ForEach-Object {
-            $startupItems += [PSCustomObject]@{
-                Name = $_.Name
-                Location = $folderInfo.Path
-                Scope = $folderInfo.Scope
-                Command = $_.FullName
-                Type = "Shortcut"
-            }
-        }
-    }
-}
-
-Write-Host "   ✓ Found $($startupItems.Count) startup items" -ForegroundColor Green
-Write-Host ""
-
-# Display startup items
-Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "            STARTUP PROGRAMS FOUND" -ForegroundColor Cyan
-Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host ""
-
-foreach ($item in $startupItems) {
-    Write-Host "──────────────────────────────────────────────────────" -ForegroundColor Gray
-    Write-Host "📌 $($item.Name)" -ForegroundColor White
-    Write-Host "   Type: $($item.Type)" -ForegroundColor Gray
-    Write-Host "   Scope: $($item.Scope)" -ForegroundColor Gray
-    Write-Host "   Location: $($item.Location)" -ForegroundColor Gray
-    Write-Host "   Command: $($item.Command)" -ForegroundColor Gray
-}
-Write-Host ""
-` : ''}
-
-${options.services ? `
-# Analyze Services
-Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "            WINDOWS SERVICES ANALYSIS" -ForegroundColor Cyan
-Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host ""
-
-# Services that can potentially be optimized
-$servicesToAnalyze = @(
-    "DiagTrack",
-    "dmwappushservice",
-    "SysMain",
-    "WSearch",
-    "MapsBroker"
-)
-
-foreach ($serviceName in $servicesToAnalyze) {
-    try {
-        $service = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
-        if ($service) {
-            Write-Host "──────────────────────────────────────────────────────" -ForegroundColor Gray
-            Write-Host "🔧 Service: $serviceName" -ForegroundColor White
-            Write-Host "   Display Name: $($service.DisplayName)" -ForegroundColor Gray
-            Write-Host "   Status: $($service.Status)" -ForegroundColor $(if ($service.Status -eq 'Running') { 'Green' } else { 'Yellow' })
-            Write-Host "   Startup Type: $($service.StartType)" -ForegroundColor Gray
-        }
-    }
-    catch {
-        Write-Host "   ⚠️  Could not query service: $serviceName" -ForegroundColor Yellow
-    }
-}
-Write-Host ""
-
-Write-Host "ℹ️  NOTE: This is ANALYSIS ONLY. No services were changed." -ForegroundColor Yellow
-Write-Host "   To optimize services, use the Performance Tuning section" -ForegroundColor Gray
-Write-Host "   in the portal with granular service selection." -ForegroundColor Gray
-Write-Host ""
-` : ''}
-
-${options.report ? `
-# Generate HTML Report
-Write-Host "📝 Generating HTML report..." -ForegroundColor Yellow
-$reportPath = "$env:USERPROFILE\\Desktop\\StartupReport_${getTimestamp()}.html"
-
-$htmlReport = @"
+# Create HTML report
+$reportPath = "$env:USERPROFILE\\Desktop\\Startup_Report_$(Get-Date -Format 'yyyy-MM-dd_HH-mm').html"
+$html = @"
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>Windows 11 Startup Analysis Report</title>
+    <title>Startup Programs Report</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            margin: 20px;
-            background: #f5f5f5;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        h1 {
-            color: #0078d4;
-            border-bottom: 3px solid #0078d4;
-            padding-bottom: 10px;
-        }
-        h2 {
-            color: #2c3e50;
-            margin-top: 30px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        th {
-            background: #0078d4;
-            color: white;
-            padding: 12px;
-            text-align: left;
-            font-weight: 600;
-        }
-        td {
-            padding: 10px 12px;
-            border-bottom: 1px solid #ddd;
-        }
-        tr:hover {
-            background: #f9f9f9;
-        }
-        .safe {
-            color: #107c10;
-            font-weight: 600;
-        }
-        .warning {
-            color: #f7630c;
-            font-weight: 600;
-        }
-        .info {
-            background: #e6f3ff;
-            padding: 15px;
-            border-left: 4px solid #0078d4;
-            margin: 15px 0;
-            border-radius: 4px;
-        }
-        .recommendation {
-            background: #fff4e6;
-            padding: 15px;
-            border-left: 4px solid #f7630c;
-            margin: 10px 0;
-            border-radius: 4px;
-        }
-        .stat-box {
-            display: inline-block;
-            background: #0078d4;
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 10px;
-            min-width: 150px;
-            text-align: center;
-        }
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-        }
-        .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
+        body { font-family: 'Segoe UI', sans-serif; margin: 20px; background: #f5f5f5; }
+        h1 { color: #0078d4; }
+        table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #0078d4; color: white; }
+        tr:hover { background: #f0f0f0; }
+        .recommendation { color: #107c10; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🚀 Windows 11 Startup Analysis Report</h1>
-        <p><strong>Generated:</strong> $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")</p>
-        <p><strong>Computer:</strong> $env:COMPUTERNAME</p>
-        <p><strong>User:</strong> $env:USERNAME</p>
-        
-        <div class="stat-box">
-            <div class="stat-value">$($startupItems.Count)</div>
-            <div class="stat-label">Startup Items</div>
-        </div>
-        
-        <h2>📋 Startup Programs</h2>
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Scope</th>
-                <th>Location</th>
-                <th>Recommendation</th>
-            </tr>
+    <h1>🚀 Startup Programs Report</h1>
+    <p>Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')</p>
+    <p>Found $($startupItems.Count) startup items</p>
+    <table>
+        <tr>
+            <th>Program Name</th>
+            <th>Command</th>
+            <th>Location</th>
+            <th>Recommendation</th>
+        </tr>
 "@
 
-$commonSafeToDisable = @('OneDrive', 'Spotify', 'Discord', 'Steam', 'Epic', 'Adobe', 'Update', 'Creative Cloud')
-$keepEnabled = @('Security', 'Defender', 'Antivirus', 'Driver', 'Audio', 'Graphics', 'Intel', 'AMD', 'NVIDIA')
-
 foreach ($item in $startupItems) {
-    $isSafeToDisable = $false
-    $recommendation = "Review - Check if you need this"
-    
-    foreach ($pattern in $commonSafeToDisable) {
-        if ($item.Name -match $pattern) {
-            $isSafeToDisable = $true
-            $recommendation = "Safe to disable if you don't use daily"
-            break
-        }
+    $recommendation = "Review - Can likely be disabled"
+    if ($item.Name -like "*antivirus*" -or $item.Name -like "*defender*") {
+        $recommendation = "Keep - Security software"
+    } elseif ($item.Name -like "*driver*" -or $item.Name -like "*audio*") {
+        $recommendation = "Keep - System driver"
     }
     
-    foreach ($pattern in $keepEnabled) {
-        if ($item.Name -match $pattern) {
-            $isSafeToDisable = $false
-            $recommendation = "Keep enabled - important for system"
-            break
-        }
-    }
-    
-    $class = if ($isSafeToDisable) { "warning" } else { "safe" }
-    
-    $htmlReport += @"
-            <tr>
-                <td><strong>$($item.Name)</strong></td>
-                <td>$($item.Type)</td>
-                <td>$($item.Scope)</td>
-                <td style="font-size: 0.85em; color: #666;">$($item.Location)</td>
-                <td class="$class">$recommendation</td>
-            </tr>
+    $html += @"
+        <tr>
+            <td>$($item.Name)</td>
+            <td><small>$($item.Command)</small></td>
+            <td><small>$($item.Location)</small></td>
+            <td class="recommendation">$recommendation</td>
+        </tr>
 "@
 }
 
-$htmlReport += @"
-        </table>
-        
-        <div class="recommendation">
-            <h3>💡 Recommendations:</h3>
-            <ul>
-                <li><strong>Safe to disable:</strong> Cloud sync apps (OneDrive, Dropbox), chat apps (Discord, Skype), game launchers (Steam, Epic), update checkers</li>
-                <li><strong>Keep enabled:</strong> Security software (antivirus), hardware drivers (audio, graphics, touchpad), system utilities</li>
-                <li><strong>Not sure?</strong> Search online for "[Program Name] startup" to see if others recommend disabling it</li>
-            </ul>
-        </div>
-        
-        <div class="info">
-            <h3>📖 How to Disable Startup Items:</h3>
-            <ol>
-                <li>Press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Esc</kbd> to open Task Manager</li>
-                <li>Go to the <strong>Startup</strong> tab</li>
-                <li>Right-click any item you want to disable</li>
-                <li>Select <strong>Disable</strong></li>
-                <li>Restart your computer to see the improvements</li>
-            </ol>
-            <p><strong>Note:</strong> Disabling startup items doesn't uninstall programs - they just won't start automatically. You can still open them manually when needed.</p>
-        </div>
-        
-        <div class="info">
-            <h3>✨ Expected Results:</h3>
-            <ul>
-                <li><strong>Faster boot time:</strong> Can save 30-60 seconds on startup</li>
-                <li><strong>Less RAM usage:</strong> More memory available for programs you're actually using</li>
-                <li><strong>Quieter startup:</strong> Less disk and CPU activity when logging in</li>
-            </ul>
-        </div>
-    </div>
+$html += @"
+    </table>
+    <br>
+    <p><strong>Note:</strong> To disable startup programs, press Win+R, type "msconfig", go to Startup tab.</p>
 </body>
 </html>
 "@
 
-$htmlReport | Out-File -FilePath $reportPath -Encoding UTF8
-Write-Host "   ✓ Report saved to: $reportPath" -ForegroundColor Green
-Write-Host ""
-Write-Host "📂 Opening report in your browser..." -ForegroundColor Yellow
+$html | Out-File -FilePath $reportPath -Encoding UTF8
+
+Write-Host "   ✓ Report created: $reportPath" -ForegroundColor Green
+Write-Host "   📄 Opening report in browser..." -ForegroundColor Cyan
 Start-Process $reportPath
-` : ''}
+
+$script:itemsCleaned++
+`;
+    }
+
+    section += "\nWrite-Host \"\"\n";
+    return section;
+}
+
+// ============================================
+// SCHEDULED TASK SCRIPT BUILDER
+// ============================================
+
+function buildScheduledTaskScript(selected) {
+    const baseScript = buildPowerShellScript(selected, false, false);
+    
+    // Save the optimization script first
+    const scriptContent = baseScript.replace(/Read-Host "Press Enter to exit"/g, '# Auto-exit for scheduled task');
+    
+    const taskScript = `#Requires -RunAsAdministrator
+# ============================================
+# Weekly Maintenance Task Creator
+# Generated: ${new Date().toLocaleString()}
+# ============================================
 
 Write-Host ""
-Write-Host "╔════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║              ANALYSIS COMPLETE                          ║" -ForegroundColor Cyan
-Write-Host "╚════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+Write-Host "║      WEEKLY MAINTENANCE TASK CREATOR                      ║" -ForegroundColor Cyan
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
-${options.report ? `Write-Host "✓ HTML report created and opened in browser" -ForegroundColor Green` : ''}
-Write-Host "ℹ️  This script did not make any changes to your system." -ForegroundColor Cyan
-Write-Host "   Use Task Manager to manually disable startup items." -ForegroundColor Gray
+
+# Create the optimization script file
+$scriptPath = "$env:ProgramData\\WindowsOptimization\\WeeklyMaintenance.ps1"
+$scriptDir = Split-Path $scriptPath -Parent
+
+Write-Host "📁 Creating script directory..." -ForegroundColor Cyan
+if (-not (Test-Path $scriptDir)) {
+    New-Item -Path $scriptDir -ItemType Directory -Force | Out-Null
+}
+
+Write-Host "💾 Saving optimization script..." -ForegroundColor Cyan
+@'
+${scriptContent}
+'@ | Out-File -FilePath $scriptPath -Encoding UTF8 -Force
+
+Write-Host "   ✓ Script saved to: $scriptPath" -ForegroundColor Green
+Write-Host ""
+
+# Create scheduled task
+Write-Host "⏰ Creating scheduled task..." -ForegroundColor Cyan
+
+$taskName = "Windows Weekly Optimization"
+$taskDescription = "Automatically runs selected Windows optimizations every Sunday at 2 AM"
+
+# Remove existing task if it exists
+$existingTask = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
+if ($existingTask) {
+    Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
+    Write-Host "   ℹ️  Removed existing task" -ForegroundColor Gray
+}
+
+# Create new task
+$action = New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \`"$scriptPath\`""
+$trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At 2am
+$principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -RunLevel Highest
+$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable
+
+Register-ScheduledTask -TaskName $taskName -Description $taskDescription -Action $action -Trigger $trigger -Principal $principal -Settings $settings | Out-Null
+
+Write-Host "   ✓ Task created successfully!" -ForegroundColor Green
+Write-Host ""
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
+Write-Host "║                    SETUP COMPLETE!                        ║" -ForegroundColor Green
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+Write-Host ""
+Write-Host "📋 Task Details:" -ForegroundColor Cyan
+Write-Host "   • Name: $taskName" -ForegroundColor White
+Write-Host "   • Schedule: Every Sunday at 2:00 AM" -ForegroundColor White
+Write-Host "   • Script location: $scriptPath" -ForegroundColor White
+Write-Host ""
+Write-Host "💡 To manage this task:" -ForegroundColor Yellow
+Write-Host "   1. Open Task Scheduler (taskschd.msc)" -ForegroundColor Gray
+Write-Host "   2. Find '$taskName'" -ForegroundColor Gray
+Write-Host "   3. You can run, disable, or delete it from there" -ForegroundColor Gray
 Write-Host ""
 Read-Host "Press Enter to exit"
 `;
 
-    const modalContent = `
-        <div class="alert alert-info">
-            <span class="alert-icon">ℹ️</span>
-            <div>
-                <strong>Startup Analyzer - Analysis Only</strong><br>
-                This script will scan your startup programs and ${options.report ? 'create a detailed HTML report' : 'show them in the console'}. 
-                <strong>No changes will be made to your system.</strong> You'll manually disable items using Task Manager after reviewing the analysis.
-            </div>
-        </div>
-        
-        <div class="alert alert-success">
-            <span class="alert-icon">✅</span>
-            <div>
-                <strong>Selected Options:</strong><br>
-                ${options.scan ? '✓ Scan all startup items<br>' : ''}
-                ${options.report ? '✓ Generate HTML report<br>' : ''}
-                ${options.services ? '✓ Analyze Windows services<br>' : ''}
-            </div>
-        </div>
-        
-        <h3>Script Preview:</h3>
-        <div class="script-preview">${escapeHtml(script)}</div>
-        
-        <div class="btn-group">
-            <button class="btn btn-success" onclick="downloadScript('StartupAnalyzer_${getTimestamp()}.ps1', \`${script.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">
-                💾 Download Script
-            </button>
-            <button class="btn btn-secondary" onclick="closeModal()">
-                Close Preview
-            </button>
-        </div>
-    `;
-    
-    showModal('⚡ Startup Analyzer Script Ready', modalContent);
+    return taskScript;
 }
 
 // ============================================
-// PRIVACY OPTIMIZER GENERATOR
+// INITIALIZE
 // ============================================
 
-function generatePrivacyScript(preview = false, restore = false) {
-    const options = {
-        telemetry: document.getElementById('privacy-telemetry').checked,
-        cortana: document.getElementById('privacy-cortana').checked,
-        ads: document.getElementById('privacy-ads').checked,
-        location: document.getElementById('privacy-location').checked,
-        feedback: document.getElementById('privacy-feedback').checked
-    };
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ Windows 11 Optimization Portal - Ready');
     
-    if (!options.telemetry && !options.cortana && !options.ads && !options.location && !options.feedback) {
-        showNotification('⚠️ Please select at least one privacy option!', 'warning');
-        return;
-    }
-    
-    const script = `# Windows 11 Privacy & Telemetry Optimizer
-# Generated: ${new Date().toLocaleString()}
-# Mode: ${restore ? 'RESTORE DEFAULT SETTINGS' : 'OPTIMIZE PRIVACY'}
-# Generated by Windows 11 Optimization Portal
-
-#Requires -RunAsAdministrator
-
-Write-Host ""
-Write-Host "╔════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║    Privacy & Telemetry ${restore ? 'Restore' : 'Optimizer'}                     ║" -ForegroundColor Cyan
-Write-Host "╚════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
-Write-Host ""
-
-# Create restore point
-Write-Host "📌 Creating system restore point..." -ForegroundColor Yellow
-try {
-    Enable-ComputerRestore -Drive "C:\\" -ErrorAction SilentlyContinue
-    Checkpoint-Computer -Description "Before Privacy Changes - $(Get-Date -Format 'yyyy-MM-dd HH:mm')" -RestorePointType "MODIFY_SETTINGS" -ErrorAction Stop
-    Write-Host "   ✓ Restore point created successfully" -ForegroundColor Green
-}
-catch {
-    Write-Host "   ⚠️  Warning: Could not create restore point" -ForegroundColor Yellow
-    Write-Host "   Continuing anyway (changes are still reversible via registry)" -ForegroundColor Gray
-}
-Write-Host ""
-
-$changesApplied = 0
-$changesFailed = 0
-
-${options.telemetry ? `
-# ${restore ? 'Restore' : 'Minimize'} Telemetry
-Write-Host "───────────────────────────────────────────────────────" -ForegroundColor Gray
-Write-Host "📡 ${restore ? 'Restoring' : 'Minimizing'} telemetry..." -ForegroundColor Yellow
-try {
-    if (-not (Test-Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection")) {
-        New-Item -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" -Force | Out-Null
-    }
-    Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" -Name "AllowTelemetry" -Type DWord -Value ${restore ? '3' : '0'} -ErrorAction Stop
-    Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\DataCollection" -Name "AllowTelemetry" -Type DWord -Value ${restore ? '3' : '0'} -ErrorAction Stop
-    Write-Host "   ✓ Telemetry ${restore ? 'restored to default (Full)' : 'set to minimum (Security only)'}" -ForegroundColor Green
-    $script:changesApplied++
-}
-catch {
-    Write-Host "   ❌ Failed: $($_.Exception.Message)" -ForegroundColor Red
-    $script:changesFailed++
-}
-` : ''}
-
-${options.cortana ? `
-# ${restore ? 'Enable' : 'Disable'} Cortana
-Write-Host "───────────────────────────────────────────────────────" -ForegroundColor Gray
-Write-Host "🎙️  ${restore ? 'Enabling' : 'Disabling'} Cortana..." -ForegroundColor Yellow
-try {
-    if (-not (Test-Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search")) {
-        New-Item -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search" -Force | Out-Null
-    }
-    Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search" -Name "AllowCortana" -Type DWord -Value ${restore ? '1' : '0'} -ErrorAction Stop
-    Write-Host "   ✓ Cortana ${restore ? 'enabled' : 'disabled'}" -ForegroundColor Green
-    Write-Host "   ℹ️  Windows Search will still work normally" -ForegroundColor Gray
-    $script:changesApplied++
-}
-catch {
-    Write-Host "   ❌ Failed: $($_.Exception.Message)" -ForegroundColor Red
-    $script:changesFailed++
-}
-` : ''}
-
-${options.ads ? `
-# ${restore ? 'Enable' : 'Disable'} Advertising ID
-Write-Host "───────────────────────────────────────────────────────" -ForegroundColor Gray
-Write-Host "📢 ${restore ? 'Enabling' : 'Disabling'} Advertising ID..." -ForegroundColor Yellow
-try {
-    if (-not (Test-Path "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo")) {
-        New-Item -Path "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo" -Force | Out-Null
-    }
-    Set-ItemProperty -Path "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo" -Name "Enabled" -Type DWord -Value ${restore ? '1' : '0'} -ErrorAction Stop
-    Write-Host "   ✓ Advertising ID ${restore ? 'enabled' : 'disabled'}" -ForegroundColor Green
-    $script:changesApplied++
-}
-catch {
-    Write-Host "   ❌ Failed: $($_.Exception.Message)" -ForegroundColor Red
-    $script:changesFailed++
-}
-` : ''}
-
-${options.location ? `
-# ${restore ? 'Enable' : 'Disable'} Location Tracking
-Write-Host "───────────────────────────────────────────────────────" -ForegroundColor Gray
-Write-Host "📍 ${restore ? 'Enabling' : 'Disabling'} location tracking..." -ForegroundColor Yellow
-try {
-    if (-not (Test-Path "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\location")) {
-        New-Item -Path "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\location" -Force | Out-Null
-    }
-    Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\location" -Name "Value" -Type String -Value ${restore ? '"Allow"' : '"Deny"'} -ErrorAction Stop
-    Write-Host "   ✓ Location tracking ${restore ? 'enabled' : 'disabled'}" -ForegroundColor Green
-    ${!restore ? `Write-Host "   ℹ️  Maps and Weather apps won't have access to location" -ForegroundColor Gray` : ''}
-    $script:changesApplied++
-}
-catch {
-    Write-Host "   ❌ Failed: $($_.Exception.Message)" -ForegroundColor Red
-    $script:changesFailed++
-}
-` : ''}
-
-${options.feedback ? `
-# ${restore ? 'Enable' : 'Disable'} Feedback Requests
-Write-Host "───────────────────────────────────────────────────────" -ForegroundColor Gray
-Write-Host "💬 ${restore ? 'Enabling' : 'Disabling'} feedback requests..." -ForegroundColor Yellow
-try {
-    if (-not (Test-Path "HKCU:\\SOFTWARE\\Microsoft\\Siuf\\Rules")) {
-        New-Item -Path "HKCU:\\SOFTWARE\\Microsoft\\Siuf\\Rules" -Force | Out-Null
-    }
-    if (-not (Test-Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection")) {
-        New-Item -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" -Force | Out-Null
-    }
-    Set-ItemProperty -Path "HKCU:\\SOFTWARE\\Microsoft\\Siuf\\Rules" -Name "NumberOfSIUFInPeriod" -Type DWord -Value 0 -ErrorAction Stop
-    Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" -Name "DoNotShowFeedbackNotifications" -Type DWord -Value ${restore ? '0' : '1'} -ErrorAction Stop
-    Write-Host "   ✓ Feedback requests ${restore ? 'enabled' : 'disabled'}" -ForegroundColor Green
-    $script:changesApplied++
-}
-catch {
-    Write-Host "   ❌ Failed: $($_.Exception.Message)" -ForegroundColor Red
-    $script:changesFailed++
-}
-` : ''}
-
-Write-Host ""
-Write-Host "╔════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║                    SUMMARY                              ║" -ForegroundColor Cyan
-Write-Host "╚════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "✓ Changes applied successfully: $changesApplied" -ForegroundColor Green
-if ($changesFailed -gt 0) {
-    Write-Host "❌ Changes that failed: $changesFailed" -ForegroundColor Red
-}
-Write-Host ""
-Write-Host "───────────────────────────────────────────────────────" -ForegroundColor Gray
-Write-Host "⚠️  A restart is REQUIRED for all changes to take effect." -ForegroundColor Yellow
-Write-Host "───────────────────────────────────────────────────────" -ForegroundColor Gray
-Write-Host ""
-
-$restart = Read-Host "Restart now? (y/n)"
-if ($restart -eq 'y' -or $restart -eq 'Y') {
-    Write-Host "🔄 Restarting in 10 seconds... (Press Ctrl+C to cancel)" -ForegroundColor Yellow
-    Start-Sleep -Seconds 10
-    Restart-Computer -Force
-} else {
-    Write-Host "ℹ️  Remember to restart your computer later for changes to apply." -ForegroundColor Cyan
-}
-`;
-
-    const modalContent = `
-        <div class="alert ${restore ? 'alert-info' : 'alert-warning'}">
-            <span class="alert-icon">${restore ? 'ℹ️' : '⚠️'}</span>
-            <div>
-                <strong>${restore ? 'Restore Mode' : 'Privacy Optimization'}</strong><br>
-                ${restore ? 
-                    'This script will <strong>restore all Windows privacy settings to their defaults</strong>.' :
-                    'This script will <strong>modify Windows registry</strong> to enhance privacy. A system restore point will be created automatically before any changes.'}
-            </div>
-        </div>
-        
-        <div class="alert alert-success">
-            <span class="alert-icon">✅</span>
-            <div>
-                <strong>Selected Changes:</strong><br>
-                ${options.telemetry ? `✓ ${restore ? 'Restore' : 'Minimize'} Telemetry<br>` : ''}
-                ${options.cortana ? `✓ ${restore ? 'Enable' : 'Disable'} Cortana<br>` : ''}
-                ${options.ads ? `✓ ${restore ? 'Enable' : 'Disable'} Advertising ID<br>` : ''}
-                ${options.location ? `✓ ${restore ? 'Enable' : 'Disable'} Location Tracking<br>` : ''}
-                ${options.feedback ? `✓ ${restore ? 'Enable' : 'Disable'} Feedback Requests<br>` : ''}
-            </div>
-        </div>
-        
-        <div class="alert alert-info">
-            <span class="alert-icon">🔒</span>
-            <div>
-                <strong>Safety:</strong><br>
-                • System restore point created automatically<br>
-                • All changes are reversible using the restore script<br>
-                • Registry changes are documented and safe<br>
-                • Restart required for changes to take effect
-            </div>
-        </div>
-        
-        <h3>Script Preview:</h3>
-        <div class="script-preview">${escapeHtml(script)}</div>
-        
-        <div class="btn-group">
-            <button class="btn btn-success" onclick="downloadScript('Privacy${restore ? 'Restore' : 'Optimize'}_${getTimestamp()}.ps1', \`${script.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">
-                💾 Download Script
-            </button>
-            <button class="btn btn-secondary" onclick="closeModal()">
-                Close Preview
-            </button>
-        </div>
-    `;
-    
-    showModal(`🔒 Privacy ${restore ? 'Restore' : 'Optimizer'} Script Ready`, modalContent);
-}
-
-// Close modal on background click
-document.getElementById('scriptModal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
+    // Close modal when clicking outside
+    document.getElementById('scriptModal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
 });
-
-document.getElementById('confirmModal').addEventListener('click', function(e) {
-    if (e.target === this) closeConfirmModal();
-});
-
-// Close modal on Escape key
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closeModal();
-        closeConfirmModal();
-    }
-});
-
-// Add CSS for animations
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideIn {
-        from {
-            transform: translateX(400px);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-    
-    @keyframes slideOut {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(400px);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);
-
-// Show welcome message on load
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        showNotification('👋 Welcome! Select options and click the blue buttons to create scripts.', 'info');
-    }, 500);
-});
-
-// ============================================
-// PERFORMANCE TUNING GENERATOR (Continued in next message due to size)
-// Note: This needs to be added - the file is complete up to Privacy Optimizer
-// ============================================
-
-// ============================================
-// PERFORMANCE TUNING GENERATOR WITH SERVICES
-// Append this to optimizer.js or merge manually
-// ============================================
-
-function generatePerformanceScript(restore = false) {
-    const options = {
-        visual: document.getElementById('perf-visual').checked,
-        indexing: document.getElementById('perf-indexing').checked,
-        superfetch: document.getElementById('perf-superfetch').checked,
-        hibernation: document.getElementById('perf-hibernation').checked,
-        gameMode: document.getElementById('perf-gamemode').checked
-    };
-    
-    // Get selected services
-    const services = {
-        diagtrack: document.getElementById('service-diagtrack').checked,
-        dmwappush: document.getElementById('service-dmwappush').checked,
-        sysmain: document.getElementById('service-sysmain').checked,
-        wsearch: document.getElementById('service-wsearch').checked,
-        mapsbroker: document.getElementById('service-mapsbroker').checked,
-        xbl: document.getElementById('service-xbl').checked,
-        printspooler: document.getElementById('service-printspooler').checked,
-        fax: document.getElementById('service-fax').checked
-    };
-    
-    const totalSelected = Object.values(options).filter(Boolean).length + Object.values(services).filter(Boolean).length;
-    
-    if (totalSelected === 0) {
-        showNotification('⚠️ Please select at least one performance optimization!', 'warning');
-        return;
-    }
-    
-    const script = `# Windows 11 Performance Tuning & Service Optimizer
-# Generated: ${new Date().toLocaleString()}
-# Mode: ${restore ? 'RESTORE DEFAULTS' : 'OPTIMIZE FOR PERFORMANCE'}
-# Generated by Windows 11 Optimization Portal
-
-#Requires -RunAsAdministrator
-
-Write-Host ""
-Write-Host "╔════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║      Performance ${restore ? 'Restore' : 'Optimizer'} & Service Manager       ║" -ForegroundColor Cyan
-Write-Host "╚════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
-Write-Host ""
-
-# Create restore point
-Write-Host "📌 Creating system restore point..." -ForegroundColor Yellow
-try {
-    Enable-ComputerRestore -Drive "C:\\" -ErrorAction SilentlyContinue
-    Checkpoint-Computer -Description "Before Performance Changes - $(Get-Date -Format 'yyyy-MM-dd HH:mm')" -RestorePointType "MODIFY_SETTINGS" -ErrorAction Stop
-    Write-Host "   ✓ Restore point created successfully" -ForegroundColor Green
-}
-catch {
-    Write-Host "   ⚠️  Warning: Could not create restore point" -ForegroundColor Yellow
-}
-Write-Host ""
-
-$changesApplied = 0
-$changesFailed = 0
-
-${options.visual ? `
-# ${restore ? 'Restore' : 'Optimize'} Visual Effects
-Write-Host "───────────────────────────────────────────────────────" -ForegroundColor Gray
-Write-Host "🎨 ${restore ? 'Restoring' : 'Optimizing'} visual effects..." -ForegroundColor Yellow
-try {
-    Set-ItemProperty -Path "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" -Name "TaskbarAnimations" -Type DWord -Value ${restore ? '1' : '0'} -ErrorAction Stop
-    Set-ItemProperty -Path "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" -Name "ListviewAlphaSelect" -Type DWord -Value ${restore ? '1' : '0'} -ErrorAction Stop
-    Set-ItemProperty -Path "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" -Name "ListviewShadow" -Type DWord -Value ${restore ? '1' : '0'} -ErrorAction Stop
-    Set-ItemProperty -Path "HKCU:\\Software\\Microsoft\\Windows\\DWM" -Name "EnableAeroPeek" -Type DWord -Value ${restore ? '1' : '0'} -ErrorAction Stop
-    Write-Host "   ✓ Visual effects ${restore ? 'restored' : 'disabled for better performance'}" -ForegroundColor Green
-    $script:changesApplied++
-}
-catch {
-    Write-Host "   ❌ Failed: $($_.Exception.Message)" -ForegroundColor Red
-    $script:changesFailed++
-}
-` : ''}
-
-${options.hibernation ? `
-# ${restore ? 'Enable' : 'Disable'} Hibernation
-Write-Host "───────────────────────────────────────────────────────" -ForegroundColor Gray
-Write-Host "💤 ${restore ? 'Enabling' : 'Disabling'} hibernation..." -ForegroundColor Yellow
-try {
-    ${restore ? 'powercfg /hibernate on' : 'powercfg /hibernate off'}
-    Write-Host "   ✓ Hibernation ${restore ? 'enabled' : 'disabled'}${!restore ? ' (hiberfil.sys deleted, disk space freed)' : ''}" -ForegroundColor Green
-    $script:changesApplied++
-}
-catch {
-    Write-Host "   ❌ Failed: $($_.Exception.Message)" -ForegroundColor Red
-    $script:changesFailed++
-}
-` : ''}
-
-${options.gameMode ? `
-# ${restore ? 'Disable' : 'Enable'} Game Mode
-Write-Host "───────────────────────────────────────────────────────" -ForegroundColor Gray
-Write-Host "🎮 ${restore ? 'Disabling' : 'Enabling'} Game Mode..." -ForegroundColor Yellow
-try {
-    if (-not (Test-Path "HKCU:\\Software\\Microsoft\\GameBar")) {
-        New-Item -Path "HKCU:\\Software\\Microsoft\\GameBar" -Force | Out-Null
-    }
-    Set-ItemProperty -Path "HKCU:\\Software\\Microsoft\\GameBar" -Name "AutoGameModeEnabled" -Type DWord -Value ${restore ? '0' : '1'} -ErrorAction Stop
-    Write-Host "   ✓ Game Mode ${restore ? 'disabled' : 'enabled (better gaming & app performance)'}" -ForegroundColor Green
-    $script:changesApplied++
-}
-catch {
-    Write-Host "   ❌ Failed: $($_.Exception.Message)" -ForegroundColor Red
-    $script:changesFailed++
-}
-` : ''}
-
-# Service Optimizations
-Write-Host ""
-Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "           WINDOWS SERVICES OPTIMIZATION" -ForegroundColor Cyan
-Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host ""
-
-${services.diagtrack ? `
-# Diagnostics Tracking Service
-Write-Host "🔧 Optimizing: Diagnostics Tracking Service..." -ForegroundColor Yellow
-try {
-    Set-Service -Name "DiagTrack" -StartupType ${restore ? 'Automatic' : 'Disabled'} -ErrorAction Stop
-    Write-Host "   ✓ DiagTrack set to ${restore ? 'Automatic' : 'Disabled'}" -ForegroundColor Green
-    Write-Host "   ℹ️  Less diagnostic data sent to Microsoft" -ForegroundColor Gray
-    $script:changesApplied++
-}
-catch {
-    Write-Host "   ❌ Failed: $($_.Exception.Message)" -ForegroundColor Red
-    $script:changesFailed++
-}
-` : ''}
-
-${services.dmwappush ? `
-# WAP Push Message Routing Service
-Write-Host "🔧 Optimizing: WAP Push Message Routing..." -ForegroundColor Yellow
-try {
-    Set-Service -Name "dmwappushservice" -StartupType ${restore ? 'Automatic' : 'Disabled'} -ErrorAction Stop
-    Write-Host "   ✓ dmwappushservice set to ${restore ? 'Automatic' : 'Disabled'}" -ForegroundColor Green
-    $script:changesApplied++
-}
-catch {
-    Write-Host "   ❌ Failed: $($_.Exception.Message)" -ForegroundColor Red
-    $script:changesFailed++
-}
-` : ''}
-
-${services.sysmain ? `
-# Superfetch/SysMain
-Write-Host "🔧 Optimizing: Superfetch (SysMain)..." -ForegroundColor Yellow
-try {
-    Set-Service -Name "SysMain" -StartupType ${restore ? 'Automatic' : 'Disabled'} -ErrorAction Stop
-    Write-Host "   ✓ SysMain set to ${restore ? 'Automatic' : 'Disabled'}" -ForegroundColor Green
-    ${!restore ? `Write-Host "   ℹ️  Recommended for SSD users (not needed)" -ForegroundColor Gray` : ''}
-    $script:changesApplied++
-}
-catch {
-    Write-Host "   ❌ Failed: $($_.Exception.Message)" -ForegroundColor Red
-    $script:changesFailed++
-}
-` : ''}
-
-${services.wsearch ? `
-# Windows Search
-Write-Host "🔧 Optimizing: Windows Search..." -ForegroundColor Yellow
-try {
-    Set-Service -Name "WSearch" -StartupType ${restore ? 'Automatic' : 'Manual'} -ErrorAction Stop
-    Write-Host "   ✓ WSearch set to ${restore ? 'Automatic' : 'Manual'}" -ForegroundColor Green
-    ${!restore ? `Write-Host "   ℹ️  Search still works, but won't index in background" -ForegroundColor Gray` : ''}
-    $script:changesApplied++
-}
-catch {
-    Write-Host "   ❌ Failed: $($_.Exception.Message)" -ForegroundColor Red
-    $script:changesFailed++
-}
-` : ''}
-
-${services.mapsbroker ? `
-# Downloaded Maps Manager
-Write-Host "🔧 Optimizing: Maps Broker..." -ForegroundColor Yellow
-try {
-    Set-Service -Name "MapsBroker" -StartupType ${restore ? 'Automatic' : 'Disabled'} -ErrorAction Stop
-    Write-Host "   ✓ MapsBroker set to ${restore ? 'Automatic' : 'Disabled'}" -ForegroundColor Green
-    $script:changesApplied++
-}
-catch {
-    Write-Host "   ❌ Failed: $($_.Exception.Message)" -ForegroundColor Red
-    $script:changesFailed++
-}
-` : ''}
-
-${services.xbl ? `
-# Xbox Live Services
-Write-Host "🔧 Optimizing: Xbox Live Services..." -ForegroundColor Yellow
-try {
-    $xblServices = @("XblAuthManager", "XblGameSave", "XboxNetApiSvc")
-    foreach ($svc in $xblServices) {
-        try {
-            Set-Service -Name $svc -StartupType ${restore ? 'Automatic' : 'Manual'} -ErrorAction Stop
-        }
-        catch {
-            # Service might not exist, continue
-        }
-    }
-    Write-Host "   ✓ Xbox Live services set to ${restore ? 'Automatic' : 'Manual'}" -ForegroundColor Green
-    ${!restore ? `Write-Host "   ⚠️  Xbox games may not work if these are disabled!" -ForegroundColor Yellow` : ''}
-    $script:changesApplied++
-}
-catch {
-    Write-Host "   ❌ Failed: $($_.Exception.Message)" -ForegroundColor Red
-    $script:changesFailed++
-}
-` : ''}
-
-${services.printspooler ? `
-# Print Spooler
-Write-Host "🔧 Optimizing: Print Spooler..." -ForegroundColor Yellow
-try {
-    Set-Service -Name "Spooler" -StartupType ${restore ? 'Automatic' : 'Manual'} -ErrorAction Stop
-    Write-Host "   ✓ Print Spooler set to ${restore ? 'Automatic' : 'Manual'}" -ForegroundColor Green
-    ${!restore ? `Write-Host "   ℹ️  Will start automatically when you print" -ForegroundColor Gray` : ''}
-    $script:changesApplied++
-}
-catch {
-    Write-Host "   ❌ Failed: $($_.Exception.Message)" -ForegroundColor Red
-    $script:changesFailed++
-}
-` : ''}
-
-${services.fax ? `
-# Fax Service
-Write-Host "🔧 Optimizing: Fax Service..." -ForegroundColor Yellow
-try {
-    Set-Service -Name "Fax" -StartupType ${restore ? 'Automatic' : 'Disabled'} -ErrorAction Stop
-    Write-Host "   ✓ Fax service set to ${restore ? 'Automatic' : 'Disabled'}" -ForegroundColor Green
-    $script:changesApplied++
-}
-catch {
-    Write-Host "   ❌ Failed: $($_.Exception.Message)" -ForegroundColor Red
-    $script:changesFailed++
-}
-` : ''}
-
-Write-Host ""
-Write-Host "╔════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║                    SUMMARY                              ║" -ForegroundColor Cyan
-Write-Host "╚════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "✓ Changes applied successfully: $changesApplied" -ForegroundColor Green
-if ($changesFailed -gt 0) {
-    Write-Host "❌ Changes that failed: $changesFailed" -ForegroundColor Red
-}
-Write-Host ""
-Write-Host "⚠️  A restart is recommended for all changes to take effect." -ForegroundColor Yellow
-Write-Host ""
-
-$restart = Read-Host "Restart now? (y/n)"
-if ($restart -eq 'y' -or $restart -eq 'Y') {
-    Write-Host "🔄 Restarting in 10 seconds... (Press Ctrl+C to cancel)" -ForegroundColor Yellow
-    Start-Sleep -Seconds 10
-    Restart-Computer -Force
-}
-`;
-
-    const modalContent = `
-        <div class="alert ${restore ? 'alert-info' : 'alert-success'}">
-            <span class="alert-icon">${restore ? 'ℹ️' : '🎯'}</span>
-            <div>
-                <strong>${restore ? 'Restore Performance Settings' : 'Performance Optimization'}</strong><br>
-                ${restore ? 
-                    'This will restore performance settings to Windows defaults.' :
-                    'This will optimize Windows for better performance. Great for older hardware or when you need maximum speed.'}
-            </div>
-        </div>
-        
-        <div class="alert alert-success">
-            <span class="alert-icon">✅</span>
-            <div>
-                <strong>Selected Optimizations:</strong><br>
-                ${options.visual ? '✓ Disable Visual Effects<br>' : ''}
-                ${options.indexing ? '✓ Optimize Search Indexing<br>' : ''}
-                ${options.superfetch ? '✓ Disable Superfetch<br>' : ''}
-                ${options.hibernation ? '✓ Disable Hibernation<br>' : ''}
-                ${options.gameMode ? '✓ Enable Game Mode<br>' : ''}
-                <br>
-                <strong>Selected Services:</strong><br>
-                ${services.diagtrack ? '✓ Diagnostics Tracking<br>' : ''}
-                ${services.dmwappush ? '✓ WAP Push Routing<br>' : ''}
-                ${services.sysmain ? '✓ Superfetch/SysMain<br>' : ''}
-                ${services.wsearch ? '✓ Windows Search<br>' : ''}
-                ${services.mapsbroker ? '✓ Maps Broker<br>' : ''}
-                ${services.xbl ? '✓ Xbox Live Services<br>' : ''}
-                ${services.printspooler ? '✓ Print Spooler<br>' : ''}
-                ${services.fax ? '✓ Fax Service<br>' : ''}
-            </div>
-        </div>
-        
-        <h3>Script Preview:</h3>
-        <div class="script-preview">${escapeHtml(script)}</div>
-        
-        <div class="btn-group">
-            <button class="btn btn-success" onclick="downloadScript('Performance${restore ? 'Restore' : 'Optimize'}_${getTimestamp()}.ps1', \`${script.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">
-                💾 Download Script
-            </button>
-            <button class="btn btn-secondary" onclick="closeModal()">
-                Close Preview
-            </button>
-        </div>
-    `;
-    
-    showModal(`🎯 Performance ${restore ? 'Restore' : 'Optimizer'} Script Ready`, modalContent);
-}
-
-// ============================================
-// DISK MAINTENANCE GENERATOR
-// ============================================
-
-function generateDiskScript() {
-    const options = {
-        winsxs: document.getElementById('disk-winsxs').checked,
-        updates: document.getElementById('disk-updates').checked,
-        logs: document.getElementById('disk-logs').checked,
-        drivers: document.getElementById('disk-drivers').checked,
-        analyze: document.getElementById('disk-analyze').checked
-    };
-    
-    if (!options.winsxs && !options.updates && !options.logs && !options.drivers && !options.analyze) {
-        showNotification('⚠️ Please select at least one disk cleanup option!', 'warning');
-        return;
-    }
-    
-    // Warning for driver cleanup
-    if (options.drivers) {
-        showConfirmation(
-            'Confirm Driver Cleanup',
-            '<strong>Warning:</strong> You selected "Remove Old Driver Packages".<br><br>This will delete old driver versions, and you won\'t be able to roll back if your current drivers have issues.<br><br>Only proceed if you\'re sure your current drivers are working correctly.',
-            () => createDiskScript(options)
-        );
-        return;
-    }
-    
-    createDiskScript(options);
-}
-
-function createDiskScript(options) {
-    const script = `# Windows 11 Disk Maintenance & Deep Cleanup
-# Generated: ${new Date().toLocaleString()}
-# Generated by Windows 11 Optimization Portal
-
-#Requires -RunAsAdministrator
-
-Write-Host ""
-Write-Host "╔════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║        Disk Maintenance & Deep Cleanup                 ║" -ForegroundColor Cyan
-Write-Host "╚════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
-Write-Host ""
-
-Write-Host "⚠️  WARNING: This process may take 10-20 minutes!" -ForegroundColor Yellow
-Write-Host "   Please be patient and do not close this window." -ForegroundColor Gray
-Write-Host ""
-
-$totalSpaceFreed = 0
-
-${options.analyze ? `
-# Analyze disk space with Disk Cleanup
-Write-Host "───────────────────────────────────────────────────────" -ForegroundColor Gray
-Write-Host "📊 Opening Disk Cleanup analysis..." -ForegroundColor Yellow
-Write-Host "   Please review the options and click OK to continue." -ForegroundColor Gray
-Write-Host ""
-
-# Run Disk Cleanup wizard
-Start-Process -FilePath "cleanmgr.exe" -ArgumentList "/sageset:1" -Wait
-Write-Host "   Disk Cleanup configured. Running cleanup..." -ForegroundColor Yellow
-Start-Process -FilePath "cleanmgr.exe" -ArgumentList "/sagerun:1" -Wait
-Write-Host "   ✓ Disk Cleanup completed!" -ForegroundColor Green
-Write-Host ""
-` : ''}
-
-${options.winsxs ? `
-# Clean Component Store (WinSxS)
-Write-Host "───────────────────────────────────────────────────────" -ForegroundColor Gray
-Write-Host "🗂️  Cleaning Component Store (WinSxS)..." -ForegroundColor Yellow
-Write-Host "   This may take 5-10 minutes, please wait..." -ForegroundColor Gray
-
-try {
-    $before = (Get-ChildItem -Path "C:\\Windows\\WinSxS" -Recurse -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
-    Write-Host "   Current WinSxS size: $([math]::Round($before / 1GB, 2)) GB" -ForegroundColor White
-    
-    # Clean up the component store
-    Write-Host "   Running DISM cleanup (this takes a while)..." -ForegroundColor Yellow
-    $dismOutput = Dism.exe /Online /Cleanup-Image /StartComponentCleanup /ResetBase /Quiet
-    
-    $after = (Get-ChildItem -Path "C:\\Windows\\WinSxS" -Recurse -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
-    $freed = $before - $after
-    $script:totalSpaceFreed += $freed
-    
-    Write-Host "   ✓ Component store cleaned!" -ForegroundColor Green
-    Write-Host "   New WinSxS size: $([math]::Round($after / 1GB, 2)) GB" -ForegroundColor Green
-    Write-Host "   Space freed: $([math]::Round($freed / 1GB, 2)) GB" -ForegroundColor Green
-}
-catch {
-    Write-Host "   ❌ Failed: $($_.Exception.Message)" -ForegroundColor Red
-}
-Write-Host ""
-` : ''}
-
-${options.updates ? `
-# Remove old Windows Update files
-Write-Host "───────────────────────────────────────────────────────" -ForegroundColor Gray
-Write-Host "🔄 Removing old Windows Update files..." -ForegroundColor Yellow
-try {
-    $before = (Get-ChildItem -Path "C:\\Windows\\SoftwareDistribution\\Download" -Recurse -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
-    
-    # Stop Windows Update service
-    Stop-Service -Name wuauserv -Force -ErrorAction Stop
-    Write-Host "   Windows Update service stopped" -ForegroundColor Gray
-    
-    # Clear download cache
-    Remove-Item -Path "C:\\Windows\\SoftwareDistribution\\Download\\*" -Recurse -Force -ErrorAction SilentlyContinue
-    
-    # Restart service
-    Start-Service -Name wuauserv -ErrorAction Stop
-    Write-Host "   Windows Update service restarted" -ForegroundColor Gray
-    
-    $after = (Get-ChildItem -Path "C:\\Windows\\SoftwareDistribution\\Download" -Recurse -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
-    $freed = $before - $after
-    $script:totalSpaceFreed += $freed
-    
-    Write-Host "   ✓ Windows Update cache cleared!" -ForegroundColor Green
-    Write-Host "   Space freed: $([math]::Round($freed / 1GB, 2)) GB" -ForegroundColor Green
-}
-catch {
-    Write-Host "   ❌ Failed: $($_.Exception.Message)" -ForegroundColor Red
-    # Try to restart service anyway
-    try { Start-Service -Name wuauserv } catch { }
-}
-Write-Host ""
-` : ''}
-
-${options.logs ? `
-# Clear old system logs
-Write-Host "───────────────────────────────────────────────────────" -ForegroundColor Gray
-Write-Host "📝 Clearing old system logs..." -ForegroundColor Yellow
-try {
-    $before = (Get-ChildItem -Path "C:\\Windows\\Logs" -Include "*.log", "*.txt" -Recurse -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
-    
-    Get-ChildItem -Path "C:\\Windows\\Logs" -Include "*.log", "*.txt" -Recurse -ErrorAction SilentlyContinue |
-        Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-30) } |
-        Remove-Item -Force -ErrorAction SilentlyContinue
-    
-    $after = (Get-ChildItem -Path "C:\\Windows\\Logs" -Include "*.log", "*.txt" -Recurse -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
-    $freed = $before - $after
-    $script:totalSpaceFreed += $freed
-    
-    Write-Host "   ✓ Old log files removed (kept last 30 days)" -ForegroundColor Green
-    Write-Host "   Space freed: $([math]::Round($freed / 1GB, 2)) GB" -ForegroundColor Green
-}
-catch {
-    Write-Host "   ❌ Failed: $($_.Exception.Message)" -ForegroundColor Red
-}
-Write-Host ""
-` : ''}
-
-${options.drivers ? `
-# Remove old driver packages (CAUTION)
-Write-Host "───────────────────────────────────────────────────────" -ForegroundColor Gray
-Write-Host "🔌 Removing old driver packages..." -ForegroundColor Yellow
-Write-Host "   ⚠️  Note: You won't be able to roll back drivers after this!" -ForegroundColor Yellow
-try {
-    Write-Host "   Running pnputil to remove old drivers..." -ForegroundColor Gray
-    $pnpOutput = pnputil /delete-driver oem*.inf /uninstall /force
-    Write-Host "   ✓ Old driver packages removed" -ForegroundColor Green
-}
-catch {
-    Write-Host "   ❌ Failed: $($_.Exception.Message)" -ForegroundColor Red
-}
-Write-Host ""
-` : ''}
-
-# Final Summary
-Write-Host ""
-Write-Host "╔════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║                  CLEANUP COMPLETE                       ║" -ForegroundColor Cyan
-Write-Host "╚════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
-Write-Host ""
-
-# Show current disk space
-$disk = Get-PSDrive C
-Write-Host "Drive C: Status:" -ForegroundColor Cyan
-Write-Host "  Total Size: $([math]::Round(($disk.Used + $disk.Free) / 1GB, 2)) GB" -ForegroundColor White
-Write-Host "  Used Space: $([math]::Round($disk.Used / 1GB, 2)) GB" -ForegroundColor White
-Write-Host "  Free Space: $([math]::Round($disk.Free / 1GB, 2)) GB" -ForegroundColor Green
-Write-Host ""
-Write-Host "Total space freed: ~$([math]::Round($totalSpaceFreed / 1GB, 2)) GB" -ForegroundColor Green
-Write-Host ""
-
-Read-Host "Press Enter to exit"
-`;
-
-    const modalContent = `
-        <div class="alert alert-warning">
-            <span class="alert-icon">⚠️</span>
-            <div>
-                <strong>Disk Maintenance - Takes Time!</strong><br>
-                This script performs deep system cleanup using DISM and other Windows tools. 
-                <strong>It may take 10-20 minutes to complete.</strong> Do not interrupt the process!
-            </div>
-        </div>
-        
-        <div class="alert alert-success">
-            <span class="alert-icon">✅</span>
-            <div>
-                <strong>Selected Cleanup Tasks:</strong><br>
-                ${options.winsxs ? '✓ Clean Component Store (WinSxS) - 2-10 GB<br>' : ''}
-                ${options.updates ? '✓ Remove Old Windows Updates - 1-5 GB<br>' : ''}
-                ${options.logs ? '✓ Clear Old System Logs - 500 MB-2 GB<br>' : ''}
-                ${options.drivers ? '✓ Remove Old Driver Packages - 200 MB-1 GB<br>' : ''}
-                ${options.analyze ? '✓ Run Disk Cleanup Analysis First<br>' : ''}
-                <br>
-                <strong>Expected Total:</strong> 5-15 GB freed (typical)
-            </div>
-        </div>
-        
-        <h3>Script Preview:</h3>
-        <div class="script-preview">${escapeHtml(script)}</div>
-        
-        <div class="btn-group">
-            <button class="btn btn-success" onclick="downloadScript('DiskMaintenance_${getTimestamp()}.ps1', \`${script.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">
-                💾 Download Script
-            </button>
-            <button class="btn btn-secondary" onclick="closeModal()">
-                Close Preview
-            </button>
-        </div>
-    `;
-    
-    showModal('💾 Disk Maintenance Script Ready', modalContent);
-}
-
-// ============================================
-// COMPLETE OPTIMIZATION SUITE & SCHEDULED TASK
-// ============================================
-
-function generateCompleteScript() {
-    // Implementation similar to others but with all safe defaults
-    showNotification('✨ Generating complete optimization suite...', 'info');
-    
-    // TO BE COMPLETED: Add complete suite script
-    showNotification('⚠️ This feature is being finalized. Use individual optimizations for now.', 'warning');
-}
-
-function generateScheduledTask() {
-    // Implementation for weekly scheduled maintenance
-    showNotification('⏰ Scheduled task generator coming soon...', 'info');
-}
-
-// Export functions for use in main optimizer.js
-// These need to be merged or loaded together
