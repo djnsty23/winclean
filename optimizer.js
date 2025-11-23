@@ -250,20 +250,20 @@ function buildPowerShellScript(selected, previewMode, scheduleMode, createBackup
 # Generated: ${new Date().toLocaleString()}
 # ============================================
 
-Write-Host ""
+Write-Log ""
 Write-Log "╔═══════════════════════════════════════════════════════════╗" "Cyan"
 Write-Log "║                                                           ║" "Cyan"
 Write-Log "║     Windows 11 ${mode.padEnd(36)} ║" "Cyan"
 Write-Log "║                                                           ║" "Cyan"
 Write-Log "╚═══════════════════════════════════════════════════════════╝" "Cyan"
-Write-Host ""
+Write-Log ""
 
 # Check for admin privileges
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $isAdmin) {
     Write-Log "❌ ERROR: This script requires Administrator privileges!" "Red"
     Write-Log "   Right-click the script and select 'Run as Administrator'" "Yellow"
-    Write-Host ""
+    Write-Log ""
     Read-Host "Press Enter to exit"
     exit 1
 }
@@ -284,7 +284,7 @@ try {
     Write-Log "   ⚠️  Could not create restore point: $($_.Exception.Message)" "Yellow"
     Write-Log "   Continuing anyway..." "Gray"
 }
-Write-Host ""
+Write-Log ""
 
 `;
     }
@@ -343,7 +343,7 @@ Write-Log ""
 
     // Summary
     script += `
-Write-Host ""
+Write-Log ""
 Write-Log "╔═══════════════════════════════════════════════════════════╗" "Green"
 Write-Log "║                  ${mode} COMPLETE!                     ║" "Green"
 Write-Log "╚═══════════════════════════════════════════════════════════╝" "Green"
@@ -375,7 +375,7 @@ Write-Log ""
 Write-Log "Opening log file..." "Cyan"
 Start-Process notepad.exe $logFile
 
-Write-Host ""
+Write-Log ""
 Write-Log "Press any key to close this window..." "Yellow"
 $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 `;
@@ -396,7 +396,7 @@ function generateBackupSection(selected) {
 Write-Log "╔═══════════════════════════════════════════════════════════╗" "Cyan"
 Write-Log "║                  BACKING UP CURRENT STATE                 ║" "Cyan"
 Write-Log "╚═══════════════════════════════════════════════════════════╝" "Cyan"
-Write-Host ""
+Write-Log ""
 
 $backupTimestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
 $backupPath = "$env:USERPROFILE\\Desktop\\Windows_Optimization_Backup_$backupTimestamp.json"
@@ -492,11 +492,11 @@ $restoreScript = @'
 # Backup created: TIMESTAMP_PLACEHOLDER
 # ============================================
 
-Write-Host ""
+Write-Log ""
 Write-Log "╔═══════════════════════════════════════════════════════════╗" "Magenta"
 Write-Log "║           RESTORING WINDOWS SETTINGS                      ║" "Magenta"
 Write-Log "╚═══════════════════════════════════════════════════════════╝" "Magenta"
-Write-Host ""
+Write-Log ""
 
 $backupFile = "BACKUP_PATH_PLACEHOLDER"
 
@@ -511,7 +511,7 @@ $backup = Get-Content $backupFile | ConvertFrom-Json
 
 Write-Log "   ℹ️  Backup created: $($backup.Timestamp)" "Gray"
 Write-Log "   ℹ️  Computer: $($backup.ComputerName)" "Gray"
-Write-Host ""
+Write-Log ""
 
 $restored = 0
 $errors = 0
@@ -538,7 +538,7 @@ foreach ($key in $backup.Registry.PSObject.Properties) {
 }
 
 # Restore Services
-Write-Host ""
+Write-Log ""
 Write-Log "⚙️  Restoring service states..." "Yellow"
 foreach ($svc in $backup.Services.PSObject.Properties) {
     try {
@@ -555,7 +555,7 @@ foreach ($svc in $backup.Services.PSObject.Properties) {
 }
 
 # Restore Hibernation
-Write-Host ""
+Write-Log ""
 if ($backup.SystemSettings.HibernationEnabled -eq $true) {
     Write-Log "🔋 Re-enabling hibernation..." "Yellow"
     try {
@@ -568,17 +568,17 @@ if ($backup.SystemSettings.HibernationEnabled -eq $true) {
     }
 }
 
-Write-Host ""
+Write-Log ""
 Write-Log "╔═══════════════════════════════════════════════════════════╗" "Green"
 Write-Log "║                 RESTORE COMPLETE!                         ║" "Green"
 Write-Log "╚═══════════════════════════════════════════════════════════╝" "Green"
-Write-Host ""
+Write-Log ""
 Write-Log "📊 Summary:" "Cyan"
 Write-Log "   • Settings restored: $restored" "White"
 Write-Log "   • Errors: $errors" "White"
-Write-Host ""
+Write-Log ""
 Write-Log "✅ Your settings have been restored to their previous state!" "Green"
-Write-Host ""
+Write-Log ""
 Read-Host "Press Enter to exit"
 '@
 
@@ -601,19 +601,19 @@ try {
     Write-Log "   ❌ Failed to create restore script: $($_.Exception.Message)" "Red"
 }
 
-Write-Host ""
+Write-Log ""
 Write-Log "╔═══════════════════════════════════════════════════════════╗" "Green"
 Write-Log "║  ✅ BACKUP COMPLETE - Safe to proceed with optimization   ║" "Green"
 Write-Log "╚═══════════════════════════════════════════════════════════╝" "Green"
-Write-Host ""
+Write-Log ""
 Write-Log "📁 Files saved to your Desktop:" "Cyan"
 Write-Log "   • Backup: Windows_Optimization_Backup_$backupTimestamp.json" "White"
 Write-Log "   • Restore: RESTORE_Windows_Settings_$backupTimestamp.ps1" "White"
-Write-Host ""
+Write-Log ""
 Write-Log "💡 To undo changes later, right-click the RESTORE script → 'Run with PowerShell'" "Yellow"
-Write-Host ""
+Write-Log ""
 Write-Log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" "Gray"
-Write-Host ""
+Write-Log ""
 
 `;
 }
@@ -794,7 +794,7 @@ function generatePerformanceSection(perf, whatIf) {
 Write-Log "╔═══════════════════════════════════════════════════════════╗" "Blue"
 Write-Log "║                 PERFORMANCE TUNING                        ║" "Blue"
 Write-Log "╚═══════════════════════════════════════════════════════════╝" "Blue"
-Write-Host ""
+Write-Log ""
 
 `;
 
@@ -867,7 +867,7 @@ function generateServicesSection(services, whatIf) {
 Write-Log "╔═══════════════════════════════════════════════════════════╗" "DarkYellow"
 Write-Log "║                  WINDOWS SERVICES                         ║" "DarkYellow"
 Write-Log "╚═══════════════════════════════════════════════════════════╝" "DarkYellow"
-Write-Host ""
+Write-Log ""
 
 `;
 
@@ -923,7 +923,7 @@ function generateDiskCleanupSection(disk, whatIf) {
 Write-Log "╔═══════════════════════════════════════════════════════════╗" "DarkCyan"
 Write-Log "║                  DISK MAINTENANCE                         ║" "DarkCyan"
 Write-Log "╚═══════════════════════════════════════════════════════════╝" "DarkCyan"
-Write-Host ""
+Write-Log ""
 
 `;
 
@@ -990,7 +990,7 @@ function generateStartupSection(startup) {
 Write-Log "╔═══════════════════════════════════════════════════════════╗" "Green"
 Write-Log "║                  STARTUP ANALYSIS                         ║" "Green"
 Write-Log "╚═══════════════════════════════════════════════════════════╝" "Green"
-Write-Host ""
+Write-Log ""
 
 Write-Log "⚡ Scanning startup items..." "Cyan"
 
@@ -1106,11 +1106,11 @@ function buildScheduledTaskScript(selected) {
 # Generated: ${new Date().toLocaleString()}
 # ============================================
 
-Write-Host ""
+Write-Log ""
 Write-Log "╔═══════════════════════════════════════════════════════════╗" "Cyan"
 Write-Log "║      WEEKLY MAINTENANCE TASK CREATOR                      ║" "Cyan"
 Write-Log "╚═══════════════════════════════════════════════════════════╝" "Cyan"
-Write-Host ""
+Write-Log ""
 
 # Create the optimization script file
 $scriptPath = "$env:ProgramData\\WindowsOptimization\\WeeklyMaintenance.ps1"
@@ -1127,7 +1127,7 @@ ${scriptContent}
 '@ | Out-File -FilePath $scriptPath -Encoding UTF8 -Force
 
 Write-Log "   ✓ Script saved to: $scriptPath" "Green"
-Write-Host ""
+Write-Log ""
 
 # Create scheduled task
 Write-Log "⏰ Creating scheduled task..." "Cyan"
@@ -1163,31 +1163,31 @@ try {
     Write-Log "   ℹ️  You may need to run this script as Administrator" "Yellow"
 }
 
-Write-Host ""
+Write-Log ""
 Write-Log "╔═══════════════════════════════════════════════════════════╗" "Green"
 Write-Log "║                    SETUP COMPLETE!                        ║" "Green"
 Write-Log "╚═══════════════════════════════════════════════════════════╝" "Green"
-Write-Host ""
+Write-Log ""
 Write-Log "📋 SCHEDULED TASK DETAILS:" "Cyan"
-Write-Host ""
+Write-Log ""
 Write-Log "   ✅ Task Name: Windows Weekly Optimization" "White"
 Write-Log "   📅 Schedule: Every Sunday at 2:00 AM" "White"
 Write-Log "   📁 Script: $scriptPath" "White"
-Write-Host ""
+Write-Log ""
 Write-Log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" "Gray"
-Write-Host ""
+Write-Log ""
 Write-Log "💡 TO MANAGE THIS TASK:" "Yellow"
-Write-Host ""
+Write-Log ""
 Write-Log "   1. Press Win+R" "Gray"
 Write-Log "   2. Type: taskschd.msc" "Gray"
 Write-Log "   3. Press Enter" "Gray"
 Write-Log "   4. Find 'Windows Weekly Optimization' in the list" "Gray"
 Write-Log "   5. Right-click to Run, Edit, Disable, or Delete" "Gray"
-Write-Host ""
+Write-Log ""
 Write-Log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" "Gray"
-Write-Host ""
+Write-Log ""
 Write-Log "This window will stay open so you can review the results." "Yellow"
-Write-Host ""
+Write-Log ""
 Read-Host "Press ENTER to close this window"
 `;
 
