@@ -145,9 +145,9 @@ function generateScript(previewMode = false, scheduleMode = false) {
         showModal('Weekly Maintenance Task', modalContent);
         window.currentScript = taskScript;
     } else {
-        // Regular mode - download immediately
+        // Regular mode - show instructions then download
         const filename = `Windows_Optimizer_${getTimestamp()}.ps1`;
-        downloadScript(filename, script);
+        showInstructionsModal(filename, script, 'optimize');
     }
 }
 
@@ -159,7 +159,74 @@ function downloadPreviewScript() {
 
 function downloadScheduledScript() {
     const filename = `Windows_Optimizer_SCHEDULED_${getTimestamp()}.ps1`;
-    downloadScript(filename, window.currentScript);
+    closeModal();
+    showInstructionsModal(filename, window.currentScript, 'schedule');
+}
+
+function showInstructionsModal(filename, scriptContent, type) {
+    let instructions = '';
+    
+    if (type === 'optimize') {
+        instructions = `
+            <div class="instructions-box">
+                <h4>📋 How to Run Your Optimization Script</h4>
+                <ol>
+                    <li><strong>Download the script</strong> by clicking the button below</li>
+                    <li><strong>Locate the file</strong> in your Downloads folder (<code>${filename}</code>)</li>
+                    <li><strong>Right-click the file</strong> → Select <strong>"Run with PowerShell"</strong></li>
+                    <li>If prompted, click <strong>"Yes"</strong> to allow administrator access</li>
+                    <li><strong>Review the output</strong> - the script shows exactly what it's doing</li>
+                    <li><strong>Check your Desktop</strong> for backup files (if backup was enabled)</li>
+                </ol>
+                <div style="margin-top: 1rem; padding: 1rem; background: #e6f3ff; border-radius: 6px;">
+                    <strong>💡 Pro Tip:</strong> If you enabled auto-backup, you'll find a <strong>RESTORE script</strong> on your Desktop. 
+                    Just run it to undo all changes!
+                </div>
+            </div>
+        `;
+    } else if (type === 'schedule') {
+        instructions = `
+            <div class="instructions-box">
+                <h4>📋 How to Set Up Scheduled Maintenance</h4>
+                <ol>
+                    <li><strong>Download the script</strong> by clicking the button below</li>
+                    <li><strong>Locate the file</strong> in your Downloads folder (<code>${filename}</code>)</li>
+                    <li><strong>Right-click the file</strong> → Select <strong>"Run with PowerShell"</strong></li>
+                    <li>Click <strong>"Yes"</strong> when prompted for administrator access</li>
+                    <li>The script will create a <strong>weekly task</strong> that runs every Sunday at 2 AM</li>
+                    <li>To manage it later, press <strong>Win+R</strong>, type <code>taskschd.msc</code>, and look for <strong>"Windows Weekly Optimization"</strong></li>
+                </ol>
+                <div style="margin-top: 1rem; padding: 1rem; background: #e6f9e6; border-radius: 6px;">
+                    <strong>✅ What it does:</strong> Creates a scheduled task that automatically runs your selected optimizations every week. 
+                    You can disable or delete it anytime from Task Scheduler.
+                </div>
+            </div>
+        `;
+    }
+    
+    const modalContent = `
+        <div class="alert alert-success">
+            <div style="font-size:1.5rem">✅</div>
+            <div><strong>Script Ready!</strong><br>Your PowerShell script has been generated and is ready to download.</div>
+        </div>
+        ${instructions}
+        <div style="margin-top: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+            <button class="btn btn-generate" style="flex: 1;" onclick="downloadScriptAndClose('${filename}')">
+                📥 Download Script
+            </button>
+            <button class="btn btn-preview" onclick="closeModal()">
+                Cancel
+            </button>
+        </div>
+    `;
+    
+    showModal('Ready to Download', modalContent);
+    window.currentScriptToDownload = scriptContent;
+    window.currentFilename = filename;
+}
+
+function downloadScriptAndClose(filename) {
+    downloadScript(filename || window.currentFilename, window.currentScriptToDownload);
     closeModal();
 }
 
