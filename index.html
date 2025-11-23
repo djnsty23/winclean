@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Windows 11 Optimization Portal</title>
+    <title>Windows 11 Optimization Portal - Simple & Safe</title>
     <style>
         * {
             margin: 0;
@@ -15,6 +15,7 @@
             --primary: #0078d4;
             --primary-hover: #106ebe;
             --success: #107c10;
+            --success-hover: #0e6b0e;
             --danger: #d13438;
             --warning: #f7630c;
             --bg-primary: #f3f3f3;
@@ -24,6 +25,7 @@
             --border: #e1dfdd;
             --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
+            --highlight: #fff4e6;
         }
 
         body {
@@ -86,7 +88,7 @@
 
         .optimization-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
             gap: 2rem;
             margin-bottom: 2rem;
         }
@@ -97,6 +99,8 @@
             padding: 2rem;
             box-shadow: var(--shadow-lg);
             transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
         }
 
         .optimization-card:hover {
@@ -108,6 +112,8 @@
             display: flex;
             align-items: center;
             margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
         }
 
         .card-icon {
@@ -125,6 +131,63 @@
             color: var(--text-secondary);
             margin-bottom: 1.5rem;
             line-height: 1.8;
+            font-size: 1rem;
+        }
+
+        .selection-summary {
+            background: var(--highlight);
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid var(--warning);
+        }
+
+        .selection-summary strong {
+            color: var(--text-primary);
+        }
+
+        .selection-count {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .options-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .options-header h3 {
+            font-size: 1.1rem;
+            color: var(--text-primary);
+        }
+
+        .select-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .select-btn {
+            padding: 0.4rem 0.8rem;
+            border: 1px solid var(--border);
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .select-btn:hover {
+            background: var(--bg-primary);
+            border-color: var(--primary);
+            color: var(--primary);
         }
 
         .options {
@@ -132,12 +195,24 @@
             padding: 1rem;
             background: var(--bg-primary);
             border-radius: 8px;
+            max-height: 400px;
+            overflow-y: auto;
         }
 
         .option {
             display: flex;
-            align-items: center;
+            align-items: start;
             margin: 0.8rem 0;
+            padding: 0.8rem;
+            background: white;
+            border-radius: 6px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .option:hover {
+            background: #f8f8f8;
+            box-shadow: var(--shadow);
         }
 
         .option input[type="checkbox"] {
@@ -145,24 +220,123 @@
             height: 20px;
             margin-right: 0.8rem;
             cursor: pointer;
+            flex-shrink: 0;
+            margin-top: 0.2rem;
         }
 
-        .option label {
+        .option-content {
+            flex: 1;
+        }
+
+        .option-label {
             cursor: pointer;
             user-select: none;
-            flex: 1;
+            font-weight: 500;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .option-badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-safe {
+            background: #e6f9e6;
+            color: var(--success);
+        }
+
+        .badge-recommended {
+            background: #e6f3ff;
+            color: var(--primary);
+        }
+
+        .badge-caution {
+            background: #fff4e6;
+            color: var(--warning);
+        }
+
+        .badge-advanced {
+            background: #ffe6e6;
+            color: var(--danger);
         }
 
         .option-description {
             font-size: 0.9rem;
             color: var(--text-secondary);
-            margin-left: 28px;
-            margin-top: -0.5rem;
-            margin-bottom: 0.5rem;
+            margin-top: 0.3rem;
+            line-height: 1.5;
+        }
+
+        .option-impact {
+            font-size: 0.85rem;
+            color: var(--primary);
+            margin-top: 0.3rem;
+            font-style: italic;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+        }
+
+        .tooltip-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 0.8rem;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -125px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
         }
 
         .btn {
-            padding: 0.8rem 1.5rem;
+            padding: 1rem 1.5rem;
             border: none;
             border-radius: 6px;
             font-size: 1rem;
@@ -171,7 +345,10 @@
             transition: all 0.2s;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 0.5rem;
+            width: 100%;
+            text-align: center;
         }
 
         .btn-primary {
@@ -191,7 +368,9 @@
         }
 
         .btn-success:hover {
-            background: #0e6b0e;
+            background: var(--success-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
         }
 
         .btn-secondary {
@@ -203,11 +382,30 @@
             background: #484644;
         }
 
+        .btn-large {
+            padding: 1.2rem 2rem;
+            font-size: 1.1rem;
+        }
+
         .btn-group {
             display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            margin-top: 1rem;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-top: auto;
+        }
+
+        .button-explainer {
+            background: #e6f3ff;
+            padding: 0.8rem;
+            border-radius: 6px;
+            margin-bottom: 0.8rem;
+            border-left: 4px solid var(--primary);
+        }
+
+        .button-explainer p {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            margin: 0;
         }
 
         .modal {
@@ -281,6 +479,8 @@
             margin: 1rem 0;
             white-space: pre-wrap;
             word-wrap: break-word;
+            max-height: 500px;
+            overflow-y: auto;
         }
 
         .alert {
@@ -310,6 +510,12 @@
             color: #155724;
         }
 
+        .alert-danger {
+            background: #ffe6e6;
+            border-left: 4px solid var(--danger);
+            color: #721c24;
+        }
+
         .alert-icon {
             font-size: 1.5rem;
             flex-shrink: 0;
@@ -325,28 +531,10 @@
             backdrop-filter: blur(10px);
         }
 
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin: 1rem 0;
-        }
-
-        .stat-card {
-            background: var(--bg-primary);
-            padding: 1rem;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
+        .help-icon {
+            cursor: help;
             color: var(--primary);
-        }
-
-        .stat-label {
-            color: var(--text-secondary);
+            font-weight: bold;
             font-size: 0.9rem;
         }
 
@@ -372,22 +560,77 @@
                 justify-content: center;
             }
         }
+
+        /* Service-specific styles */
+        .service-item {
+            border: 1px solid var(--border);
+            margin: 0.5rem 0;
+        }
+
+        .service-item:hover {
+            border-color: var(--primary);
+        }
+
+        .service-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .service-status {
+            font-size: 0.8rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .status-running {
+            background: #e6f9e6;
+            color: var(--success);
+        }
+
+        .status-stopped {
+            background: #ffe6e6;
+            color: var(--danger);
+        }
+
+        /* Scrollbar styling */
+        .options::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .options::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .options::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .options::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
             <h1>🚀 Windows 11 Optimization Portal</h1>
-            <p>Safe, transparent, and effective optimization tools for your fresh Windows installation</p>
+            <p>Safe, transparent, and effective optimization tools for your Windows installation</p>
+            <p style="margin-top: 0.5rem; font-size: 0.95rem; color: var(--text-secondary);">
+                ⚠️ <strong>Important:</strong> Select the checkboxes below, then click the button at the bottom of each card to create a script
+            </p>
         </header>
 
         <div class="info-banner">
-            <h3>✨ How It Works</h3>
+            <h3>✨ How This Works (Read This First!)</h3>
             <ul>
-                <li><strong>Choose optimizations</strong> - Select what you want to optimize</li>
-                <li><strong>Review scripts</strong> - See exactly what will run before execution</li>
-                <li><strong>Download & run</strong> - Get PowerShell scripts to run with admin rights</li>
-                <li><strong>100% Safe</strong> - All scripts skip files in use, create restore points, and are fully reversible</li>
+                <li><strong>Step 1:</strong> Check the boxes for what you want to optimize (in the gray areas)</li>
+                <li><strong>Step 2:</strong> Click the blue button at the bottom of each card to create a PowerShell script</li>
+                <li><strong>Step 3:</strong> Review the script in the popup window (you'll see exactly what it does)</li>
+                <li><strong>Step 4:</strong> Download the script file and run it as Administrator on your PC</li>
+                <li><strong>100% Safe:</strong> Files in use are automatically skipped, restore points are created, everything is reversible</li>
             </ul>
         </div>
 
@@ -396,57 +639,136 @@
             <div class="optimization-card">
                 <div class="card-header">
                     <div class="card-icon">🗑️</div>
-                    <h2>Temp File Cleaner</h2>
+                    <div>
+                        <h2>Temp File Cleaner</h2>
+                    </div>
                 </div>
                 <p class="card-description">
-                    Safely clean temporary files from %TEMP%, Windows\Temp, and other locations. 
-                    Automatically skips files in use and system-critical files.
+                    Delete temporary files that Windows doesn't need anymore. Frees up 500 MB - 5 GB typically.
+                    <span class="tooltip">
+                        <span class="help-icon">❓</span>
+                        <span class="tooltip-text">These are temporary files created by Windows and programs. They're safe to delete and will be recreated if needed.</span>
+                    </span>
                 </p>
-                
-                <div class="options">
-                    <div class="option">
-                        <input type="checkbox" id="temp-user" checked>
-                        <label for="temp-user">Clean User Temp Folder (%TEMP%)</label>
+
+                <div class="options-header">
+                    <h3>Select what to clean:</h3>
+                    <div class="select-controls">
+                        <button class="select-btn" onclick="selectAll('temp')">Select All</button>
+                        <button class="select-btn" onclick="selectNone('temp')">Select None</button>
                     </div>
-                    <div class="option-description">Removes temporary files from your user profile</div>
-                    
+                </div>
+
+                <div class="selection-summary">
+                    <strong>Selected:</strong> <span id="temp-count" class="selection-count">2</span> items will be cleaned
+                </div>
+
+                <div class="options" id="temp-options">
                     <div class="option">
-                        <input type="checkbox" id="temp-windows" checked>
-                        <label for="temp-windows">Clean Windows Temp Folder</label>
+                        <input type="checkbox" id="temp-user" checked onchange="updateCount('temp')">
+                        <div class="option-content">
+                            <label for="temp-user" class="option-label">
+                                Clean User Temp Folder (%TEMP%)
+                                <span class="option-badge badge-recommended">RECOMMENDED</span>
+                            </label>
+                            <div class="option-description">
+                                Removes temporary files from your user profile (C:\Users\YourName\AppData\Local\Temp).
+                                This is always safe to clean.
+                            </div>
+                            <div class="option-impact">
+                                💾 Expected space freed: 200-2000 MB
+                            </div>
+                        </div>
                     </div>
-                    <div class="option-description">Requires admin rights, cleans C:\Windows\Temp</div>
-                    
+
                     <div class="option">
-                        <input type="checkbox" id="temp-prefetch">
-                        <label for="temp-prefetch">Clear Prefetch Cache</label>
+                        <input type="checkbox" id="temp-windows" checked onchange="updateCount('temp')">
+                        <div class="option-content">
+                            <label for="temp-windows" class="option-label">
+                                Clean Windows Temp Folder
+                                <span class="option-badge badge-recommended">RECOMMENDED</span>
+                            </label>
+                            <div class="option-description">
+                                Removes temporary files from Windows system folder (C:\Windows\Temp).
+                                Requires administrator rights to clean.
+                            </div>
+                            <div class="option-impact">
+                                💾 Expected space freed: 100-1000 MB
+                            </div>
+                        </div>
                     </div>
-                    <div class="option-description">Can speed up boot time, but may slow down app launches temporarily</div>
-                    
+
                     <div class="option">
-                        <input type="checkbox" id="temp-recycle">
-                        <label for="temp-recycle">Empty Recycle Bin</label>
+                        <input type="checkbox" id="temp-prefetch" onchange="updateCount('temp')">
+                        <div class="option-content">
+                            <label for="temp-prefetch" class="option-label">
+                                Clear Prefetch Cache
+                                <span class="option-badge badge-caution">OPTIONAL</span>
+                            </label>
+                            <div class="option-description">
+                                Prefetch helps Windows load programs faster. Clearing it may speed up boot time but programs might load slower for a few days while Windows rebuilds the cache.
+                            </div>
+                            <div class="option-impact">
+                                ⚠️ Programs may load slower for 1-2 days after cleaning
+                            </div>
+                        </div>
                     </div>
-                    <div class="option-description">Permanently delete items in recycle bin</div>
-                    
+
                     <div class="option">
-                        <input type="checkbox" id="temp-thumbnail">
-                        <label for="temp-thumbnail">Clear Thumbnail Cache</label>
+                        <input type="checkbox" id="temp-recycle" onchange="updateCount('temp')">
+                        <div class="option-content">
+                            <label for="temp-recycle" class="option-label">
+                                Empty Recycle Bin
+                                <span class="option-badge badge-caution">PERMANENT</span>
+                            </label>
+                            <div class="option-description">
+                                Permanently delete all files in your Recycle Bin. Make sure you don't need anything in there first!
+                            </div>
+                            <div class="option-impact">
+                                ⚠️ Files cannot be recovered after this!
+                            </div>
+                        </div>
                     </div>
-                    <div class="option-description">Thumbnails will regenerate when needed</div>
-                    
+
                     <div class="option">
-                        <input type="checkbox" id="temp-log" checked>
-                        <label for="temp-log">Create Cleanup Log</label>
+                        <input type="checkbox" id="temp-thumbnail" onchange="updateCount('temp')">
+                        <div class="option-content">
+                            <label for="temp-thumbnail" class="option-label">
+                                Clear Thumbnail Cache
+                                <span class="option-badge badge-safe">SAFE</span>
+                            </label>
+                            <div class="option-description">
+                                Windows caches image thumbnails to show them faster in File Explorer. They'll be recreated automatically when you browse folders with images.
+                            </div>
+                            <div class="option-impact">
+                                💾 Expected space freed: 50-500 MB
+                            </div>
+                        </div>
                     </div>
-                    <div class="option-description">Save details of what was cleaned to Desktop</div>
+
+                    <div class="option">
+                        <input type="checkbox" id="temp-log" checked onchange="updateCount('temp')">
+                        <div class="option-content">
+                            <label for="temp-log" class="option-label">
+                                Create Cleanup Log
+                                <span class="option-badge badge-recommended">RECOMMENDED</span>
+                            </label>
+                            <div class="option-description">
+                                Saves a detailed report of what was cleaned to your Desktop. Helpful to see what was deleted and how much space was freed.
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="btn-group">
+                    <div class="button-explainer">
+                        <p><strong>👇 Click this button to create your cleanup script based on the checkboxes above</strong></p>
+                    </div>
                     <button class="btn btn-primary" onclick="generateTempCleanerScript()">
-                        📜 Generate Script
+                        📜 Create Cleanup Script (Will Delete Files)
                     </button>
                     <button class="btn btn-secondary" onclick="generateTempCleanerScript(true)">
-                        👀 Preview Mode
+                        👀 Create Preview Script (Shows What Would Be Deleted)
                     </button>
                 </div>
             </div>
@@ -455,142 +777,514 @@
             <div class="optimization-card">
                 <div class="card-header">
                     <div class="card-icon">⚡</div>
-                    <h2>Startup Optimizer</h2>
+                    <div>
+                        <h2>Startup Optimizer</h2>
+                    </div>
                 </div>
                 <p class="card-description">
-                    Analyze and disable unnecessary startup programs to speed up boot time. 
-                    Generates a report of all startup items with recommendations.
+                    Find out what programs run when Windows starts and get recommendations on what you can safely disable to speed up boot time.
+                    <span class="tooltip">
+                        <span class="help-icon">❓</span>
+                        <span class="tooltip-text">This creates a report showing all startup programs. You can then manually disable ones you don't need using Task Manager.</span>
+                    </span>
                 </p>
-                
-                <div class="options">
-                    <div class="option">
-                        <input type="checkbox" id="startup-scan" checked>
-                        <label for="startup-scan">Scan All Startup Items</label>
+
+                <div class="options-header">
+                    <h3>Select what to analyze:</h3>
+                    <div class="select-controls">
+                        <button class="select-btn" onclick="selectAll('startup')">Select All</button>
+                        <button class="select-btn" onclick="selectNone('startup')">Select None</button>
                     </div>
-                    <div class="option-description">Lists all programs that run at startup</div>
-                    
+                </div>
+
+                <div class="selection-summary">
+                    <strong>Selected:</strong> <span id="startup-count" class="selection-count">2</span> analysis types
+                </div>
+
+                <div class="options" id="startup-options">
                     <div class="option">
-                        <input type="checkbox" id="startup-report" checked>
-                        <label for="startup-report">Generate Detailed Report</label>
+                        <input type="checkbox" id="startup-scan" checked onchange="updateCount('startup')">
+                        <div class="option-content">
+                            <label for="startup-scan" class="option-label">
+                                Scan All Startup Items
+                                <span class="option-badge badge-recommended">RECOMMENDED</span>
+                            </label>
+                            <div class="option-description">
+                                Lists all programs that automatically start when you log in to Windows. Includes registry entries and startup folder items.
+                            </div>
+                            <div class="option-impact">
+                                ℹ️ Creates a detailed list - no changes made to your system
+                            </div>
+                        </div>
                     </div>
-                    <div class="option-description">Creates HTML report with recommendations</div>
-                    
+
                     <div class="option">
-                        <input type="checkbox" id="startup-services">
-                        <label for="startup-services">Optimize Services</label>
+                        <input type="checkbox" id="startup-report" checked onchange="updateCount('startup')">
+                        <div class="option-content">
+                            <label for="startup-report" class="option-label">
+                                Generate HTML Report
+                                <span class="option-badge badge-recommended">RECOMMENDED</span>
+                            </label>
+                            <div class="option-description">
+                                Creates a beautiful, easy-to-read HTML report saved to your Desktop. Opens automatically in your browser with recommendations for each startup item.
+                            </div>
+                            <div class="option-impact">
+                                📄 Report saved to Desktop and opens in browser
+                            </div>
+                        </div>
                     </div>
-                    <div class="option-description">Set unnecessary services to manual start</div>
+
+                    <div class="option">
+                        <input type="checkbox" id="startup-services" onchange="updateCount('startup')">
+                        <div class="option-content">
+                            <label for="startup-services" class="option-label">
+                                Analyze Windows Services
+                                <span class="option-badge badge-caution">ANALYSIS ONLY</span>
+                            </label>
+                            <div class="option-description">
+                                Shows which Windows background services are set to start automatically. The script will only analyze them, not change them. Actual changes require manual editing of the script.
+                            </div>
+                            <div class="option-impact">
+                                ℹ️ Analysis only - see details below for granular service control
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="btn-group">
+                    <div class="button-explainer">
+                        <p><strong>👇 Click this button to create a startup analysis script</strong></p>
+                    </div>
                     <button class="btn btn-primary" onclick="generateStartupScript()">
-                        📜 Generate Script
+                        📜 Create Startup Analysis Script
                     </button>
                 </div>
             </div>
 
-            <!-- Privacy Optimizer Card -->
+            <!-- Privacy & Telemetry Card -->
             <div class="optimization-card">
                 <div class="card-header">
                     <div class="card-icon">🔒</div>
-                    <h2>Privacy & Telemetry</h2>
+                    <div>
+                        <h2>Privacy & Telemetry</h2>
+                    </div>
                 </div>
                 <p class="card-description">
-                    Reduce Windows telemetry and enhance privacy. All changes are reversible 
-                    and documented. Creates a restore script automatically.
+                    Reduce how much data Windows sends to Microsoft. All changes are reversible.
+                    <span class="tooltip">
+                        <span class="help-icon">❓</span>
+                        <span class="tooltip-text">Windows sends diagnostic data to Microsoft. These options let you minimize that while keeping Windows functional.</span>
+                    </span>
                 </p>
-                
-                <div class="options">
-                    <div class="option">
-                        <input type="checkbox" id="privacy-telemetry" checked>
-                        <label for="privacy-telemetry">Minimize Telemetry</label>
+
+                <div class="options-header">
+                    <h3>Select privacy changes:</h3>
+                    <div class="select-controls">
+                        <button class="select-btn" onclick="selectAll('privacy')">Select All</button>
+                        <button class="select-btn" onclick="selectNone('privacy')">Select None</button>
                     </div>
-                    <div class="option-description">Set telemetry to minimum allowed level</div>
-                    
+                </div>
+
+                <div class="selection-summary">
+                    <strong>Selected:</strong> <span id="privacy-count" class="selection-count">1</span> privacy enhancements
+                </div>
+
+                <div class="options" id="privacy-options">
                     <div class="option">
-                        <input type="checkbox" id="privacy-cortana">
-                        <label for="privacy-cortana">Disable Cortana</label>
+                        <input type="checkbox" id="privacy-telemetry" checked onchange="updateCount('privacy')">
+                        <div class="option-content">
+                            <label for="privacy-telemetry" class="option-label">
+                                Minimize Telemetry
+                                <span class="option-badge badge-recommended">RECOMMENDED</span>
+                            </label>
+                            <div class="option-description">
+                                Sets Windows diagnostic data collection to the minimum allowed level. Windows will still send basic error reports but won't send detailed usage data.
+                            </div>
+                            <div class="option-impact">
+                                ℹ️ Reduces data sent to Microsoft, no functionality lost
+                            </div>
+                        </div>
                     </div>
-                    <div class="option-description">Disable Cortana background activity</div>
-                    
+
                     <div class="option">
-                        <input type="checkbox" id="privacy-ads">
-                        <label for="privacy-ads">Disable Advertising ID</label>
+                        <input type="checkbox" id="privacy-cortana" onchange="updateCount('privacy')">
+                        <div class="option-content">
+                            <label for="privacy-cortana" class="option-label">
+                                Disable Cortana
+                                <span class="option-badge badge-safe">SAFE</span>
+                            </label>
+                            <div class="option-description">
+                                Disables Microsoft's voice assistant Cortana. Windows Search will still work normally, but voice commands and cloud-based assistant features will be disabled.
+                            </div>
+                            <div class="option-impact">
+                                ℹ️ Voice assistant disabled, search still works
+                            </div>
+                        </div>
                     </div>
-                    <div class="option-description">Prevent personalized ads in Windows</div>
-                    
+
                     <div class="option">
-                        <input type="checkbox" id="privacy-location">
-                        <label for="privacy-location">Disable Location Tracking</label>
+                        <input type="checkbox" id="privacy-ads" onchange="updateCount('privacy')">
+                        <div class="option-content">
+                            <label for="privacy-ads" class="option-label">
+                                Disable Advertising ID
+                                <span class="option-badge badge-recommended">RECOMMENDED</span>
+                            </label>
+                            <div class="option-description">
+                                Prevents Windows from creating a unique advertising ID for your account. This stops apps from using it to show you personalized ads.
+                            </div>
+                            <div class="option-impact">
+                                ℹ️ Less personalized ads in apps
+                            </div>
+                        </div>
                     </div>
-                    <div class="option-description">Turn off location services</div>
-                    
+
                     <div class="option">
-                        <input type="checkbox" id="privacy-feedback">
-                        <label for="privacy-feedback">Disable Feedback Requests</label>
+                        <input type="checkbox" id="privacy-location" onchange="updateCount('privacy')">
+                        <div class="option-content">
+                            <label for="privacy-location" class="option-label">
+                                Disable Location Tracking
+                                <span class="option-badge badge-caution">MAY AFFECT APPS</span>
+                            </label>
+                            <div class="option-description">
+                                Turns off Windows location services. Apps like Maps, Weather, and some games won't be able to use your location. You can re-enable this in Windows Settings if needed.
+                            </div>
+                            <div class="option-impact">
+                                ⚠️ Location-based apps won't work (Maps, Weather, etc.)
+                            </div>
+                        </div>
                     </div>
-                    <div class="option-description">Stop Windows from asking for feedback</div>
+
+                    <div class="option">
+                        <input type="checkbox" id="privacy-feedback" onchange="updateCount('privacy')">
+                        <div class="option-content">
+                            <label for="privacy-feedback" class="option-label">
+                                Disable Feedback Requests
+                                <span class="option-badge badge-safe">SAFE</span>
+                            </label>
+                            <div class="option-description">
+                                Stops Windows from asking you to provide feedback about your experience. You won't see popup notifications asking for feedback anymore.
+                            </div>
+                            <div class="option-impact">
+                                ℹ️ No more "How are we doing?" popups
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="btn-group">
+                    <div class="button-explainer">
+                        <p><strong>👇 Creates TWO scripts: one to apply changes, one to undo them</strong></p>
+                    </div>
                     <button class="btn btn-primary" onclick="generatePrivacyScript()">
-                        📜 Generate Script
+                        📜 Create Privacy Optimization Script
                     </button>
                     <button class="btn btn-success" onclick="generatePrivacyScript(false, true)">
-                        ↩️ Generate Restore Script
+                        ↩️ Create Restore Script (Undo Changes)
                     </button>
                 </div>
             </div>
 
-            <!-- Performance Optimizer Card -->
+            <!-- Performance Tuning Card -->
             <div class="optimization-card">
                 <div class="card-header">
                     <div class="card-icon">🎯</div>
-                    <h2>Performance Tuning</h2>
+                    <div>
+                        <h2>Performance Tuning</h2>
+                    </div>
                 </div>
                 <p class="card-description">
-                    Optimize visual effects and system settings for better performance. 
-                    Great for older hardware or when you need maximum speed.
+                    Make Windows faster by turning off visual effects and unnecessary background services.
+                    <span class="tooltip">
+                        <span class="help-icon">❓</span>
+                        <span class="tooltip-text">These changes make Windows more responsive, especially on older or slower computers. Everything can be reversed.</span>
+                    </span>
                 </p>
-                
-                <div class="options">
-                    <div class="option">
-                        <input type="checkbox" id="perf-visual">
-                        <label for="perf-visual">Optimize Visual Effects</label>
+
+                <div class="options-header">
+                    <h3>Select optimizations:</h3>
+                    <div class="select-controls">
+                        <button class="select-btn" onclick="selectAll('perf')">Select All</button>
+                        <button class="select-btn" onclick="selectNone('perf')">Select None</button>
                     </div>
-                    <div class="option-description">Disable animations and transparency for speed</div>
-                    
+                </div>
+
+                <div class="selection-summary">
+                    <strong>Selected:</strong> <span id="perf-count" class="selection-count">1</span> performance tweaks
+                </div>
+
+                <div class="options" id="perf-options">
                     <div class="option">
-                        <input type="checkbox" id="perf-indexing">
-                        <label for="perf-indexing">Optimize Search Indexing</label>
+                        <input type="checkbox" id="perf-visual" onchange="updateCount('perf')">
+                        <div class="option-content">
+                            <label for="perf-visual" class="option-label">
+                                Disable Visual Effects & Animations
+                                <span class="option-badge badge-recommended">FOR OLDER PCS</span>
+                            </label>
+                            <div class="option-description">
+                                Turns off window animations, transparency effects, and shadows. Makes Windows look more basic but respond faster. Great for older computers or if you prefer speed over looks.
+                            </div>
+                            <div class="option-impact">
+                                🚀 10-20% faster UI response, Windows looks simpler
+                            </div>
+                        </div>
                     </div>
-                    <div class="option-description">Limit indexing to important locations only</div>
-                    
+
                     <div class="option">
-                        <input type="checkbox" id="perf-superfetch">
-                        <label for="perf-superfetch">Disable Superfetch (SSD)</label>
+                        <input type="checkbox" id="perf-indexing" onchange="updateCount('perf')">
+                        <div class="option-content">
+                            <label for="perf-indexing" class="option-label">
+                                Set Windows Search to Manual
+                                <span class="option-badge badge-safe">SAFE</span>
+                            </label>
+                            <div class="option-description">
+                                Stops Windows Search from constantly indexing files in the background. Search will still work, but Windows won't use resources building search indexes when idle.
+                            </div>
+                            <div class="option-impact">
+                                💻 Less background disk activity, search may be slower
+                            </div>
+                        </div>
                     </div>
-                    <div class="option-description">Not needed if you have an SSD</div>
-                    
+
                     <div class="option">
-                        <input type="checkbox" id="perf-hibernation">
-                        <label for="perf-hibernation">Disable Hibernation</label>
+                        <input type="checkbox" id="perf-superfetch" onchange="updateCount('perf')">
+                        <div class="option-content">
+                            <label for="perf-superfetch" class="option-label">
+                                Disable Superfetch/SysMain
+                                <span class="option-badge badge-recommended">IF YOU HAVE SSD</span>
+                            </label>
+                            <div class="option-description">
+                                Superfetch preloads frequently-used programs into RAM. This helps with hard drives but is unnecessary if you have an SSD (solid-state drive).
+                            </div>
+                            <div class="option-impact">
+                                ℹ️ Only disable if you have an SSD, not a hard drive!
+                            </div>
+                        </div>
                     </div>
-                    <div class="option-description">Free up disk space (hiberfil.sys)</div>
-                    
+
                     <div class="option">
-                        <input type="checkbox" id="perf-gamemode" checked>
-                        <label for="perf-gamemode">Enable Game Mode</label>
+                        <input type="checkbox" id="perf-hibernation" onchange="updateCount('perf')">
+                        <div class="option-content">
+                            <label for="perf-hibernation" class="option-label">
+                                Disable Hibernation
+                                <span class="option-badge badge-caution">FREES DISK SPACE</span>
+                            </label>
+                            <div class="option-description">
+                                Hibernation saves your RAM to disk so you can completely power off and resume later. Disabling it deletes the hibernation file (hiberfil.sys) which is as large as your RAM (4-32 GB typically).
+                            </div>
+                            <div class="option-impact">
+                                💾 Frees up space equal to your RAM size, hibernation won't work
+                            </div>
+                        </div>
                     </div>
-                    <div class="option-description">Optimize for gaming and performance</div>
+
+                    <div class="option">
+                        <input type="checkbox" id="perf-gamemode" checked onchange="updateCount('perf')">
+                        <div class="option-content">
+                            <label for="perf-gamemode" class="option-label">
+                                Enable Game Mode
+                                <span class="option-badge badge-recommended">RECOMMENDED</span>
+                            </label>
+                            <div class="option-description">
+                                Tells Windows to prioritize game performance when you're playing. Gives games more CPU/GPU resources and prevents Windows Update from interrupting.
+                            </div>
+                            <div class="option-impact">
+                                🎮 Better gaming performance, works for all apps
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Granular Service Selection -->
+                <div class="options-header" style="margin-top: 1.5rem;">
+                    <h3>Advanced: Service-by-Service Control</h3>
+                    <div class="select-controls">
+                        <button class="select-btn" onclick="selectAll('services')">Select All</button>
+                        <button class="select-btn" onclick="selectNone('services')">Select None</button>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning">
+                    <span class="alert-icon">⚠️</span>
+                    <div>
+                        <strong>Advanced Users Only:</strong> Select specific Windows services to optimize. Only change services you understand. Incorrect settings can affect Windows functionality.
+                    </div>
+                </div>
+
+                <div class="selection-summary">
+                    <strong>Selected Services:</strong> <span id="services-count" class="selection-count">0</span> services to optimize
+                </div>
+
+                <div class="options" id="services-options">
+                    <div class="option service-item">
+                        <input type="checkbox" id="service-diagtrack" onchange="updateCount('services')">
+                        <div class="option-content">
+                            <label for="service-diagtrack" class="option-label">
+                                <div class="service-header">
+                                    Diagnostics Tracking Service
+                                    <span class="option-badge badge-safe">SAFE TO DISABLE</span>
+                                </div>
+                            </label>
+                            <div class="option-description">
+                                <strong>Service Name:</strong> DiagTrack<br>
+                                <strong>What it does:</strong> Collects diagnostic and usage data for Microsoft. Used for improving Windows.<br>
+                                <strong>If disabled:</strong> Less data sent to Microsoft, no functionality lost.
+                            </div>
+                            <div class="option-impact">
+                                ✅ Safe to disable • Privacy improvement
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="option service-item">
+                        <input type="checkbox" id="service-dmwappush" onchange="updateCount('services')">
+                        <div class="option-content">
+                            <label for="service-dmwappush" class="option-label">
+                                <div class="service-header">
+                                    WAP Push Message Routing Service
+                                    <span class="option-badge badge-safe">SAFE TO DISABLE</span>
+                                </div>
+                            </label>
+                            <div class="option-description">
+                                <strong>Service Name:</strong> dmwappushservice<br>
+                                <strong>What it does:</strong> Routes push messages for mobile devices. Not needed for most users.<br>
+                                <strong>If disabled:</strong> No impact for desktop users.
+                            </div>
+                            <div class="option-impact">
+                                ✅ Safe to disable • Only needed for mobile device sync
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="option service-item">
+                        <input type="checkbox" id="service-sysmain" onchange="updateCount('services')">
+                        <div class="option-content">
+                            <label for="service-sysmain" class="option-label">
+                                <div class="service-header">
+                                    Superfetch (SysMain)
+                                    <span class="option-badge badge-caution">SSD ONLY</span>
+                                </div>
+                            </label>
+                            <div class="option-description">
+                                <strong>Service Name:</strong> SysMain<br>
+                                <strong>What it does:</strong> Preloads frequently-used apps into memory for faster startup.<br>
+                                <strong>If disabled:</strong> Less disk activity. Only disable if you have an SSD!
+                            </div>
+                            <div class="option-impact">
+                                ⚠️ Only disable if you have an SSD, not a hard drive
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="option service-item">
+                        <input type="checkbox" id="service-wsearch" onchange="updateCount('services')">
+                        <div class="option-content">
+                            <label for="service-wsearch" class="option-label">
+                                <div class="service-header">
+                                    Windows Search
+                                    <span class="option-badge badge-caution">MAY SLOW SEARCH</span>
+                                </div>
+                            </label>
+                            <div class="option-description">
+                                <strong>Service Name:</strong> WSearch<br>
+                                <strong>What it does:</strong> Indexes files for fast searching in File Explorer and Start Menu.<br>
+                                <strong>If set to Manual:</strong> Search still works but won't index in background. Searches may be slower.
+                            </div>
+                            <div class="option-impact">
+                                ⚠️ Search still works but may be slower
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="option service-item">
+                        <input type="checkbox" id="service-mapsbroker" onchange="updateCount('services')">
+                        <div class="option-content">
+                            <label for="service-mapsbroker" class="option-label">
+                                <div class="service-header">
+                                    Downloaded Maps Manager
+                                    <span class="option-badge badge-safe">SAFE TO DISABLE</span>
+                                </div>
+                            </label>
+                            <div class="option-description">
+                                <strong>Service Name:</strong> MapsBroker<br>
+                                <strong>What it does:</strong> Manages offline maps for the Maps app.<br>
+                                <strong>If disabled:</strong> Offline maps won't update. Online maps still work.
+                            </div>
+                            <div class="option-impact">
+                                ✅ Safe to disable unless you use offline maps
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="option service-item">
+                        <input type="checkbox" id="service-xbl" onchange="updateCount('services')">
+                        <div class="option-content">
+                            <label for="service-xbl" class="option-label">
+                                <div class="service-header">
+                                    Xbox Live Services
+                                    <span class="option-badge badge-caution">GAMERS KEEP ENABLED</span>
+                                </div>
+                            </label>
+                            <div class="option-description">
+                                <strong>Service Name:</strong> XblAuthManager, XblGameSave, XboxNetApiSvc<br>
+                                <strong>What it does:</strong> Provides Xbox Live authentication and game save sync.<br>
+                                <strong>If disabled:</strong> Xbox app and Xbox-enabled games may not work properly.
+                            </div>
+                            <div class="option-impact">
+                                ⚠️ DO NOT disable if you play Xbox games or use Game Pass
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="option service-item">
+                        <input type="checkbox" id="service-printspooler" onchange="updateCount('services')">
+                        <div class="option-content">
+                            <label for="service-printspooler" class="option-label">
+                                <div class="service-header">
+                                    Print Spooler
+                                    <span class="option-badge badge-caution">NEEDED FOR PRINTING</span>
+                                </div>
+                            </label>
+                            <div class="option-description">
+                                <strong>Service Name:</strong> Spooler<br>
+                                <strong>What it does:</strong> Manages all print jobs.<br>
+                                <strong>If set to Manual:</strong> Will start automatically when you print. Saves RAM when not printing.
+                            </div>
+                            <div class="option-impact">
+                                ℹ️ Set to Manual if you rarely print (it will still work when needed)
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="option service-item">
+                        <input type="checkbox" id="service-fax" onchange="updateCount('services')">
+                        <div class="option-content">
+                            <label for="service-fax" class="option-label">
+                                <div class="service-header">
+                                    Fax Service
+                                    <span class="option-badge badge-safe">SAFE TO DISABLE</span>
+                                </div>
+                            </label>
+                            <div class="option-description">
+                                <strong>Service Name:</strong> Fax<br>
+                                <strong>What it does:</strong> Sends and receives faxes.<br>
+                                <strong>If disabled:</strong> Can't send faxes. Most people don't use fax anymore.
+                            </div>
+                            <div class="option-impact">
+                                ✅ Safe to disable unless you actually use fax
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="btn-group">
+                    <div class="button-explainer">
+                        <p><strong>👇 Creates TWO scripts: one to optimize, one to restore defaults</strong></p>
+                    </div>
                     <button class="btn btn-primary" onclick="generatePerformanceScript()">
-                        📜 Generate Script
+                        📜 Create Performance Optimization Script
                     </button>
                     <button class="btn btn-success" onclick="generatePerformanceScript(true)">
-                        ↩️ Generate Restore Script
+                        ↩️ Create Restore Script (Undo All Changes)
                     </button>
                 </div>
             </div>
@@ -599,69 +1293,154 @@
             <div class="optimization-card">
                 <div class="card-header">
                     <div class="card-icon">💾</div>
-                    <h2>Disk Maintenance</h2>
+                    <div>
+                        <h2>Disk Maintenance</h2>
+                    </div>
                 </div>
                 <p class="card-description">
-                    Comprehensive disk cleanup including Windows Update files, logs, and caches. 
-                    Can free up several gigabytes of space safely.
+                    Deep cleanup of Windows system files. Can free 5-15 GB or more. This takes longer than temp cleaning.
+                    <span class="tooltip">
+                        <span class="help-icon">❓</span>
+                        <span class="tooltip-text">Uses Windows DISM tool to safely clean old Windows components and updates. Everything is safe to remove.</span>
+                    </span>
                 </p>
-                
-                <div class="options">
-                    <div class="option">
-                        <input type="checkbox" id="disk-winsxs">
-                        <label for="disk-winsxs">Clean Component Store</label>
+
+                <div class="options-header">
+                    <h3>Select cleanup tasks:</h3>
+                    <div class="select-controls">
+                        <button class="select-btn" onclick="selectAll('disk')">Select All</button>
+                        <button class="select-btn" onclick="selectNone('disk')">Select None</button>
                     </div>
-                    <div class="option-description">Remove old Windows components (safe)</div>
-                    
+                </div>
+
+                <div class="selection-summary">
+                    <strong>Selected:</strong> <span id="disk-count" class="selection-count">1</span> cleanup tasks
+                </div>
+
+                <div class="options" id="disk-options">
                     <div class="option">
-                        <input type="checkbox" id="disk-updates">
-                        <label for="disk-updates">Remove Old Updates</label>
+                        <input type="checkbox" id="disk-winsxs" onchange="updateCount('disk')">
+                        <div class="option-content">
+                            <label for="disk-winsxs" class="option-label">
+                                Clean Component Store (WinSxS)
+                                <span class="option-badge badge-recommended">SAFE & EFFECTIVE</span>
+                            </label>
+                            <div class="option-description">
+                                The WinSxS folder stores multiple versions of Windows files. This safely removes old versions you don't need anymore using Microsoft's official DISM tool. This is the biggest space saver!
+                            </div>
+                            <div class="option-impact">
+                                💾 Expected space freed: 2-10 GB • Takes 5-10 minutes
+                            </div>
+                        </div>
                     </div>
-                    <div class="option-description">Delete superseded Windows Update files</div>
-                    
+
                     <div class="option">
-                        <input type="checkbox" id="disk-logs">
-                        <label for="disk-logs">Clear System Logs</label>
+                        <input type="checkbox" id="disk-updates" onchange="updateCount('disk')">
+                        <div class="option-content">
+                            <label for="disk-updates" class="option-label">
+                                Remove Old Windows Updates
+                                <span class="option-badge badge-safe">SAFE</span>
+                            </label>
+                            <div class="option-description">
+                                Windows keeps old update files in case you need to uninstall an update. This removes superseded updates you can't uninstall anyway. Windows Update will still work normally.
+                            </div>
+                            <div class="option-impact">
+                                💾 Expected space freed: 1-5 GB
+                            </div>
+                        </div>
                     </div>
-                    <div class="option-description">Remove old Windows log files</div>
-                    
+
                     <div class="option">
-                        <input type="checkbox" id="disk-drivers">
-                        <label for="disk-drivers">Remove Old Drivers</label>
+                        <input type="checkbox" id="disk-logs" onchange="updateCount('disk')">
+                        <div class="option-content">
+                            <label for="disk-logs" class="option-label">
+                                Clear Old System Logs
+                                <span class="option-badge badge-safe">SAFE</span>
+                            </label>
+                            <div class="option-description">
+                                Windows keeps log files for troubleshooting. This removes log files older than 30 days. Recent logs are kept in case you need to troubleshoot a problem.
+                            </div>
+                            <div class="option-impact">
+                                💾 Expected space freed: 500 MB - 2 GB
+                            </div>
+                        </div>
                     </div>
-                    <div class="option-description">Delete previous driver versions</div>
-                    
+
                     <div class="option">
-                        <input type="checkbox" id="disk-analyze" checked>
-                        <label for="disk-analyze">Analyze First</label>
+                        <input type="checkbox" id="disk-drivers" onchange="updateCount('disk')">
+                        <div class="option-content">
+                            <label for="disk-drivers" class="option-label">
+                                Remove Old Driver Packages
+                                <span class="option-badge badge-caution">ADVANCED</span>
+                            </label>
+                            <div class="option-description">
+                                When you update drivers, Windows keeps old versions. This removes old driver versions. Your current drivers are not affected. Only use this if you're sure your current drivers work correctly.
+                            </div>
+                            <div class="option-impact">
+                                ⚠️ Can't roll back to old drivers if removed • 200 MB - 1 GB freed
+                            </div>
+                        </div>
                     </div>
-                    <div class="option-description">Show how much space will be freed before cleaning</div>
+
+                    <div class="option">
+                        <input type="checkbox" id="disk-analyze" checked onchange="updateCount('disk')">
+                        <div class="option-content">
+                            <label for="disk-analyze" class="option-label">
+                                Show Space Analysis Before Cleaning
+                                <span class="option-badge badge-recommended">RECOMMENDED</span>
+                            </label>
+                            <div class="option-description">
+                                Opens Windows Disk Cleanup tool so you can see exactly how much space will be freed before doing the actual cleanup. You can review and confirm the selections.
+                            </div>
+                            <div class="option-impact">
+                                ℹ️ Lets you preview before deleting anything
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="btn-group">
+                    <div class="button-explainer">
+                        <p><strong>👇 Creates a cleanup script - this may take 10-20 minutes to run</strong></p>
+                    </div>
                     <button class="btn btn-primary" onclick="generateDiskScript()">
-                        📜 Generate Script
+                        📜 Create Disk Cleanup Script
                     </button>
                 </div>
             </div>
 
-            <!-- All-in-One Card -->
+            <!-- Complete Optimization Suite Card -->
             <div class="optimization-card" style="grid-column: 1 / -1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                <div class="card-header">
+                <div class="card-header" style="border-bottom-color: rgba(255,255,255,0.3);">
                     <div class="card-icon">🎁</div>
-                    <h2>Complete Optimization Suite</h2>
+                    <div>
+                        <h2 style="color: white;">Complete Optimization Suite</h2>
+                    </div>
                 </div>
-                <p class="card-description" style="color: rgba(255,255,255,0.9)">
-                    Generate a comprehensive optimization script that includes safe defaults from all categories. 
-                    Perfect for a fresh Windows 11 installation. Includes automatic restore point creation.
+                <p class="card-description" style="color: rgba(255,255,255,0.9); font-size: 1.1rem;">
+                    <strong>Perfect for fresh Windows 11 installations!</strong> This creates a single script that does everything with safe defaults. No need to use the cards above.
                 </p>
 
+                <div class="alert alert-info" style="background: rgba(255,255,255,0.95); color: #004085;">
+                    <span class="alert-icon">ℹ️</span>
+                    <div>
+                        <strong>This all-in-one script includes:</strong><br>
+                        ✅ Temp file cleanup (User & Windows temp folders)<br>
+                        ✅ Privacy optimization (Minimal telemetry, disable advertising ID)<br>
+                        ✅ Performance boost (Game mode, disable animations)<br>
+                        ✅ Disk cleanup (Component store, Windows Updates)<br>
+                        ✅ Creates a restore point automatically before making changes<br>
+                        <br>
+                        <strong>Expected results:</strong> 5-10 GB freed, faster boot, better privacy, improved performance
+                    </div>
+                </div>
+
                 <div class="btn-group">
-                    <button class="btn btn-success" onclick="generateCompleteScript()">
-                        🚀 Generate Complete Optimization
+                    <button class="btn btn-large" style="background: white; color: var(--primary); font-weight: 700;" onclick="generateCompleteScript()">
+                        🚀 Create Complete Optimization Script (Recommended for New PCs)
                     </button>
-                    <button class="btn btn-secondary" onclick="generateScheduledTask()">
-                        ⏰ Generate Scheduled Maintenance Task
+                    <button class="btn btn-large btn-secondary" onclick="generateScheduledTask()">
+                        ⏰ Create Weekly Auto-Cleanup Task (Runs Every Sunday at 3 AM)
                     </button>
                 </div>
             </div>
@@ -671,6 +1450,7 @@
             <p><strong>Windows 11 Optimization Portal</strong></p>
             <p>Safe, transparent, and effective. Always review scripts before running.</p>
             <p style="margin-top: 1rem; opacity: 0.8;">All optimizations are tested on Windows 11 and designed to be fully reversible.</p>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem;">Need help? Hover over the <span style="color: var(--primary);">❓</span> icons for more information.</p>
         </footer>
     </div>
 
@@ -679,9 +1459,20 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modalTitle">Script Preview</h2>
-                <button class="close-btn" onclick="closeModal()">&times;</button>
+                <button class="close-btn" onclick="closeModal()" title="Close (ESC)">&times;</button>
             </div>
             <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚠️ Confirm Your Selection</h2>
+                <button class="close-btn" onclick="closeConfirmModal()">&times;</button>
+            </div>
+            <div id="confirmBody"></div>
         </div>
     </div>
 
