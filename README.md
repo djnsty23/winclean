@@ -6,6 +6,12 @@ A modern, safe, and transparent web-based tool for optimizing your Windows 11 in
 ![PowerShell](https://img.shields.io/badge/PowerShell-5.1+-5391FE?style=for-the-badge&logo=powershell&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
+## 🌐 Live Demo
+
+**Try it now:** [https://djnsty23.github.io/winclean/](https://djnsty23.github.io/winclean/)
+
+No installation needed - works directly in your browser!
+
 ---
 
 ## ✨ Features
