@@ -289,9 +289,25 @@ Write-Host ""
 `;
     }
 
-    script += `$totalCleaned = 0
+    script += `# Create log file on Desktop
+$logFile = "$env:USERPROFILE\\Desktop\\Windows_Optimization_Log_$(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss').txt"
+$totalCleaned = 0
 $itemsCleaned = 0
 $errorCount = 0
+
+# Function to write to both console and log
+function Write-Log {
+    param([string]$Message, [string]$Color = "White")
+    Write-Host $Message -ForegroundColor $Color
+    Add-Content -Path $logFile -Value $Message
+}
+
+# Start logging
+Write-Log "═══════════════════════════════════════════════════════════" "Cyan"
+Write-Log "Windows 11 Optimization Script - Started at $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" "Cyan"
+Write-Log "Log file: $logFile" "Gray"
+Write-Log "═══════════════════════════════════════════════════════════" "Cyan"
+Write-Log ""
 
 `;
 
@@ -331,24 +347,37 @@ Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
 Write-Host "║                  ${mode} COMPLETE!                     ║" -ForegroundColor Green
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
-Write-Host ""
-Write-Host "📊 FINAL SUMMARY:" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "   ✅ Items processed: $itemsCleaned" -ForegroundColor Green
-Write-Host "   💾 Space freed: $([math]::Round($totalCleaned / 1MB, 2)) MB" -ForegroundColor Green
+Write-Log ""
+Write-Log "╔═══════════════════════════════════════════════════════════╗" "Green"
+Write-Log "║                  ${mode} COMPLETE!                     ║" "Green"
+Write-Log "╚═══════════════════════════════════════════════════════════╝" "Green"
+Write-Log ""
+Write-Log "📊 FINAL SUMMARY:" "Cyan"
+Write-Log ""
+Write-Log "   ✅ Items processed: $itemsCleaned" "Green"
+Write-Log "   💾 Space freed: $([math]::Round($totalCleaned / 1MB, 2)) MB" "Green"
 if ($errorCount -gt 0) {
-    Write-Host "   ⚠️  Items skipped (files in use): $errorCount" -ForegroundColor Yellow
+    Write-Log "   ⚠️  Items skipped (files in use): $errorCount" "Yellow"
 }
+Write-Log ""
+Write-Log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" "Gray"
+Write-Log ""
+Write-Log "✅ SUCCESS! Your system has been optimized!" "Green"
+Write-Log ""
+Write-Log "📄 Full log saved to: $logFile" "Cyan"
+Write-Log ""
+Write-Log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" "Gray"
+Write-Log ""
+Write-Log "Script completed at $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" "Gray"
+Write-Log ""
+
+# Open log file automatically
+Write-Host "Opening log file..." -ForegroundColor Cyan
+Start-Process notepad.exe $logFile
+
 Write-Host ""
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Gray
-Write-Host ""
-Write-Host "✅ SUCCESS! Your system has been optimized!" -ForegroundColor Green
-Write-Host ""
-Write-Host "This window will stay open so you can review the results." -ForegroundColor Yellow
-Write-Host ""
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Gray
-Write-Host ""
-Read-Host "Press ENTER to close this window"
+Write-Host "Press any key to close this window..." -ForegroundColor Yellow
+$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 `;
 
     return script;
@@ -595,20 +624,20 @@ Write-Host ""
 
 function generateTempCleanupSection(temp, whatIf) {
     let section = `
-Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
-Write-Host "║                  TEMP FILES CLEANUP                       ║" -ForegroundColor Yellow
-Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
-Write-Host ""
+Write-Log "╔═══════════════════════════════════════════════════════════╗" "Yellow"
+Write-Log "║                  TEMP FILES CLEANUP                       ║" "Yellow"
+Write-Log "╚═══════════════════════════════════════════════════════════╝" "Yellow"
+Write-Log ""
 
 function Clean-Directory {
     param([string]$Path, [string]$Description)
     
     if (-not (Test-Path $Path)) {
-        Write-Host "   ⏭️  Skipping $Description - Path not found" -ForegroundColor Gray
+        Write-Log "   ⏭️  Skipping $Description - Path not found" "Gray"
         return
     }
     
-    Write-Host "   🔍 Scanning $Description..." -ForegroundColor Cyan
+    Write-Log "   🔍 Scanning $Description..." "Cyan"
     $sizeBefore = 0
     $filesRemoved = 0
     $filesSkipped = 0
@@ -618,7 +647,7 @@ function Clean-Directory {
         $itemCount = ($items | Measure-Object).Count
         $sizeBefore = ($items | Measure-Object -Property Length -Sum -ErrorAction SilentlyContinue).Sum
         
-        Write-Host "   📊 Found $itemCount items ($([math]::Round($sizeBefore / 1MB, 2)) MB)" -ForegroundColor Gray
+        Write-Log "   📊 Found $itemCount items ($([math]::Round($sizeBefore / 1MB, 2)) MB)" "Gray"
         
         foreach ($item in $items) {
             try {
@@ -633,17 +662,17 @@ function Clean-Directory {
         $script:itemsCleaned += $filesRemoved
         
         if ($filesRemoved -gt 0) {
-            Write-Host "   ✅ Cleaned: $filesRemoved items ($([math]::Round($sizeBefore / 1MB, 2)) MB)" -ForegroundColor Green
+            Write-Log "   ✅ Cleaned: $filesRemoved items ($([math]::Round($sizeBefore / 1MB, 2)) MB)" "Green"
         }
         if ($filesSkipped -gt 0) {
-            Write-Host "   ⏭️  Skipped: $filesSkipped items (in use)" -ForegroundColor Yellow
+            Write-Log "   ⏭️  Skipped: $filesSkipped items (in use)" "Yellow"
         }
         
     } catch {
-        Write-Host "   ⚠️  Some files were in use (this is normal)" -ForegroundColor Yellow
+        Write-Log "   ⚠️  Some files were in use (this is normal)" "Yellow"
         $script:errorCount++
     }
-    Write-Host ""
+    Write-Log ""
 }
 
 `;
