@@ -251,18 +251,18 @@ function buildPowerShellScript(selected, previewMode, scheduleMode, createBackup
 # ============================================
 
 Write-Host ""
-Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║                                                           ║" -ForegroundColor Cyan
-Write-Host "║     Windows 11 ${mode.padEnd(36)} ║" -ForegroundColor Cyan
-Write-Host "║                                                           ║" -ForegroundColor Cyan
-Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Log "╔═══════════════════════════════════════════════════════════╗" "Cyan"
+Write-Log "║                                                           ║" "Cyan"
+Write-Log "║     Windows 11 ${mode.padEnd(36)} ║" "Cyan"
+Write-Log "║                                                           ║" "Cyan"
+Write-Log "╚═══════════════════════════════════════════════════════════╝" "Cyan"
 Write-Host ""
 
 # Check for admin privileges
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $isAdmin) {
-    Write-Host "❌ ERROR: This script requires Administrator privileges!" -ForegroundColor Red
-    Write-Host "   Right-click the script and select 'Run as Administrator'" -ForegroundColor Yellow
+    Write-Log "❌ ERROR: This script requires Administrator privileges!" "Red"
+    Write-Log "   Right-click the script and select 'Run as Administrator'" "Yellow"
     Write-Host ""
     Read-Host "Press Enter to exit"
     exit 1
@@ -275,14 +275,14 @@ if (-not $isAdmin) {
     } else if (!previewMode) {
         script += `
 # Create System Restore Point
-Write-Host "🛡️  Creating System Restore Point..." -ForegroundColor Yellow
+Write-Log "🛡️  Creating System Restore Point..." "Yellow"
 try {
     Enable-ComputerRestore -Drive "C:\\"
     Checkpoint-Computer -Description "Before Optimization - $(Get-Date -Format 'yyyy-MM-dd HH:mm')" -RestorePointType "MODIFY_SETTINGS"
-    Write-Host "   ✓ Restore point created successfully!" -ForegroundColor Green
+    Write-Log "   ✓ Restore point created successfully!" "Green"
 } catch {
-    Write-Host "   ⚠️  Could not create restore point: $($_.Exception.Message)" -ForegroundColor Yellow
-    Write-Host "   Continuing anyway..." -ForegroundColor Gray
+    Write-Log "   ⚠️  Could not create restore point: $($_.Exception.Message)" "Yellow"
+    Write-Log "   Continuing anyway..." "Gray"
 }
 Write-Host ""
 
@@ -344,9 +344,9 @@ Write-Log ""
     // Summary
     script += `
 Write-Host ""
-Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
-Write-Host "║                  ${mode} COMPLETE!                     ║" -ForegroundColor Green
-Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+Write-Log "╔═══════════════════════════════════════════════════════════╗" "Green"
+Write-Log "║                  ${mode} COMPLETE!                     ║" "Green"
+Write-Log "╚═══════════════════════════════════════════════════════════╝" "Green"
 Write-Log ""
 Write-Log "╔═══════════════════════════════════════════════════════════╗" "Green"
 Write-Log "║                  ${mode} COMPLETE!                     ║" "Green"
@@ -372,11 +372,11 @@ Write-Log "Script completed at $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" "Gray"
 Write-Log ""
 
 # Open log file automatically
-Write-Host "Opening log file..." -ForegroundColor Cyan
+Write-Log "Opening log file..." "Cyan"
 Start-Process notepad.exe $logFile
 
 Write-Host ""
-Write-Host "Press any key to close this window..." -ForegroundColor Yellow
+Write-Log "Press any key to close this window..." "Yellow"
 $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 `;
 
@@ -393,16 +393,16 @@ function generateBackupSection(selected) {
 # BACKUP CURRENT STATE
 # ============================================
 
-Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║                  BACKING UP CURRENT STATE                 ║" -ForegroundColor Cyan
-Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Log "╔═══════════════════════════════════════════════════════════╗" "Cyan"
+Write-Log "║                  BACKING UP CURRENT STATE                 ║" "Cyan"
+Write-Log "╚═══════════════════════════════════════════════════════════╝" "Cyan"
 Write-Host ""
 
 $backupTimestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
 $backupPath = "$env:USERPROFILE\\Desktop\\Windows_Optimization_Backup_$backupTimestamp.json"
 $restoreScriptPath = "$env:USERPROFILE\\Desktop\\RESTORE_Windows_Settings_$backupTimestamp.ps1"
 
-Write-Host "💾 Creating backup of current settings..." -ForegroundColor Cyan
+Write-Log "💾 Creating backup of current settings..." "Cyan"
 
 $backup = @{
     Timestamp = $backupTimestamp
@@ -414,7 +414,7 @@ $backup = @{
 }
 
 # Backup Registry Settings
-Write-Host "   📋 Backing up registry settings..." -ForegroundColor Gray
+Write-Log "   📋 Backing up registry settings..." "Gray"
 
 $regPaths = @(
     @{Path="HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection"; Name="AllowTelemetry"},
@@ -440,7 +440,7 @@ foreach ($reg in $regPaths) {
 }
 
 # Backup Service States
-Write-Host "   ⚙️  Backing up service states..." -ForegroundColor Gray
+Write-Log "   ⚙️  Backing up service states..." "Gray"
 
 $services = @("DiagTrack", "SysMain", "WSearch", "dmwappushservice", "MapsBroker", "XblAuthManager", "XblGameSave", "XboxGipSvc", "XboxNetApiSvc", "Spooler", "Fax")
 
@@ -469,21 +469,21 @@ try {
 # Save backup to JSON
 try {
     $backup | ConvertTo-Json -Depth 10 | Out-File -FilePath $backupPath -Encoding UTF8
-    Write-Host "   ✓ Backup saved to: $backupPath" -ForegroundColor Green
+    Write-Log "   ✓ Backup saved to: $backupPath" "Green"
     
     # Verify backup was created
     if (Test-Path $backupPath) {
         $backupSize = (Get-Item $backupPath).Length
-        Write-Host "   ✓ Backup file size: $([math]::Round($backupSize / 1KB, 2)) KB" -ForegroundColor Green
+        Write-Log "   ✓ Backup file size: $([math]::Round($backupSize / 1KB, 2)) KB" "Green"
     } else {
-        Write-Host "   ⚠️  Warning: Backup file not found!" -ForegroundColor Yellow
+        Write-Log "   ⚠️  Warning: Backup file not found!" "Yellow"
     }
 } catch {
-    Write-Host "   ❌ Failed to create backup: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Log "   ❌ Failed to create backup: $($_.Exception.Message)" "Red"
 }
 
 # Generate Restore Script
-Write-Host "   📝 Generating restore script..." -ForegroundColor Gray
+Write-Log "   📝 Generating restore script..." "Gray"
 
 $restoreScript = @'
 #Requires -RunAsAdministrator
@@ -493,31 +493,31 @@ $restoreScript = @'
 # ============================================
 
 Write-Host ""
-Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
-Write-Host "║           RESTORING WINDOWS SETTINGS                      ║" -ForegroundColor Magenta
-Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
+Write-Log "╔═══════════════════════════════════════════════════════════╗" "Magenta"
+Write-Log "║           RESTORING WINDOWS SETTINGS                      ║" "Magenta"
+Write-Log "╚═══════════════════════════════════════════════════════════╝" "Magenta"
 Write-Host ""
 
 $backupFile = "BACKUP_PATH_PLACEHOLDER"
 
 if (-not (Test-Path $backupFile)) {
-    Write-Host "❌ ERROR: Backup file not found: $backupFile" -ForegroundColor Red
+    Write-Log "❌ ERROR: Backup file not found: $backupFile" "Red"
     Read-Host "Press Enter to exit"
     exit 1
 }
 
-Write-Host "📂 Loading backup from: $backupFile" -ForegroundColor Cyan
+Write-Log "📂 Loading backup from: $backupFile" "Cyan"
 $backup = Get-Content $backupFile | ConvertFrom-Json
 
-Write-Host "   ℹ️  Backup created: $($backup.Timestamp)" -ForegroundColor Gray
-Write-Host "   ℹ️  Computer: $($backup.ComputerName)" -ForegroundColor Gray
+Write-Log "   ℹ️  Backup created: $($backup.Timestamp)" "Gray"
+Write-Log "   ℹ️  Computer: $($backup.ComputerName)" "Gray"
 Write-Host ""
 
 $restored = 0
 $errors = 0
 
 # Restore Registry Settings
-Write-Host "📋 Restoring registry settings..." -ForegroundColor Yellow
+Write-Log "📋 Restoring registry settings..." "Yellow"
 foreach ($key in $backup.Registry.PSObject.Properties) {
     $fullPath = $key.Name
     $parts = $fullPath -split '\\\\'
@@ -529,27 +529,27 @@ foreach ($key in $backup.Registry.PSObject.Properties) {
             New-Item -Path $regPath -Force | Out-Null
         }
         Set-ItemProperty -Path $regPath -Name $valueName -Value $key.Value -ErrorAction Stop
-        Write-Host "   ✓ Restored: $fullPath" -ForegroundColor Green
+        Write-Log "   ✓ Restored: $fullPath" "Green"
         $restored++
     } catch {
-        Write-Host "   ❌ Failed: $fullPath" -ForegroundColor Red
+        Write-Log "   ❌ Failed: $fullPath" "Red"
         $errors++
     }
 }
 
 # Restore Services
 Write-Host ""
-Write-Host "⚙️  Restoring service states..." -ForegroundColor Yellow
+Write-Log "⚙️  Restoring service states..." "Yellow"
 foreach ($svc in $backup.Services.PSObject.Properties) {
     try {
         $service = Get-Service -Name $svc.Name -ErrorAction Stop
         $startType = $svc.Value.StartType
         
         Set-Service -Name $svc.Name -StartupType $startType -ErrorAction Stop
-        Write-Host "   ✓ Restored service: $($svc.Name) -> $startType" -ForegroundColor Green
+        Write-Log "   ✓ Restored service: $($svc.Name) -> $startType" "Green"
         $restored++
     } catch {
-        Write-Host "   ❌ Failed to restore service: $($svc.Name)" -ForegroundColor Red
+        Write-Log "   ❌ Failed to restore service: $($svc.Name)" "Red"
         $errors++
     }
 }
@@ -557,27 +557,27 @@ foreach ($svc in $backup.Services.PSObject.Properties) {
 # Restore Hibernation
 Write-Host ""
 if ($backup.SystemSettings.HibernationEnabled -eq $true) {
-    Write-Host "🔋 Re-enabling hibernation..." -ForegroundColor Yellow
+    Write-Log "🔋 Re-enabling hibernation..." "Yellow"
     try {
         powercfg -h on
-        Write-Host "   ✓ Hibernation enabled" -ForegroundColor Green
+        Write-Log "   ✓ Hibernation enabled" "Green"
         $restored++
     } catch {
-        Write-Host "   ❌ Could not enable hibernation" -ForegroundColor Red
+        Write-Log "   ❌ Could not enable hibernation" "Red"
         $errors++
     }
 }
 
 Write-Host ""
-Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
-Write-Host "║                 RESTORE COMPLETE!                         ║" -ForegroundColor Green
-Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+Write-Log "╔═══════════════════════════════════════════════════════════╗" "Green"
+Write-Log "║                 RESTORE COMPLETE!                         ║" "Green"
+Write-Log "╚═══════════════════════════════════════════════════════════╝" "Green"
 Write-Host ""
-Write-Host "📊 Summary:" -ForegroundColor Cyan
-Write-Host "   • Settings restored: $restored" -ForegroundColor White
-Write-Host "   • Errors: $errors" -ForegroundColor White
+Write-Log "📊 Summary:" "Cyan"
+Write-Log "   • Settings restored: $restored" "White"
+Write-Log "   • Errors: $errors" "White"
 Write-Host ""
-Write-Host "✅ Your settings have been restored to their previous state!" -ForegroundColor Green
+Write-Log "✅ Your settings have been restored to their previous state!" "Green"
 Write-Host ""
 Read-Host "Press Enter to exit"
 '@
@@ -591,28 +591,28 @@ try {
     
     # Verify restore script was created
     if (Test-Path $restoreScriptPath) {
-        Write-Host "   ✓ Restore script created: $restoreScriptPath" -ForegroundColor Green
+        Write-Log "   ✓ Restore script created: $restoreScriptPath" "Green"
         $restoreSize = (Get-Item $restoreScriptPath).Length
-        Write-Host "   ✓ Restore script size: $([math]::Round($restoreSize / 1KB, 2)) KB" -ForegroundColor Green
+        Write-Log "   ✓ Restore script size: $([math]::Round($restoreSize / 1KB, 2)) KB" "Green"
     } else {
-        Write-Host "   ⚠️  Warning: Restore script not found!" -ForegroundColor Yellow
+        Write-Log "   ⚠️  Warning: Restore script not found!" "Yellow"
     }
 } catch {
-    Write-Host "   ❌ Failed to create restore script: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Log "   ❌ Failed to create restore script: $($_.Exception.Message)" "Red"
 }
 
 Write-Host ""
-Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
-Write-Host "║  ✅ BACKUP COMPLETE - Safe to proceed with optimization   ║" -ForegroundColor Green
-Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+Write-Log "╔═══════════════════════════════════════════════════════════╗" "Green"
+Write-Log "║  ✅ BACKUP COMPLETE - Safe to proceed with optimization   ║" "Green"
+Write-Log "╚═══════════════════════════════════════════════════════════╝" "Green"
 Write-Host ""
-Write-Host "📁 Files saved to your Desktop:" -ForegroundColor Cyan
-Write-Host "   • Backup: Windows_Optimization_Backup_$backupTimestamp.json" -ForegroundColor White
-Write-Host "   • Restore: RESTORE_Windows_Settings_$backupTimestamp.ps1" -ForegroundColor White
+Write-Log "📁 Files saved to your Desktop:" "Cyan"
+Write-Log "   • Backup: Windows_Optimization_Backup_$backupTimestamp.json" "White"
+Write-Log "   • Restore: RESTORE_Windows_Settings_$backupTimestamp.ps1" "White"
 Write-Host ""
-Write-Host "💡 To undo changes later, right-click the RESTORE script → 'Run with PowerShell'" -ForegroundColor Yellow
+Write-Log "💡 To undo changes later, right-click the RESTORE script → 'Run with PowerShell'" "Yellow"
 Write-Host ""
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Gray
+Write-Log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" "Gray"
 Write-Host ""
 
 `;
@@ -699,13 +699,13 @@ function Clean-Directory {
 
     if (temp.recycle) {
         section += `
-Write-Host "🗑️  Emptying Recycle Bin..." -ForegroundColor Cyan
+Write-Log "🗑️  Emptying Recycle Bin..." "Cyan"
 try {
     Clear-RecycleBin -Force ${whatIf} -ErrorAction Stop
-    Write-Host "   ✓ Recycle Bin emptied" -ForegroundColor Green
+    Write-Log "   ✓ Recycle Bin emptied" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Host "   ⚠️  Could not empty recycle bin: $($_.Exception.Message)" -ForegroundColor Yellow
+    Write-Log "   ⚠️  Could not empty recycle bin: $($_.Exception.Message)" "Yellow"
 }
 `;
     }
@@ -716,22 +716,22 @@ try {
 
 function generatePrivacySection(privacy, whatIf) {
     let section = `
-Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
-Write-Host "║                  PRIVACY SETTINGS                         ║" -ForegroundColor Magenta
-Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
-Write-Host ""
+Write-Log "╔═══════════════════════════════════════════════════════════╗" "Magenta"
+Write-Log "║                  PRIVACY SETTINGS                         ║" "Magenta"
+Write-Log "╚═══════════════════════════════════════════════════════════╝" "Magenta"
+Write-Log ""
 
 `;
 
     if (privacy.telemetry) {
         section += `
-Write-Host "🔒 Minimizing Telemetry..." -ForegroundColor Cyan
+Write-Log "🔒 Minimizing Telemetry..." "Cyan"
 try {
     Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" -Name "AllowTelemetry" -Value 0 ${whatIf} -ErrorAction Stop
-    Write-Host "   ✓ Telemetry set to minimum" -ForegroundColor Green
+    Write-Log "   ✓ Telemetry set to minimum" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Host "   ⚠️  Could not modify telemetry settings" -ForegroundColor Yellow
+    Write-Log "   ⚠️  Could not modify telemetry settings" "Yellow"
     $script:errorCount++
 }
 `;
@@ -739,16 +739,16 @@ try {
 
     if (privacy.ads) {
         section += `
-Write-Host "🔒 Disabling Advertising ID..." -ForegroundColor Cyan
+Write-Log "🔒 Disabling Advertising ID..." "Cyan"
 try {
     if (-not (Test-Path "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo")) {
         New-Item -Path "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo" -Force ${whatIf} | Out-Null
     }
     Set-ItemProperty -Path "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo" -Name "Enabled" -Value 0 ${whatIf} -ErrorAction Stop
-    Write-Host "   ✓ Advertising ID disabled" -ForegroundColor Green
+    Write-Log "   ✓ Advertising ID disabled" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Host "   ⚠️  Could not disable advertising ID" -ForegroundColor Yellow
+    Write-Log "   ⚠️  Could not disable advertising ID" "Yellow"
     $script:errorCount++
 }
 `;
@@ -756,16 +756,16 @@ try {
 
     if (privacy.cortana) {
         section += `
-Write-Host "🔒 Disabling Cortana..." -ForegroundColor Cyan
+Write-Log "🔒 Disabling Cortana..." "Cyan"
 try {
     if (-not (Test-Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search")) {
         New-Item -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search" -Force ${whatIf} | Out-Null
     }
     Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search" -Name "AllowCortana" -Value 0 ${whatIf} -ErrorAction Stop
-    Write-Host "   ✓ Cortana disabled" -ForegroundColor Green
+    Write-Log "   ✓ Cortana disabled" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Host "   ⚠️  Could not disable Cortana" -ForegroundColor Yellow
+    Write-Log "   ⚠️  Could not disable Cortana" "Yellow"
     $script:errorCount++
 }
 `;
@@ -773,13 +773,13 @@ try {
 
     if (privacy.location) {
         section += `
-Write-Host "🔒 Disabling Location Tracking..." -ForegroundColor Cyan
+Write-Log "🔒 Disabling Location Tracking..." "Cyan"
 try {
     Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\location" -Name "Value" -Value "Deny" ${whatIf} -ErrorAction Stop
-    Write-Host "   ✓ Location tracking disabled" -ForegroundColor Green
+    Write-Log "   ✓ Location tracking disabled" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Host "   ⚠️  Could not disable location tracking" -ForegroundColor Yellow
+    Write-Log "   ⚠️  Could not disable location tracking" "Yellow"
     $script:errorCount++
 }
 `;
@@ -791,22 +791,22 @@ try {
 
 function generatePerformanceSection(perf, whatIf) {
     let section = `
-Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Blue
-Write-Host "║                 PERFORMANCE TUNING                        ║" -ForegroundColor Blue
-Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Blue
+Write-Log "╔═══════════════════════════════════════════════════════════╗" "Blue"
+Write-Log "║                 PERFORMANCE TUNING                        ║" "Blue"
+Write-Log "╚═══════════════════════════════════════════════════════════╝" "Blue"
 Write-Host ""
 
 `;
 
     if (perf.visual) {
         section += `
-Write-Host "🎯 Optimizing Visual Effects..." -ForegroundColor Cyan
+Write-Log "🎯 Optimizing Visual Effects..." "Cyan"
 try {
     Set-ItemProperty -Path "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects" -Name "VisualFXSetting" -Value 2 ${whatIf} -ErrorAction Stop
-    Write-Host "   ✓ Visual effects set to best performance" -ForegroundColor Green
+    Write-Log "   ✓ Visual effects set to best performance" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Host "   ⚠️  Could not modify visual effects" -ForegroundColor Yellow
+    Write-Log "   ⚠️  Could not modify visual effects" "Yellow"
     $script:errorCount++
 }
 `;
@@ -814,16 +814,16 @@ try {
 
     if (perf.gamemode) {
         section += `
-Write-Host "🎯 Enabling Game Mode..." -ForegroundColor Cyan
+Write-Log "🎯 Enabling Game Mode..." "Cyan"
 try {
     if (-not (Test-Path "HKCU:\\Software\\Microsoft\\GameBar")) {
         New-Item -Path "HKCU:\\Software\\Microsoft\\GameBar" -Force ${whatIf} | Out-Null
     }
     Set-ItemProperty -Path "HKCU:\\Software\\Microsoft\\GameBar" -Name "AutoGameModeEnabled" -Value 1 ${whatIf} -ErrorAction Stop
-    Write-Host "   ✓ Game Mode enabled" -ForegroundColor Green
+    Write-Log "   ✓ Game Mode enabled" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Host "   ⚠️  Could not enable Game Mode" -ForegroundColor Yellow
+    Write-Log "   ⚠️  Could not enable Game Mode" "Yellow"
     $script:errorCount++
 }
 `;
@@ -831,14 +831,14 @@ try {
 
     if (perf.superfetch) {
         section += `
-Write-Host "🎯 Disabling Superfetch (for SSD)..." -ForegroundColor Cyan
+Write-Log "🎯 Disabling Superfetch (for SSD)..." "Cyan"
 try {
     Set-Service -Name "SysMain" -StartupType Disabled ${whatIf} -ErrorAction Stop
     Stop-Service -Name "SysMain" -Force ${whatIf} -ErrorAction SilentlyContinue
-    Write-Host "   ✓ Superfetch disabled" -ForegroundColor Green
+    Write-Log "   ✓ Superfetch disabled" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Host "   ⚠️  Could not disable Superfetch" -ForegroundColor Yellow
+    Write-Log "   ⚠️  Could not disable Superfetch" "Yellow"
     $script:errorCount++
 }
 `;
@@ -846,13 +846,13 @@ try {
 
     if (perf.hibernation) {
         section += `
-Write-Host "🎯 Disabling Hibernation..." -ForegroundColor Cyan
+Write-Log "🎯 Disabling Hibernation..." "Cyan"
 try {
     powercfg -h off
-    Write-Host "   ✓ Hibernation disabled (hiberfil.sys deleted)" -ForegroundColor Green
+    Write-Log "   ✓ Hibernation disabled (hiberfil.sys deleted)" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Host "   ⚠️  Could not disable hibernation" -ForegroundColor Yellow
+    Write-Log "   ⚠️  Could not disable hibernation" "Yellow"
     $script:errorCount++
 }
 `;
@@ -864,23 +864,23 @@ try {
 
 function generateServicesSection(services, whatIf) {
     let section = `
-Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor DarkYellow
-Write-Host "║                  WINDOWS SERVICES                         ║" -ForegroundColor DarkYellow
-Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor DarkYellow
+Write-Log "╔═══════════════════════════════════════════════════════════╗" "DarkYellow"
+Write-Log "║                  WINDOWS SERVICES                         ║" "DarkYellow"
+Write-Log "╚═══════════════════════════════════════════════════════════╝" "DarkYellow"
 Write-Host ""
 
 `;
 
     if (services.diagtrack) {
         section += `
-Write-Host "⚙️  Disabling Diagnostics Tracking Service..." -ForegroundColor Cyan
+Write-Log "⚙️  Disabling Diagnostics Tracking Service..." "Cyan"
 try {
     Set-Service -Name "DiagTrack" -StartupType Disabled ${whatIf} -ErrorAction Stop
     Stop-Service -Name "DiagTrack" -Force ${whatIf} -ErrorAction SilentlyContinue
-    Write-Host "   ✓ DiagTrack service disabled" -ForegroundColor Green
+    Write-Log "   ✓ DiagTrack service disabled" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Host "   ⚠️  Could not modify DiagTrack service" -ForegroundColor Yellow
+    Write-Log "   ⚠️  Could not modify DiagTrack service" "Yellow"
     $script:errorCount++
 }
 `;
@@ -888,13 +888,13 @@ try {
 
     if (services.sysmain) {
         section += `
-Write-Host "⚙️  Setting Superfetch to Manual..." -ForegroundColor Cyan
+Write-Log "⚙️  Setting Superfetch to Manual..." "Cyan"
 try {
     Set-Service -Name "SysMain" -StartupType Manual ${whatIf} -ErrorAction Stop
-    Write-Host "   ✓ SysMain (Superfetch) set to Manual" -ForegroundColor Green
+    Write-Log "   ✓ SysMain (Superfetch) set to Manual" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Host "   ⚠️  Could not modify SysMain service" -ForegroundColor Yellow
+    Write-Log "   ⚠️  Could not modify SysMain service" "Yellow"
     $script:errorCount++
 }
 `;
@@ -902,13 +902,13 @@ try {
 
     if (services.wsearch) {
         section += `
-Write-Host "⚙️  Setting Windows Search to Manual..." -ForegroundColor Cyan
+Write-Log "⚙️  Setting Windows Search to Manual..." "Cyan"
 try {
     Set-Service -Name "WSearch" -StartupType Manual ${whatIf} -ErrorAction Stop
-    Write-Host "   ✓ Windows Search set to Manual (saves CPU/disk)" -ForegroundColor Green
+    Write-Log "   ✓ Windows Search set to Manual (saves CPU/disk)" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Host "   ⚠️  Could not modify Windows Search service" -ForegroundColor Yellow
+    Write-Log "   ⚠️  Could not modify Windows Search service" "Yellow"
     $script:errorCount++
 }
 `;
@@ -920,23 +920,23 @@ try {
 
 function generateDiskCleanupSection(disk, whatIf) {
     let section = `
-Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor DarkCyan
-Write-Host "║                  DISK MAINTENANCE                         ║" -ForegroundColor DarkCyan
-Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor DarkCyan
+Write-Log "╔═══════════════════════════════════════════════════════════╗" "DarkCyan"
+Write-Log "║                  DISK MAINTENANCE                         ║" "DarkCyan"
+Write-Log "╚═══════════════════════════════════════════════════════════╝" "DarkCyan"
 Write-Host ""
 
 `;
 
     if (disk.winsxs) {
         section += `
-Write-Host "💾 Cleaning Component Store (WinSxS)..." -ForegroundColor Cyan
-Write-Host "   ⏱️  This may take 5-10 minutes..." -ForegroundColor Gray
+Write-Log "💾 Cleaning Component Store (WinSxS)..." "Cyan"
+Write-Log "   ⏱️  This may take 5-10 minutes..." "Gray"
 try {
     $result = Dism.exe /Online /Cleanup-Image /StartComponentCleanup /ResetBase
-    Write-Host "   ✓ Component Store cleaned" -ForegroundColor Green
+    Write-Log "   ✓ Component Store cleaned" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Host "   ⚠️  Could not clean component store" -ForegroundColor Yellow
+    Write-Log "   ⚠️  Could not clean component store" "Yellow"
     $script:errorCount++
 }
 `;
@@ -944,18 +944,18 @@ try {
 
     if (disk.updates) {
         section += `
-Write-Host "💾 Removing Old Windows Updates..." -ForegroundColor Cyan
+Write-Log "💾 Removing Old Windows Updates..." "Cyan"
 try {
     $updatePath = "C:\\Windows\\SoftwareDistribution\\Download"
     if (Test-Path $updatePath) {
         $sizeBefore = (Get-ChildItem $updatePath -Recurse | Measure-Object -Property Length -Sum).Sum
         Remove-Item "$updatePath\\*" -Recurse -Force ${whatIf} -ErrorAction Stop
         $script:totalCleaned += $sizeBefore
-        Write-Host "   ✓ Old updates removed ($([math]::Round($sizeBefore / 1MB, 2)) MB)" -ForegroundColor Green
+        Write-Log "   ✓ Old updates removed ($([math]::Round($sizeBefore / 1MB, 2)) MB)" "Green"
         $script:itemsCleaned++
     }
 } catch {
-    Write-Host "   ⚠️  Could not remove old updates" -ForegroundColor Yellow
+    Write-Log "   ⚠️  Could not remove old updates" "Yellow"
     $script:errorCount++
 }
 `;
@@ -963,7 +963,7 @@ try {
 
     if (disk.logs) {
         section += `
-Write-Host "💾 Clearing Old System Logs..." -ForegroundColor Cyan
+Write-Log "💾 Clearing Old System Logs..." "Cyan"
 try {
     Get-EventLog -LogName * | ForEach-Object {
         try {
@@ -972,10 +972,10 @@ try {
             # Some logs can't be cleared - skip them
         }
     }
-    Write-Host "   ✓ System logs cleared" -ForegroundColor Green
+    Write-Log "   ✓ System logs cleared" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Host "   ⚠️  Could not clear all logs" -ForegroundColor Yellow
+    Write-Log "   ⚠️  Could not clear all logs" "Yellow"
     $script:errorCount++
 }
 `;
@@ -987,12 +987,12 @@ try {
 
 function generateStartupSection(startup) {
     let section = `
-Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
-Write-Host "║                  STARTUP ANALYSIS                         ║" -ForegroundColor Green
-Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+Write-Log "╔═══════════════════════════════════════════════════════════╗" "Green"
+Write-Log "║                  STARTUP ANALYSIS                         ║" "Green"
+Write-Log "╚═══════════════════════════════════════════════════════════╝" "Green"
 Write-Host ""
 
-Write-Host "⚡ Scanning startup items..." -ForegroundColor Cyan
+Write-Log "⚡ Scanning startup items..." "Cyan"
 
 `;
 
@@ -1078,8 +1078,8 @@ $html += @"
 
 $html | Out-File -FilePath $reportPath -Encoding UTF8
 
-Write-Host "   ✓ Report created: $reportPath" -ForegroundColor Green
-Write-Host "   📄 Opening report in browser..." -ForegroundColor Cyan
+Write-Log "   ✓ Report created: $reportPath" "Green"
+Write-Log "   📄 Opening report in browser..." "Cyan"
 Start-Process $reportPath
 
 $script:itemsCleaned++
@@ -1107,30 +1107,30 @@ function buildScheduledTaskScript(selected) {
 # ============================================
 
 Write-Host ""
-Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║      WEEKLY MAINTENANCE TASK CREATOR                      ║" -ForegroundColor Cyan
-Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Log "╔═══════════════════════════════════════════════════════════╗" "Cyan"
+Write-Log "║      WEEKLY MAINTENANCE TASK CREATOR                      ║" "Cyan"
+Write-Log "╚═══════════════════════════════════════════════════════════╝" "Cyan"
 Write-Host ""
 
 # Create the optimization script file
 $scriptPath = "$env:ProgramData\\WindowsOptimization\\WeeklyMaintenance.ps1"
 $scriptDir = Split-Path $scriptPath -Parent
 
-Write-Host "📁 Creating script directory..." -ForegroundColor Cyan
+Write-Log "📁 Creating script directory..." "Cyan"
 if (-not (Test-Path $scriptDir)) {
     New-Item -Path $scriptDir -ItemType Directory -Force | Out-Null
 }
 
-Write-Host "💾 Saving optimization script..." -ForegroundColor Cyan
+Write-Log "💾 Saving optimization script..." "Cyan"
 @'
 ${scriptContent}
 '@ | Out-File -FilePath $scriptPath -Encoding UTF8 -Force
 
-Write-Host "   ✓ Script saved to: $scriptPath" -ForegroundColor Green
+Write-Log "   ✓ Script saved to: $scriptPath" "Green"
 Write-Host ""
 
 # Create scheduled task
-Write-Host "⏰ Creating scheduled task..." -ForegroundColor Cyan
+Write-Log "⏰ Creating scheduled task..." "Cyan"
 
 $taskName = "Windows Weekly Optimization"
 $taskDescription = "Automatically runs selected Windows optimizations every Sunday at 2 AM"
@@ -1139,7 +1139,7 @@ $taskDescription = "Automatically runs selected Windows optimizations every Sund
 $existingTask = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
 if ($existingTask) {
     Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
-    Write-Host "   ℹ️  Removed existing task" -ForegroundColor Gray
+    Write-Log "   ℹ️  Removed existing task" "Gray"
 }
 
 # Create new task
@@ -1150,43 +1150,43 @@ $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoi
 
 try {
     Register-ScheduledTask -TaskName $taskName -Description $taskDescription -Action $action -Trigger $trigger -Principal $principal -Settings $settings -ErrorAction Stop | Out-Null
-    Write-Host "   ✓ Task created successfully!" -ForegroundColor Green
+    Write-Log "   ✓ Task created successfully!" "Green"
     
     # Verify task was created
     $verifyTask = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
     if ($verifyTask) {
-        Write-Host "   ✓ Task verified in Task Scheduler" -ForegroundColor Green
-        Write-Host "   ✓ Next run: $(($verifyTask | Get-ScheduledTaskInfo).NextRunTime)" -ForegroundColor Green
+        Write-Log "   ✓ Task verified in Task Scheduler" "Green"
+        Write-Log "   ✓ Next run: $(($verifyTask | Get-ScheduledTaskInfo).NextRunTime)" "Green"
     }
 } catch {
-    Write-Host "   ❌ Failed to create task: $($_.Exception.Message)" -ForegroundColor Red
-    Write-Host "   ℹ️  You may need to run this script as Administrator" -ForegroundColor Yellow
+    Write-Log "   ❌ Failed to create task: $($_.Exception.Message)" "Red"
+    Write-Log "   ℹ️  You may need to run this script as Administrator" "Yellow"
 }
 
 Write-Host ""
-Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
-Write-Host "║                    SETUP COMPLETE!                        ║" -ForegroundColor Green
-Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+Write-Log "╔═══════════════════════════════════════════════════════════╗" "Green"
+Write-Log "║                    SETUP COMPLETE!                        ║" "Green"
+Write-Log "╚═══════════════════════════════════════════════════════════╝" "Green"
 Write-Host ""
-Write-Host "📋 SCHEDULED TASK DETAILS:" -ForegroundColor Cyan
+Write-Log "📋 SCHEDULED TASK DETAILS:" "Cyan"
 Write-Host ""
-Write-Host "   ✅ Task Name: Windows Weekly Optimization" -ForegroundColor White
-Write-Host "   📅 Schedule: Every Sunday at 2:00 AM" -ForegroundColor White
-Write-Host "   📁 Script: $scriptPath" -ForegroundColor White
+Write-Log "   ✅ Task Name: Windows Weekly Optimization" "White"
+Write-Log "   📅 Schedule: Every Sunday at 2:00 AM" "White"
+Write-Log "   📁 Script: $scriptPath" "White"
 Write-Host ""
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Gray
+Write-Log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" "Gray"
 Write-Host ""
-Write-Host "💡 TO MANAGE THIS TASK:" -ForegroundColor Yellow
+Write-Log "💡 TO MANAGE THIS TASK:" "Yellow"
 Write-Host ""
-Write-Host "   1. Press Win+R" -ForegroundColor Gray
-Write-Host "   2. Type: taskschd.msc" -ForegroundColor Gray
-Write-Host "   3. Press Enter" -ForegroundColor Gray
-Write-Host "   4. Find 'Windows Weekly Optimization' in the list" -ForegroundColor Gray
-Write-Host "   5. Right-click to Run, Edit, Disable, or Delete" -ForegroundColor Gray
+Write-Log "   1. Press Win+R" "Gray"
+Write-Log "   2. Type: taskschd.msc" "Gray"
+Write-Log "   3. Press Enter" "Gray"
+Write-Log "   4. Find 'Windows Weekly Optimization' in the list" "Gray"
+Write-Log "   5. Right-click to Run, Edit, Disable, or Delete" "Gray"
 Write-Host ""
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Gray
+Write-Log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" "Gray"
 Write-Host ""
-Write-Host "This window will stay open so you can review the results." -ForegroundColor Yellow
+Write-Log "This window will stay open so you can review the results." "Yellow"
 Write-Host ""
 Read-Host "Press ENTER to close this window"
 `;
