@@ -332,16 +332,23 @@ Write-Host "╔═════════════════════�
 Write-Host "║                  ${mode} COMPLETE!                     ║" -ForegroundColor Green
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
 Write-Host ""
-Write-Host "📊 Summary:" -ForegroundColor Cyan
-Write-Host "   • Items processed: $itemsCleaned" -ForegroundColor White
-Write-Host "   • Space freed: $([math]::Round($totalCleaned / 1MB, 2)) MB" -ForegroundColor White
+Write-Host "📊 FINAL SUMMARY:" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "   ✅ Items processed: $itemsCleaned" -ForegroundColor Green
+Write-Host "   💾 Space freed: $([math]::Round($totalCleaned / 1MB, 2)) MB" -ForegroundColor Green
 if ($errorCount -gt 0) {
-    Write-Host "   • Errors (safe to ignore): $errorCount" -ForegroundColor Yellow
+    Write-Host "   ⚠️  Items skipped (files in use): $errorCount" -ForegroundColor Yellow
 }
 Write-Host ""
-Write-Host "✅ Your system has been optimized!" -ForegroundColor Green
+Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Gray
 Write-Host ""
-Read-Host "Press Enter to exit"
+Write-Host "✅ SUCCESS! Your system has been optimized!" -ForegroundColor Green
+Write-Host ""
+Write-Host "This window will stay open so you can review the results." -ForegroundColor Yellow
+Write-Host ""
+Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Gray
+Write-Host ""
+Read-Host "Press ENTER to close this window"
 `;
 
     return script;
@@ -431,8 +438,20 @@ try {
 }
 
 # Save backup to JSON
-$backup | ConvertTo-Json -Depth 10 | Out-File -FilePath $backupPath -Encoding UTF8
-Write-Host "   ✓ Backup saved to: $backupPath" -ForegroundColor Green
+try {
+    $backup | ConvertTo-Json -Depth 10 | Out-File -FilePath $backupPath -Encoding UTF8
+    Write-Host "   ✓ Backup saved to: $backupPath" -ForegroundColor Green
+    
+    # Verify backup was created
+    if (Test-Path $backupPath) {
+        $backupSize = (Get-Item $backupPath).Length
+        Write-Host "   ✓ Backup file size: $([math]::Round($backupSize / 1KB, 2)) KB" -ForegroundColor Green
+    } else {
+        Write-Host "   ⚠️  Warning: Backup file not found!" -ForegroundColor Yellow
+    }
+} catch {
+    Write-Host "   ❌ Failed to create backup: $($_.Exception.Message)" -ForegroundColor Red
+}
 
 # Generate Restore Script
 Write-Host "   📝 Generating restore script..." -ForegroundColor Gray
@@ -538,15 +557,33 @@ Read-Host "Press Enter to exit"
 $restoreScript = $restoreScript -replace 'TIMESTAMP_PLACEHOLDER', $backupTimestamp
 $restoreScript = $restoreScript -replace 'BACKUP_PATH_PLACEHOLDER', $backupPath
 
-$restoreScript | Out-File -FilePath $restoreScriptPath -Encoding UTF8
-Write-Host "   ✓ Restore script created: $restoreScriptPath" -ForegroundColor Green
+try {
+    $restoreScript | Out-File -FilePath $restoreScriptPath -Encoding UTF8
+    
+    # Verify restore script was created
+    if (Test-Path $restoreScriptPath) {
+        Write-Host "   ✓ Restore script created: $restoreScriptPath" -ForegroundColor Green
+        $restoreSize = (Get-Item $restoreScriptPath).Length
+        Write-Host "   ✓ Restore script size: $([math]::Round($restoreSize / 1KB, 2)) KB" -ForegroundColor Green
+    } else {
+        Write-Host "   ⚠️  Warning: Restore script not found!" -ForegroundColor Yellow
+    }
+} catch {
+    Write-Host "   ❌ Failed to create restore script: $($_.Exception.Message)" -ForegroundColor Red
+}
+
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
 Write-Host "║  ✅ BACKUP COMPLETE - Safe to proceed with optimization   ║" -ForegroundColor Green
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
 Write-Host ""
-Write-Host "💡 To restore your settings later, just run:" -ForegroundColor Cyan
-Write-Host "   $restoreScriptPath" -ForegroundColor White
+Write-Host "📁 Files saved to your Desktop:" -ForegroundColor Cyan
+Write-Host "   • Backup: Windows_Optimization_Backup_$backupTimestamp.json" -ForegroundColor White
+Write-Host "   • Restore: RESTORE_Windows_Settings_$backupTimestamp.ps1" -ForegroundColor White
+Write-Host ""
+Write-Host "💡 To undo changes later, right-click the RESTORE script → 'Run with PowerShell'" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Gray
 Write-Host ""
 
 `;
@@ -567,35 +604,46 @@ function Clean-Directory {
     param([string]$Path, [string]$Description)
     
     if (-not (Test-Path $Path)) {
-        Write-Host "⚠️  $Description - Path not found: $Path" -ForegroundColor Yellow
+        Write-Host "   ⏭️  Skipping $Description - Path not found" -ForegroundColor Gray
         return
     }
     
-    Write-Host "🗑️  Cleaning $Description..." -ForegroundColor Cyan
+    Write-Host "   🔍 Scanning $Description..." -ForegroundColor Cyan
     $sizeBefore = 0
     $filesRemoved = 0
+    $filesSkipped = 0
     
     try {
         $items = Get-ChildItem -Path $Path -Recurse -Force -ErrorAction SilentlyContinue
+        $itemCount = ($items | Measure-Object).Count
         $sizeBefore = ($items | Measure-Object -Property Length -Sum -ErrorAction SilentlyContinue).Sum
+        
+        Write-Host "   📊 Found $itemCount items ($([math]::Round($sizeBefore / 1MB, 2)) MB)" -ForegroundColor Gray
         
         foreach ($item in $items) {
             try {
                 Remove-Item $item.FullName -Force -Recurse ${whatIf} -ErrorAction Stop
                 $filesRemoved++
             } catch {
-                # Skip files in use - this is expected
+                $filesSkipped++
             }
         }
         
         $script:totalCleaned += $sizeBefore
         $script:itemsCleaned += $filesRemoved
-        Write-Host "   ✓ Removed $filesRemoved items ($([math]::Round($sizeBefore / 1MB, 2)) MB)" -ForegroundColor Green
+        
+        if ($filesRemoved -gt 0) {
+            Write-Host "   ✅ Cleaned: $filesRemoved items ($([math]::Round($sizeBefore / 1MB, 2)) MB)" -ForegroundColor Green
+        }
+        if ($filesSkipped -gt 0) {
+            Write-Host "   ⏭️  Skipped: $filesSkipped items (in use)" -ForegroundColor Yellow
+        }
         
     } catch {
         Write-Host "   ⚠️  Some files were in use (this is normal)" -ForegroundColor Yellow
         $script:errorCount++
     }
+    Write-Host ""
 }
 
 `;
@@ -1071,25 +1119,47 @@ $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At 2am
 $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -RunLevel Highest
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable
 
-Register-ScheduledTask -TaskName $taskName -Description $taskDescription -Action $action -Trigger $trigger -Principal $principal -Settings $settings | Out-Null
+try {
+    Register-ScheduledTask -TaskName $taskName -Description $taskDescription -Action $action -Trigger $trigger -Principal $principal -Settings $settings -ErrorAction Stop | Out-Null
+    Write-Host "   ✓ Task created successfully!" -ForegroundColor Green
+    
+    # Verify task was created
+    $verifyTask = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
+    if ($verifyTask) {
+        Write-Host "   ✓ Task verified in Task Scheduler" -ForegroundColor Green
+        Write-Host "   ✓ Next run: $(($verifyTask | Get-ScheduledTaskInfo).NextRunTime)" -ForegroundColor Green
+    }
+} catch {
+    Write-Host "   ❌ Failed to create task: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "   ℹ️  You may need to run this script as Administrator" -ForegroundColor Yellow
+}
 
-Write-Host "   ✓ Task created successfully!" -ForegroundColor Green
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
 Write-Host "║                    SETUP COMPLETE!                        ║" -ForegroundColor Green
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
 Write-Host ""
-Write-Host "📋 Task Details:" -ForegroundColor Cyan
-Write-Host "   • Name: $taskName" -ForegroundColor White
-Write-Host "   • Schedule: Every Sunday at 2:00 AM" -ForegroundColor White
-Write-Host "   • Script location: $scriptPath" -ForegroundColor White
+Write-Host "📋 SCHEDULED TASK DETAILS:" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "💡 To manage this task:" -ForegroundColor Yellow
-Write-Host "   1. Open Task Scheduler (taskschd.msc)" -ForegroundColor Gray
-Write-Host "   2. Find '$taskName'" -ForegroundColor Gray
-Write-Host "   3. You can run, disable, or delete it from there" -ForegroundColor Gray
+Write-Host "   ✅ Task Name: Windows Weekly Optimization" -ForegroundColor White
+Write-Host "   📅 Schedule: Every Sunday at 2:00 AM" -ForegroundColor White
+Write-Host "   📁 Script: $scriptPath" -ForegroundColor White
 Write-Host ""
-Read-Host "Press Enter to exit"
+Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Gray
+Write-Host ""
+Write-Host "💡 TO MANAGE THIS TASK:" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "   1. Press Win+R" -ForegroundColor Gray
+Write-Host "   2. Type: taskschd.msc" -ForegroundColor Gray
+Write-Host "   3. Press Enter" -ForegroundColor Gray
+Write-Host "   4. Find 'Windows Weekly Optimization' in the list" -ForegroundColor Gray
+Write-Host "   5. Right-click to Run, Edit, Disable, or Delete" -ForegroundColor Gray
+Write-Host ""
+Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Gray
+Write-Host ""
+Write-Host "This window will stay open so you can review the results." -ForegroundColor Yellow
+Write-Host ""
+Read-Host "Press ENTER to close this window"
 `;
 
     return taskScript;
