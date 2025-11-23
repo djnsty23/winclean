@@ -370,11 +370,11 @@ Write-Host "   ✓ Backup saved to: $backupPath" -ForegroundColor Green
 # Generate Restore Script
 Write-Host "   📝 Generating restore script..." -ForegroundColor Gray
 
-$restoreScript = @"
+$restoreScript = @'
 #Requires -RunAsAdministrator
 # ============================================
 # RESTORE Windows Settings
-# Backup created: $backupTimestamp
+# Backup created: TIMESTAMP_PLACEHOLDER
 # ============================================
 
 Write-Host ""
@@ -383,73 +383,73 @@ Write-Host "║           RESTORING WINDOWS SETTINGS                      ║" -
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
 Write-Host ""
 
-`$backupFile = "$backupPath"
+$backupFile = "BACKUP_PATH_PLACEHOLDER"
 
-if (-not (Test-Path `$backupFile)) {
-    Write-Host "❌ ERROR: Backup file not found: `$backupFile" -ForegroundColor Red
+if (-not (Test-Path $backupFile)) {
+    Write-Host "❌ ERROR: Backup file not found: $backupFile" -ForegroundColor Red
     Read-Host "Press Enter to exit"
     exit 1
 }
 
-Write-Host "📂 Loading backup from: `$backupFile" -ForegroundColor Cyan
-`$backup = Get-Content `$backupFile | ConvertFrom-Json
+Write-Host "📂 Loading backup from: $backupFile" -ForegroundColor Cyan
+$backup = Get-Content $backupFile | ConvertFrom-Json
 
-Write-Host "   ℹ️  Backup created: `$(`$backup.Timestamp)" -ForegroundColor Gray
-Write-Host "   ℹ️  Computer: `$(`$backup.ComputerName)" -ForegroundColor Gray
+Write-Host "   ℹ️  Backup created: $($backup.Timestamp)" -ForegroundColor Gray
+Write-Host "   ℹ️  Computer: $($backup.ComputerName)" -ForegroundColor Gray
 Write-Host ""
 
-`$restored = 0
-`$errors = 0
+$restored = 0
+$errors = 0
 
 # Restore Registry Settings
 Write-Host "📋 Restoring registry settings..." -ForegroundColor Yellow
-foreach (`$key in `$backup.Registry.PSObject.Properties) {
-    `$fullPath = `$key.Name
-    `$parts = `$fullPath -split '\\\\\\\\'
-    `$valueName = `$parts[-1]
-    `$regPath = `$parts[0..(`$parts.Length-2)] -join '\\\\'
+foreach ($key in $backup.Registry.PSObject.Properties) {
+    $fullPath = $key.Name
+    $parts = $fullPath -split '\\\\'
+    $valueName = $parts[-1]
+    $regPath = $parts[0..($parts.Length-2)] -join '\\'
     
     try {
-        if (-not (Test-Path `$regPath)) {
-            New-Item -Path `$regPath -Force | Out-Null
+        if (-not (Test-Path $regPath)) {
+            New-Item -Path $regPath -Force | Out-Null
         }
-        Set-ItemProperty -Path `$regPath -Name `$valueName -Value `$key.Value -ErrorAction Stop
-        Write-Host "   ✓ Restored: `$fullPath" -ForegroundColor Green
-        `$restored++
+        Set-ItemProperty -Path $regPath -Name $valueName -Value $key.Value -ErrorAction Stop
+        Write-Host "   ✓ Restored: $fullPath" -ForegroundColor Green
+        $restored++
     } catch {
-        Write-Host "   ❌ Failed: `$fullPath" -ForegroundColor Red
-        `$errors++
+        Write-Host "   ❌ Failed: $fullPath" -ForegroundColor Red
+        $errors++
     }
 }
 
 # Restore Services
 Write-Host ""
 Write-Host "⚙️  Restoring service states..." -ForegroundColor Yellow
-foreach (`$svc in `$backup.Services.PSObject.Properties) {
+foreach ($svc in $backup.Services.PSObject.Properties) {
     try {
-        `$service = Get-Service -Name `$svc.Name -ErrorAction Stop
-        `$startType = `$svc.Value.StartType
+        $service = Get-Service -Name $svc.Name -ErrorAction Stop
+        $startType = $svc.Value.StartType
         
-        Set-Service -Name `$svc.Name -StartupType `$startType -ErrorAction Stop
-        Write-Host "   ✓ Restored service: `$(`$svc.Name) -> `$startType" -ForegroundColor Green
-        `$restored++
+        Set-Service -Name $svc.Name -StartupType $startType -ErrorAction Stop
+        Write-Host "   ✓ Restored service: $($svc.Name) -> $startType" -ForegroundColor Green
+        $restored++
     } catch {
-        Write-Host "   ❌ Failed to restore service: `$(`$svc.Name)" -ForegroundColor Red
-        `$errors++
+        Write-Host "   ❌ Failed to restore service: $($svc.Name)" -ForegroundColor Red
+        $errors++
     }
 }
 
 # Restore Hibernation
 Write-Host ""
-if (`$backup.SystemSettings.HibernationEnabled -eq `$true) {
+if ($backup.SystemSettings.HibernationEnabled -eq $true) {
     Write-Host "🔋 Re-enabling hibernation..." -ForegroundColor Yellow
     try {
         powercfg -h on
         Write-Host "   ✓ Hibernation enabled" -ForegroundColor Green
-        `$restored++
+        $restored++
     } catch {
         Write-Host "   ❌ Could not enable hibernation" -ForegroundColor Red
-        `$errors++
+        $errors++
     }
 }
 
@@ -459,13 +459,17 @@ Write-Host "║                 RESTORE COMPLETE!                         ║" -
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
 Write-Host ""
 Write-Host "📊 Summary:" -ForegroundColor Cyan
-Write-Host "   • Settings restored: `$restored" -ForegroundColor White
-Write-Host "   • Errors: `$errors" -ForegroundColor White
+Write-Host "   • Settings restored: $restored" -ForegroundColor White
+Write-Host "   • Errors: $errors" -ForegroundColor White
 Write-Host ""
 Write-Host "✅ Your settings have been restored to their previous state!" -ForegroundColor Green
 Write-Host ""
 Read-Host "Press Enter to exit"
-"@
+'@
+
+# Replace placeholders
+$restoreScript = $restoreScript -replace 'TIMESTAMP_PLACEHOLDER', $backupTimestamp
+$restoreScript = $restoreScript -replace 'BACKUP_PATH_PLACEHOLDER', $backupPath
 
 $restoreScript | Out-File -FilePath $restoreScriptPath -Encoding UTF8
 Write-Host "   ✓ Restore script created: $restoreScriptPath" -ForegroundColor Green
