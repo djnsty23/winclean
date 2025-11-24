@@ -279,7 +279,7 @@ try {
 
 # CREATE LOG FILE FIRST (before anything can fail)
 # Save in same folder as script (not Desktop, which may be protected)
-$logFile = "$PSScriptRoot\\Windows_Optimization_Log_$(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss').txt"
+$logFile = "$PSScriptRoot\\Windows_Optimization_Log_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").txt"
 
 Write-Host ""
 Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
@@ -476,7 +476,7 @@ Write-Host ""
     
     # Try to save error to same folder as script
     try {
-        $errorFile = "$PSScriptRoot\\Windows_Optimization_ERROR_$(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss').txt"
+        $errorFile = "$PSScriptRoot\\Windows_Optimization_ERROR_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").txt"
         $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
         @"
 WINDOWS OPTIMIZATION SCRIPT ERROR LOG
@@ -580,7 +580,8 @@ foreach ($serviceName in $services) {
                 Status = $service.Status.ToString()
             }
         }
-    } catch {
+    }
+    catch {
         # Service doesn't exist, skip
     }
 }
@@ -1158,7 +1159,7 @@ foreach ($path in $regPaths) {
 }
 
 # Create HTML report in same folder as script
-$reportPath = "$PSScriptRoot\\Startup_Report_$(Get-Date -Format 'yyyy-MM-dd_HH-mm').html"
+$reportPath = "$PSScriptRoot\\Startup_Report_$(Get-Date -Format "yyyy-MM-dd_HH-mm").html"
 $reportTime = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 $html = @"
 <!DOCTYPE html>
