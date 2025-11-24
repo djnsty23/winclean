@@ -177,6 +177,34 @@
             transform: translateY(0);
         }
 
+        /* Quick Action Buttons */
+        .btn-quick-action {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.875rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s;
+        }
+
+        .btn-quick-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-quick-action.secondary {
+            background: linear-gradient(135deg, #868e96 0%, #495057 100%);
+            box-shadow: 0 4px 15px rgba(73, 80, 87, 0.3);
+        }
+
+        .btn-quick-action.secondary:hover {
+            box-shadow: 0 8px 25px rgba(73, 80, 87, 0.4);
+        }
+
         /* Instructions Section */
         .instructions {
             background: var(--card);
@@ -601,6 +629,19 @@
             </div>
         </div>
 
+        <!-- Quick Actions Bar -->
+        <div style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 2rem; flex-wrap: wrap;">
+            <button class="btn-quick-action" onclick="selectRecommended()">
+                ⭐ Apply Recommended Settings
+            </button>
+            <button class="btn-quick-action secondary" onclick="selectAll()">
+                ✅ Select All
+            </button>
+            <button class="btn-quick-action secondary" onclick="deselectAll()">
+                ❌ Clear All
+            </button>
+        </div>
+
         <!-- Main Generate Section -->
         <div class="generate-section">
             <div class="generate-section-content">
@@ -1021,6 +1062,60 @@
                 document.getElementById('startup-scan').checked = true;
             }
         });
+
+        // Quick action functions
+        function selectRecommended() {
+            deselectAll();
+            
+            // Temp Files
+            document.getElementById("temp-user").checked = true;
+            document.getElementById("temp-windows").checked = true;
+            document.getElementById("temp-prefetch").checked = true;
+            document.getElementById("temp-thumbnail").checked = true;
+            
+            // Privacy
+            document.getElementById("privacy-telemetry").checked = true;
+            document.getElementById("privacy-ads").checked = true;
+            document.getElementById("privacy-cortana").checked = true;
+            
+            // Performance
+            document.getElementById("perf-gamemode").checked = true;
+            document.getElementById("perf-hibernation").checked = true;
+            
+            // Disk
+            document.getElementById("disk-winsxs").checked = true;
+            document.getElementById("disk-updates").checked = true;
+            document.getElementById("disk-logs").checked = true;
+            document.getElementById("disk-system-repair").checked = true;
+            
+            // Browser
+            document.getElementById("browser-edge").checked = true;
+            document.getElementById("browser-chrome").checked = true;
+            document.getElementById("browser-brave").checked = true;
+            document.getElementById("browser-opera").checked = true;
+            
+            // Services
+            document.getElementById("service-diagtrack").checked = true;
+            document.getElementById("service-sysmain").checked = true;
+            document.getElementById("service-wsearch").checked = true;
+            
+            // Backup
+            document.getElementById("create-backup").checked = true;
+            
+            showNotification("Recommended settings applied!", "success");
+        }
+
+        function selectAll() {
+            const checkboxes = document.querySelectorAll("input[type=checkbox]");
+            checkboxes.forEach(cb => cb.checked = true);
+            showNotification("All options selected!", "success");
+        }
+
+        function deselectAll() {
+            const checkboxes = document.querySelectorAll("input[type=checkbox]");
+            checkboxes.forEach(cb => cb.checked = false);
+            showNotification("All options cleared!", "info");
+        }
     </script>
 </body>
 </html>
