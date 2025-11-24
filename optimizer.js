@@ -282,19 +282,19 @@ try {
 $logFile = "$PSScriptRoot\\Windows_Optimization_Log_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").txt"
 
 Write-Host ""
-Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "=============================================================" -ForegroundColor Cyan
 Write-Host "  Windows 11 Optimization Script - ${mode} Mode" -ForegroundColor Cyan
-Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "=============================================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Creating log file..." -ForegroundColor Cyan
 
 try {
-    "═══════════════════════════════════════════════════════════" | Out-File -FilePath $logFile -Encoding UTF8 -Force
+    "=============================================================" | Out-File -FilePath $logFile -Encoding UTF8 -Force
     "Windows 11 Optimization Script - ${mode} MODE" | Add-Content -Path $logFile
     $startTime = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
     "Started: $startTime" | Add-Content -Path $logFile
     "Log file: $logFile" | Add-Content -Path $logFile
-    "═══════════════════════════════════════════════════════════" | Add-Content -Path $logFile
+    "=============================================================" | Add-Content -Path $logFile
     "" | Add-Content -Path $logFile
     Write-Host "OK: Log file created at: $logFile" -ForegroundColor Green
     Write-Host ""
@@ -320,9 +320,9 @@ function Write-Log {
 }
 
 Write-Log ""
-Write-Log "╔═══════════════════════════════════════════════════════════╗" "Cyan"
-Write-Log "║           WINDOWS 11 ${mode} SCRIPT                    ║" "Cyan"
-Write-Log "╚═══════════════════════════════════════════════════════════╝" "Cyan"
+Write-Log "=============================================================" "Cyan"
+Write-Log "           WINDOWS 11 ${mode} SCRIPT                    " "Cyan"
+Write-Log "=============================================================" "Cyan"
 Write-Log ""
 
 # Check admin privileges
@@ -331,7 +331,7 @@ try {
     if (-not $isAdmin) {
         Write-Log "WARNING: WARNING: Not running as Administrator" "Yellow"
         Write-Log "   Some operations may fail without admin rights." "Yellow"
-        Write-Log "   To fix: Close this, right-click script → 'Run as Administrator'" "Gray"
+        Write-Log "   To fix: Close this, right-click script -> 'Run as Administrator'" "Gray"
         Write-Log ""
         Write-Log "Continuing in 5 seconds..." "Yellow"
         Start-Sleep -Seconds 5
@@ -405,13 +405,9 @@ $errorCount = 0
     // Summary
     script += `
 Write-Log ""
-Write-Log "╔═══════════════════════════════════════════════════════════╗" "Green"
-Write-Log "║                  ${mode} COMPLETE!                     ║" "Green"
-Write-Log "╚═══════════════════════════════════════════════════════════╝" "Green"
-Write-Log ""
-Write-Log "╔═══════════════════════════════════════════════════════════╗" "Green"
-Write-Log "║                  ${mode} COMPLETE!                     ║" "Green"
-Write-Log "╚═══════════════════════════════════════════════════════════╝" "Green"
+Write-Log "=============================================================" "Green"
+Write-Log "                  ${mode} COMPLETE!                     " "Green"
+Write-Log "=============================================================" "Green"
 Write-Log ""
 Write-Log "[STATS] FINAL SUMMARY:" "Cyan"
 Write-Log ""
@@ -421,13 +417,13 @@ if ($errorCount -gt 0) {
     Write-Log "   WARNING: Items skipped (files in use): $errorCount" "Yellow"
 }
 Write-Log ""
-Write-Log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" "Gray"
+Write-Log "-------------------------------------------------------------" "Gray"
 Write-Log ""
 Write-Log "SUCCESS: SUCCESS! Your system has been optimized!" "Green"
 Write-Log ""
 Write-Log "[FILE] Full log saved to: $logFile" "Cyan"
 Write-Log ""
-Write-Log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" "Gray"
+Write-Log "-------------------------------------------------------------" "Gray"
 Write-Log ""
 $completeTime = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 Write-Log "Script completed at $completeTime" "Gray"
@@ -448,17 +444,17 @@ try {
 }
 
 Write-Log ""
-Write-Log "═══════════════════════════════════════════════════════════" "Cyan"
+Write-Log "=============================================================" "Cyan"
 Write-Log "Script completed. Window will stay open." "Cyan"
-Write-Log "═══════════════════════════════════════════════════════════" "Cyan"
+Write-Log "=============================================================" "Cyan"
 Write-Host ""
 
 } catch {
     # CRITICAL ERROR HANDLER - Shows ALL errors before closing
     Write-Host ""
-    Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
-    Write-Host "║                   CRITICAL ERROR!                         ║" -ForegroundColor Red
-    Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+    Write-Host "=============================================================" -ForegroundColor Red
+    Write-Host "                   CRITICAL ERROR!                         " -ForegroundColor Red
+    Write-Host "=============================================================" -ForegroundColor Red
     Write-Host ""
     Write-Host "The script encountered a fatal error:" -ForegroundColor Yellow
     Write-Host ""
@@ -471,7 +467,7 @@ Write-Host ""
     Write-Host "FULL ERROR DETAILS:" -ForegroundColor Red
     Write-Host ($_ | Format-List * -Force | Out-String) -ForegroundColor Gray
     Write-Host ""
-    Write-Host "════════════════════════════════════════════════════════════" -ForegroundColor Red
+    Write-Host "=============================================================" -ForegroundColor Red
     Write-Host ""
     
     # Try to save error to same folder as script
@@ -519,9 +515,9 @@ function generateBackupSection(selected) {
 # BACKUP CURRENT STATE
 # ============================================
 
-Write-Log "╔═══════════════════════════════════════════════════════════╗" "Cyan"
-Write-Log "║                  BACKING UP CURRENT STATE                 ║" "Cyan"
-Write-Log "╚═══════════════════════════════════════════════════════════╝" "Cyan"
+Write-Log "=============================================================" "Cyan"
+Write-Log "                  BACKING UP CURRENT STATE                 " "Cyan"
+Write-Log "=============================================================" "Cyan"
 Write-Log ""
 
 $backupTimestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
@@ -551,20 +547,20 @@ $regPaths = @(
     @{Path="HKCU:\\Software\\Microsoft\\GameBar"; Name="AutoGameModeEnabled"}
 )
 
-    foreach ($reg in $regPaths) {
-        try {
-            if (Test-Path $reg.Path) {
-                $value = Get-ItemProperty -Path $reg.Path -Name $reg.Name -ErrorAction SilentlyContinue
-                if ($value) {
-                    $key = "$($reg.Path)\\$($reg.Name)"
-                    $backup.Registry[$key] = $value.$($reg.Name)
-                }
+foreach ($reg in $regPaths) {
+    try {
+        if (Test-Path $reg.Path) {
+            $value = Get-ItemProperty -Path $reg.Path -Name $reg.Name -ErrorAction SilentlyContinue
+            if ($value) {
+                $key = "$($reg.Path)\\$($reg.Name)"
+                $backup.Registry[$key] = $value.$($reg.Name)
             }
         }
-        catch {
-            # Path doesn't exist, skip
-        }
     }
+    catch {
+        # Path doesn't exist, skip
+    }
+}
 
 # Backup Service States
 Write-Log "   [SERVICE] Backing up service states..." "Gray"
@@ -628,9 +624,9 @@ function Write-Log {
 }
 
 Write-Log ""
-Write-Log "╔═══════════════════════════════════════════════════════════╗" "Magenta"
-Write-Log "║           RESTORING WINDOWS SETTINGS                      ║" "Magenta"
-Write-Log "╚═══════════════════════════════════════════════════════════╝" "Magenta"
+Write-Log "=============================================================" "Magenta"
+Write-Log "           RESTORING WINDOWS SETTINGS                      " "Magenta"
+Write-Log "=============================================================" "Magenta"
 Write-Log ""
 
 $backupFile = "BACKUP_PATH_PLACEHOLDER"
@@ -641,7 +637,7 @@ if (-not (Test-Path $backupFile)) {
     exit 1
 }
 
-Write-Log "📂 Loading backup from: $backupFile" "Cyan"
+Write-Log "Loading backup from: $backupFile" "Cyan"
 $backup = Get-Content $backupFile | ConvertFrom-Json
 
 Write-Log "   [INFO] Backup created: $($backup.Timestamp)" "Gray"
@@ -704,13 +700,13 @@ if ($backup.SystemSettings.HibernationEnabled -eq $true) {
 }
 
 Write-Log ""
-Write-Log "╔═══════════════════════════════════════════════════════════╗" "Green"
-Write-Log "║                 RESTORE COMPLETE!                         ║" "Green"
-Write-Log "╚═══════════════════════════════════════════════════════════╝" "Green"
+Write-Log "=============================================================" "Green"
+Write-Log "                 RESTORE COMPLETE!                         " "Green"
+Write-Log "=============================================================" "Green"
 Write-Log ""
 Write-Log "[STATS] Summary:" "Cyan"
-Write-Log "   • Settings restored: $restored" "White"
-Write-Log "   • Errors: $errors" "White"
+Write-Log "   - Settings restored: $restored" "White"
+Write-Log "   - Errors: $errors" "White"
 Write-Log ""
 Write-Log "SUCCESS: Your settings have been restored to their previous state!" "Green"
 Write-Log ""
@@ -737,18 +733,18 @@ try {
 }
 
 Write-Log ""
-Write-Log "╔═══════════════════════════════════════════════════════════╗" "Green"
-Write-Log "║  SUCCESS: BACKUP COMPLETE - Safe to proceed with optimization   ║" "Green"
-Write-Log "╚═══════════════════════════════════════════════════════════╝" "Green"
+Write-Log "=============================================================" "Green"
+Write-Log "  SUCCESS: BACKUP COMPLETE - Safe to proceed with optimization   " "Green"
+Write-Log "=============================================================" "Green"
 Write-Log ""
 Write-Log "[FILES] Files saved in script folder:" "Cyan"
-Write-Log "   • Backup: Windows_Optimization_Backup_$backupTimestamp.json" "White"
-Write-Log "   • Restore: RESTORE_Windows_Settings_$backupTimestamp.ps1" "White"
-Write-Log "   • Location: $PSScriptRoot" "Gray"
+Write-Log "   - Backup: Windows_Optimization_Backup_$backupTimestamp.json" "White"
+Write-Log "   - Restore: RESTORE_Windows_Settings_$backupTimestamp.ps1" "White"
+Write-Log "   - Location: $PSScriptRoot" "Gray"
 Write-Log ""
-Write-Log "[TIP] To undo changes later, right-click the RESTORE script → 'Run with PowerShell'" "Yellow"
+Write-Log "[TIP] To undo changes later, right-click the RESTORE script -> 'Run with PowerShell'" "Yellow"
 Write-Log ""
-Write-Log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" "Gray"
+Write-Log "-------------------------------------------------------------" "Gray"
 Write-Log ""
 
 `;
@@ -760,9 +756,9 @@ Write-Log ""
 
 function generateTempCleanupSection(temp, whatIf) {
     let section = `
-Write-Log "╔═══════════════════════════════════════════════════════════╗" "Yellow"
-Write-Log "║                  TEMP FILES CLEANUP                       ║" "Yellow"
-Write-Log "╚═══════════════════════════════════════════════════════════╝" "Yellow"
+Write-Log "=============================================================" "Yellow"
+Write-Log "                  TEMP FILES CLEANUP                       " "Yellow"
+Write-Log "=============================================================" "Yellow"
 Write-Log ""
 
 function Clean-Directory {
@@ -853,9 +849,9 @@ try {
 
 function generatePrivacySection(privacy, whatIf) {
     let section = `
-Write-Log "╔═══════════════════════════════════════════════════════════╗" "Magenta"
-Write-Log "║                  PRIVACY SETTINGS                         ║" "Magenta"
-Write-Log "╚═══════════════════════════════════════════════════════════╝" "Magenta"
+Write-Log "=============================================================" "Magenta"
+Write-Log "                  PRIVACY SETTINGS                         " "Magenta"
+Write-Log "=============================================================" "Magenta"
 Write-Log ""
 
 `;
@@ -928,9 +924,9 @@ try {
 
 function generatePerformanceSection(perf, whatIf) {
     let section = `
-Write-Log "╔═══════════════════════════════════════════════════════════╗" "Blue"
-Write-Log "║                 PERFORMANCE TUNING                        ║" "Blue"
-Write-Log "╚═══════════════════════════════════════════════════════════╝" "Blue"
+Write-Log "=============================================================" "Blue"
+Write-Log "                 PERFORMANCE TUNING                        " "Blue"
+Write-Log "=============================================================" "Blue"
 Write-Log ""
 
 `;
@@ -1001,9 +997,9 @@ try {
 
 function generateServicesSection(services, whatIf) {
     let section = `
-Write-Log "╔═══════════════════════════════════════════════════════════╗" "DarkYellow"
-Write-Log "║                  WINDOWS SERVICES                         ║" "DarkYellow"
-Write-Log "╚═══════════════════════════════════════════════════════════╝" "DarkYellow"
+Write-Log "=============================================================" "DarkYellow"
+Write-Log "                  WINDOWS SERVICES                         " "DarkYellow"
+Write-Log "=============================================================" "DarkYellow"
 Write-Log ""
 
 `;
@@ -1057,9 +1053,9 @@ try {
 
 function generateDiskCleanupSection(disk, whatIf) {
     let section = `
-Write-Log "╔═══════════════════════════════════════════════════════════╗" "DarkCyan"
-Write-Log "║                  DISK MAINTENANCE                         ║" "DarkCyan"
-Write-Log "╚═══════════════════════════════════════════════════════════╝" "DarkCyan"
+Write-Log "=============================================================" "DarkCyan"
+Write-Log "                  DISK MAINTENANCE                         " "DarkCyan"
+Write-Log "=============================================================" "DarkCyan"
 Write-Log ""
 
 `;
@@ -1067,7 +1063,7 @@ Write-Log ""
     if (disk.winsxs) {
         section += `
 Write-Log "[DISK] Cleaning Component Store (WinSxS)..." "Cyan"
-Write-Log "   ⏱️  This may take 5-10 minutes..." "Gray"
+Write-Log "   [INFO] This may take 5-10 minutes..." "Gray"
 try {
     $result = Dism.exe /Online /Cleanup-Image /StartComponentCleanup /ResetBase
     Write-Log "   OK: Component Store cleaned" "Green"
@@ -1125,9 +1121,9 @@ try {
 
 function generateStartupSection(startup) {
     let section = `
-Write-Log "╔═══════════════════════════════════════════════════════════╗" "Green"
-Write-Log "║                  STARTUP ANALYSIS                         ║" "Green"
-Write-Log "╚═══════════════════════════════════════════════════════════╝" "Green"
+Write-Log "=============================================================" "Green"
+Write-Log "                  STARTUP ANALYSIS                         " "Green"
+Write-Log "=============================================================" "Green"
 Write-Log ""
 
 Write-Log "[STARTUP] Scanning startup items..." "Cyan"
@@ -1262,9 +1258,9 @@ function Write-Log {
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $isAdmin) {
     Write-Log ""
-    Write-Log "╔═══════════════════════════════════════════════════════════╗" "Red"
-    Write-Log "║                    ADMIN REQUIRED!                        ║" "Red"
-    Write-Log "╚═══════════════════════════════════════════════════════════╝" "Red"
+    Write-Log "=============================================================" "Red"
+    Write-Log "                    ADMIN REQUIRED!                        " "Red"
+    Write-Log "=============================================================" "Red"
     Write-Log ""
     Write-Log "WARNING: This script MUST be run as Administrator to create scheduled tasks!" "Yellow"
     Write-Log ""
@@ -1279,9 +1275,9 @@ if (-not $isAdmin) {
 }
 
 Write-Log ""
-Write-Log "╔═══════════════════════════════════════════════════════════╗" "Cyan"
-Write-Log "║      WEEKLY MAINTENANCE TASK CREATOR                      ║" "Cyan"
-Write-Log "╚═══════════════════════════════════════════════════════════╝" "Cyan"
+Write-Log "=============================================================" "Cyan"
+Write-Log "      WEEKLY MAINTENANCE TASK CREATOR                      " "Cyan"
+Write-Log "=============================================================" "Cyan"
 Write-Log ""
 
 # Create the optimization script file
@@ -1302,7 +1298,7 @@ Write-Log "   OK: Script saved to: $scriptPath" "Green"
 Write-Log ""
 
 # Create scheduled task
-Write-Log "⏰ Creating scheduled task..." "Cyan"
+Write-Log "Creating scheduled task..." "Cyan"
 
 $taskName = "Windows Weekly Optimization"
 $taskDescription = "Automatically runs selected Windows optimizations every Sunday at 2 AM"
@@ -1336,17 +1332,17 @@ try {
 }
 
 Write-Log ""
-Write-Log "╔═══════════════════════════════════════════════════════════╗" "Green"
-Write-Log "║                    SETUP COMPLETE!                        ║" "Green"
-Write-Log "╚═══════════════════════════════════════════════════════════╝" "Green"
+Write-Log "=============================================================" "Green"
+Write-Log "                    SETUP COMPLETE!                        " "Green"
+Write-Log "=============================================================" "Green"
 Write-Log ""
 Write-Log "[BACKUP] SCHEDULED TASK DETAILS:" "Cyan"
 Write-Log ""
 Write-Log "   SUCCESS: Task Name: Windows Weekly Optimization" "White"
-Write-Log "   📅 Schedule: Every Sunday at 2:00 AM" "White"
+Write-Log "   Schedule: Every Sunday at 2:00 AM" "White"
 Write-Log "   [FILES] Script: $scriptPath" "White"
 Write-Log ""
-Write-Log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" "Gray"
+Write-Log "-------------------------------------------------------------" "Gray"
 Write-Log ""
 Write-Log "[TIP] TO MANAGE THIS TASK:" "Yellow"
 Write-Log ""
@@ -1356,7 +1352,7 @@ Write-Log "   3. Press Enter" "Gray"
 Write-Log "   4. Find 'Windows Weekly Optimization' in the list" "Gray"
 Write-Log "   5. Right-click to Run, Edit, Disable, or Delete" "Gray"
 Write-Log ""
-Write-Log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" "Gray"
+Write-Log "-------------------------------------------------------------" "Gray"
 Write-Log ""
 Write-Log "This window will stay open so you can review the results." "Yellow"
 Write-Log ""
