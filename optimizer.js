@@ -278,7 +278,8 @@ $Host.UI.RawUI.WindowTitle = "Windows Optimization Script - ${mode} Mode"
 try {
 
 # CREATE LOG FILE FIRST (before anything can fail)
-$logFile = "$env:USERPROFILE\\Desktop\\Windows_Optimization_Log_$(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss').txt"
+# Save in same folder as script (not Desktop, which may be protected)
+$logFile = "$PSScriptRoot\\Windows_Optimization_Log_$(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss').txt"
 
 Write-Host ""
 Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
@@ -470,9 +471,9 @@ Write-Host ""
     Write-Host "════════════════════════════════════════════════════════════" -ForegroundColor Red
     Write-Host ""
     
-    # Try to save error to desktop
+    # Try to save error to same folder as script
     try {
-        $errorFile = "$env:USERPROFILE\\Desktop\\Windows_Optimization_ERROR_$(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss').txt"
+        $errorFile = "$PSScriptRoot\\Windows_Optimization_ERROR_$(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss').txt"
         @"
 WINDOWS OPTIMIZATION SCRIPT ERROR LOG
 Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
@@ -520,8 +521,8 @@ Write-Log "╚══════════════════════
 Write-Log ""
 
 $backupTimestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
-$backupPath = "$env:USERPROFILE\\Desktop\\Windows_Optimization_Backup_$backupTimestamp.json"
-$restoreScriptPath = "$env:USERPROFILE\\Desktop\\RESTORE_Windows_Settings_$backupTimestamp.ps1"
+$backupPath = "$PSScriptRoot\\Windows_Optimization_Backup_$backupTimestamp.json"
+$restoreScriptPath = "$PSScriptRoot\\RESTORE_Windows_Settings_$backupTimestamp.ps1"
 
 Write-Log "💾 Creating backup of current settings..." "Cyan"
 
@@ -734,9 +735,10 @@ Write-Log "╔══════════════════════
 Write-Log "║  ✅ BACKUP COMPLETE - Safe to proceed with optimization   ║" "Green"
 Write-Log "╚═══════════════════════════════════════════════════════════╝" "Green"
 Write-Log ""
-Write-Log "📁 Files saved to your Desktop:" "Cyan"
+Write-Log "📁 Files saved in script folder:" "Cyan"
 Write-Log "   • Backup: Windows_Optimization_Backup_$backupTimestamp.json" "White"
 Write-Log "   • Restore: RESTORE_Windows_Settings_$backupTimestamp.ps1" "White"
+Write-Log "   • Location: $PSScriptRoot" "Gray"
 Write-Log ""
 Write-Log "💡 To undo changes later, right-click the RESTORE script → 'Run with PowerShell'" "Yellow"
 Write-Log ""
@@ -1148,8 +1150,8 @@ foreach ($path in $regPaths) {
     }
 }
 
-# Create HTML report
-$reportPath = "$env:USERPROFILE\\Desktop\\Startup_Report_$(Get-Date -Format 'yyyy-MM-dd_HH-mm').html"
+# Create HTML report in same folder as script
+$reportPath = "$PSScriptRoot\\Startup_Report_$(Get-Date -Format 'yyyy-MM-dd_HH-mm').html"
 $html = @"
 <!DOCTYPE html>
 <html>
