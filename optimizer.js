@@ -10,6 +10,8 @@ function closeModal() {
     document.body.style.overflow = 'auto';
 }
 
+'use strict';
+
 function showModal(title, content) {
     document.getElementById('modalTitle').textContent = title;
     document.getElementById('modalBody').innerHTML = content;
@@ -549,9 +551,9 @@ echo     Unregister-ScheduledTask -TaskName $taskName -Confirm:$false -ErrorActi
 echo. >> "%tempPS%"
 echo     # Build task action >> "%tempPS%"
 echo     if ($taskHidden -eq '1') { >> "%tempPS%"
-echo         $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-WindowStyle Hidden -ExecutionPolicy Bypass -File `"$scriptPath`"" -WorkingDirectory (Split-Path $scriptPath) >> "%tempPS%"
+echo         $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-WindowStyle Hidden -ExecutionPolicy Bypass -File \`"$scriptPath\`"" -WorkingDirectory (Split-Path $scriptPath) >> "%tempPS%"
 echo     } else { >> "%tempPS%"
-echo         $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-ExecutionPolicy Bypass -File `"$scriptPath`"" -WorkingDirectory (Split-Path $scriptPath) >> "%tempPS%"
+echo         $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-ExecutionPolicy Bypass -File \`"$scriptPath\`"" -WorkingDirectory (Split-Path $scriptPath) >> "%tempPS%"
 echo     } >> "%tempPS%"
 echo. >> "%tempPS%"
 echo     # Build trigger >> "%tempPS%"

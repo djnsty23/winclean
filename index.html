@@ -1035,10 +1035,13 @@
 
     <script src="optimizer.js"></script>
     <script>
+        'use strict';
+        
         // Toggle checkbox when clicking on option item
         function toggleCheckbox(id) {
             const checkbox = document.getElementById(id);
-            if (checkbox && event.target.type !== 'checkbox') {
+            const targetEvent = window.event || arguments[1];
+            if (checkbox && targetEvent && targetEvent.target.type !== 'checkbox') {
                 checkbox.checked = !checkbox.checked;
             }
         }
