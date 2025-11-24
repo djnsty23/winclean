@@ -1,16 +1,16 @@
 # Quick Start Guide
 
-## 🚀 3 Simple Steps
+## 3 Simple Steps
 
 ### Step 1: Generate Your Optimizer
 1. Open `index.html` in any web browser
 2. **Quick Actions** (new!):
-   - Click **"⭐ Apply Recommended Settings"** for instant safe optimization
-   - Or click **"✅ Select All"** or **"❌ Clear All"**
+   - Click **"Apply Recommended Settings"** for instant safe optimization
+   - Or click **"Select All"** or **"Clear All"**
    - Or manually select your optimizations
 3. Click **"Generate My Optimizer"**
 4. **3 files download automatically**:
-   - `START_HERE_Windows_Optimizer.bat` ← **Run this one!**
+   - `START_HERE_Windows_Optimizer.bat` - **Run this one!**
    - `Windows_Optimizer_OneTime.ps1` (used automatically)
    - `Windows_Optimizer_Scheduled.ps1` (used automatically)
 
@@ -20,7 +20,7 @@
 3. Select **"Run as Administrator"**
 4. You'll see an interactive menu with 6 options
 
-⚠️ **CRITICAL**: All 3 files must be in the same folder! Only run START_HERE .bat file!
+**CRITICAL**: All 3 files must be in the same folder! Only run START_HERE .bat file!
 
 ### Step 3: Choose What to Do
 - **[1]** Run optimization now
@@ -83,7 +83,7 @@
 
 ## What's Safe to Enable?
 
-### Always Safe ✅
+### Always Safe
 - All temp file cleanups
 - Browser cache cleanup (Edge, Chrome, Brave, Opera)
 - Recycle bin emptying
@@ -91,14 +91,14 @@
 - System log clearing
 - System file repair (DISM + SFC)
 
-### Usually Safe ✅
+### Usually Safe
 - Telemetry minimization
 - Advertising ID disable
 - Prefetch cleanup
 - Game Mode enable
 - SysMain/Superfetch to Manual (recommended for SSDs)
 
-### Consider Carefully ⚠️
+### Consider Carefully
 - Cortana disable (if you use voice commands)
 - Windows Search to Manual (may slow file searches)
 - Hibernation disable (if you use hibernate feature)
@@ -134,14 +134,14 @@
 - Select "Run as Administrator"
 
 **Want to undo changes?**
-- Run the launcher (right-click → Run as Admin)
+- Run the launcher (right-click > Run as Admin)
 - Choose option [5] (Restore Previous Settings)
 - Select which backup point to restore from
 
 **Scheduled task not running?**
-- Open Task Scheduler (Win+R → `taskschd.msc`)
+- Open Task Scheduler (Win+R > `taskschd.msc`)
 - Find "WindowsOptimizerMaintenance"
-- Right-click → Properties → Verify settings
+- Right-click > Properties > Verify settings
 - Ensure "Run with highest privileges" is checked
 
 ---
@@ -152,16 +152,16 @@ After downloading, your folder should look like this:
 
 ```
 Downloads/
-├── START_HERE_Windows_Optimizer.bat    ← Right-click this, Run as Admin!
-├── Windows_Optimizer_OneTime.ps1       ← Used automatically
-└── Windows_Optimizer_Scheduled.ps1     ← Used automatically
+- START_HERE_Windows_Optimizer.bat    - Right-click this, Run as Admin!
+- Windows_Optimizer_OneTime.ps1       - Used automatically
+- Windows_Optimizer_Scheduled.ps1     - Used automatically
 ```
 
 **All 3 files MUST stay together!**
 
 ---
 
-## 🎯 Pro Tips
+## Pro Tips
 
 1. **First Run**: Enable the backup option for safety
 2. **System Repair**: Enable DISM+SFC for monthly automated Windows repair

@@ -2,22 +2,22 @@
 
 A comprehensive, user-friendly tool to optimize Windows 11 performance, privacy, and disk space.
 
-## 🚀 Quick Start
+## Quick Start
 
 1. Open `index.html` in your browser
-2. Click **"⭐ Apply Recommended Settings"** or select manually
+2. Click **"Apply Recommended Settings"** or select manually
 3. Click "Generate My Optimizer"
 4. Download all 3 files (downloads automatically):
-   - `START_HERE_Windows_Optimizer.bat` ← **Run this one!**
+   - `START_HERE_Windows_Optimizer.bat` - **Run this one!**
    - `Windows_Optimizer_OneTime.ps1` (used automatically)
    - `Windows_Optimizer_Scheduled.ps1` (used automatically)
 5. **Keep all 3 files in the same folder**
-6. **Right-click `START_HERE_Windows_Optimizer.bat`** → **Run as Administrator**
+6. **Right-click `START_HERE_Windows_Optimizer.bat`** > **Run as Administrator**
 7. Select from the interactive menu
 
 **IMPORTANT**: Only run the START_HERE .bat file! The .ps1 files are used automatically.
 
-## ✨ Features
+## Features
 
 ### One-Time Optimizations
 - **Temp Files Cleanup**: User temp, Windows temp, prefetch, thumbnails, recycle bin
@@ -36,14 +36,14 @@ A comprehensive, user-friendly tool to optimize Windows 11 performance, privacy,
 - **System Logs**: Clear old event logs to save space
 - **System Repair**: DISM + SFC (runs monthly only, first week of month)
 
-## 📋 How It Works
+## How It Works
 
 ### 1. Generate Your Custom Optimizer
 - Open `index.html` in any browser
 - Use **Quick Actions**:
-  - **⭐ Apply Recommended Settings** - Instantly selects all safe, recommended optimizations
-  - **✅ Select All** - Enable every optimization option
-  - **❌ Clear All** - Start fresh with no selections
+  - **Apply Recommended Settings** - Instantly selects all safe, recommended optimizations
+  - **Select All** - Enable every optimization option
+  - **Clear All** - Start fresh with no selections
 - Or manually select your desired optimizations
 - Click "Generate My Optimizer"
 - 3 files download automatically:
@@ -52,15 +52,15 @@ A comprehensive, user-friendly tool to optimize Windows 11 performance, privacy,
   - `Windows_Optimizer_Scheduled.ps1` - Recurring tasks only
 
 ### 2. Run the BAT File as Administrator
-**Right-click `Windows_Optimizer.bat` → Run as Administrator**
+**Right-click `Windows_Optimizer.bat` > Run as Administrator**
 
 The launcher provides an interactive menu:
-- ✅ [1] Run optimization now (executes OneTime script)
-- ✅ [2] Schedule recurring maintenance (sets up scheduled tasks)
-- ✅ [3] View last log file
-- ✅ [4] View startup programs report
-- ✅ [5] Restore previous settings
-- ✅ [6] Exit
+- [1] Run optimization now (executes OneTime script)
+- [2] Schedule recurring maintenance (sets up scheduled tasks)
+- [3] View last log file
+- [4] View startup programs report
+- [5] Restore previous settings
+- [6] Exit
 
 **Never run `.ps1` files directly** - always use the .bat launcher!
 
@@ -94,7 +94,7 @@ The launcher provides an interactive menu:
 ### 3. Automatic Admin Elevation
 The launcher automatically requests administrator privileges - no manual "Run as Admin" needed!
 
-## 🔒 Safety Features
+## Safety Features
 
 ### Backup System
 Every optimization run creates:
@@ -107,54 +107,54 @@ Every optimization run creates:
 - **Recurring Tasks**: Only temp cleanup and maintenance tasks
 - **Prevention**: Settings won't be repeatedly changed by scheduled tasks
 
-## 🔄 Complete Workflow
+## Complete Workflow
 
 ```
 1. Generate Your Optimizer (index.html)
-   └─> Downloads 3 files:
-       ├─> START_HERE_Windows_Optimizer.bat ← RUN THIS!
-       ├─> Windows_Optimizer_OneTime.ps1 (auto-used)
-       └─> Windows_Optimizer_Scheduled.ps1 (auto-used)
+   - Downloads 3 files:
+     - START_HERE_Windows_Optimizer.bat - RUN THIS!
+     - Windows_Optimizer_OneTime.ps1 (auto-used)
+     - Windows_Optimizer_Scheduled.ps1 (auto-used)
 
-2. Run Launcher (START_HERE_Windows_Optimizer.bat) ← RIGHT-CLICK → RUN AS ADMIN
-   ├─> Checks for admin privileges
-   ├─> Verifies PS1 files are present
-   └─> Shows interactive menu
+2. Run Launcher (START_HERE_Windows_Optimizer.bat) - RIGHT-CLICK > RUN AS ADMIN
+   - Checks for admin privileges
+   - Verifies PS1 files are present
+   - Shows interactive menu
 
 3. Choose from Menu:
-   ├─> [1] Run Optimization Now
-   │   ├─> Executes Windows_Optimizer_OneTime.ps1
-   │   ├─> Creates backup (if enabled)
-   │   ├─> Shows progress in real-time
-   │   └─> Saves log to script folder
-   │
-   ├─> [2] Schedule Recurring Maintenance
-   │   ├─> Executes Windows_Optimizer_Scheduled.ps1
-   │   ├─> Choose: Daily/Weekly/Monthly
-   │   ├─> Set time (0-23 hours)
-   │   ├─> Choose: Hidden/Visible window
-   │   └─> Creates Windows scheduled task
-   │
-   ├─> [3] View Last Log
-   │   └─> Opens most recent WinOptimizer_*.log in Notepad
-   │
-   ├─> [4] View Startup Report
-   │   └─> Opens StartupPrograms_*.txt in Notepad
-   │
-   ├─> [5] Restore Previous Settings
-   │   ├─> Lists all RESTORE_*.ps1 files
-   │   ├─> Runs selected restore script
-   │   └─> Shows results
-   │
-   └─> [6] Exit
+   - [1] Run Optimization Now
+     - Executes Windows_Optimizer_OneTime.ps1
+     - Creates backup (if enabled)
+     - Shows progress in real-time
+     - Saves log to script folder
+   
+   - [2] Schedule Recurring Maintenance
+     - Executes Windows_Optimizer_Scheduled.ps1
+     - Choose: Daily/Weekly/Monthly
+     - Set time (0-23 hours)
+     - Choose: Hidden/Visible window
+     - Creates Windows scheduled task
+   
+   - [3] View Last Log
+     - Opens most recent WinOptimizer_*.log in Notepad
+   
+   - [4] View Startup Report
+     - Opens StartupPrograms_*.txt in Notepad
+   
+   - [5] Restore Previous Settings
+     - Lists all RESTORE_*.ps1 files
+     - Runs selected restore script
+     - Shows results
+   
+   - [6] Exit
 ```
 
 **KEY RULES**: 
-- ⚠️ Keep all 3 files in the same folder
-- ⚠️ Only run START_HERE_Windows_Optimizer.bat as Administrator
-- ⚠️ Never run .ps1 files directly - they're used automatically!
+- WARNING: Keep all 3 files in the same folder
+- WARNING: Only run START_HERE_Windows_Optimizer.bat as Administrator
+- WARNING: Never run .ps1 files directly - they're used automatically!
 
-## 📊 What Gets Optimized
+## What Gets Optimized
 
 ### System Repair (New!)
 - **DISM**: Repairs Windows system image (foundation)
