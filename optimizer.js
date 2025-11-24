@@ -522,31 +522,65 @@ if "%taskHidden%"=="1" (
     set "visibilityText=Visible Window"
 )
 
+:: Create a temporary PowerShell script to avoid argument escaping issues
+set "tempPS=%TEMP%\\CreateScheduledTask_%RANDOM%.ps1"
+
+:: Build the PowerShell script content
+(
+echo $ErrorActionPreference = 'Stop'
+echo try {
+echo     $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-ExecutionPolicy Bypass -File \"%SCHEDULED_SCRIPT%\""
+echo.
 if "%triggerType%"=="DAILY" (
-    if "%taskHidden%"=="1" (
-        powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden:$true; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"
-    ) else (
-        powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"
-    )
+echo     $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00
+) else if "%triggerType%"=="WEEKLY" (
+echo     $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At %hour%:00
+) else (
+echo     $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00
 )
-
-if "%triggerType%"=="WEEKLY" (
-    if "%taskHidden%"=="1" (
-        powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden:$true; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"
-    ) else (
-        powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"
-    )
+echo.
+echo     $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
+echo.
+if "%taskHidden%"=="1" (
+echo     $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden
+) else (
+echo     $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable
 )
+echo.
+echo     Register-ScheduledTask -TaskName "%taskName%" -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force ^| Out-Null
+echo     Write-Host "SUCCESS"
+echo     exit 0
+echo } catch {
+echo     Write-Host "ERROR: $_"
+echo     exit 1
+echo }
+) > "%tempPS%"
 
-if "%triggerType%"=="MONTHLY" (
-    if "%taskHidden%"=="1" (
-        powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden:$true; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"
-    ) else (
-        powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"
-    )
-)
+:: Execute the PowerShell script and capture output
+for /f "delims=" %%i in ('powershell.exe -ExecutionPolicy Bypass -File "%tempPS%" 2^>^&1') do set PS_OUTPUT=%%i
 
+:: Clean up temp file
+del "%tempPS%" >nul 2>&1
+
+:: Capture the exit code immediately
+set TASK_RESULT=%errorlevel%
+
+:: Verify task was actually created
+schtasks /query /tn "%taskName%" >nul 2>&1
 if %errorlevel% equ 0 (
+    set TASK_EXISTS=1
+) else (
+    set TASK_EXISTS=0
+)
+
+echo.
+echo [DEBUG] PowerShell output: %PS_OUTPUT%
+echo [DEBUG] Exit code: %TASK_RESULT%
+echo [DEBUG] Task exists: %TASK_EXISTS%
+echo.
+
+:: Show result based on verification
+if "%TASK_EXISTS%"=="1" (
     echo ============================================
     echo  SCHEDULED TASK CREATED SUCCESSFULLY!
     echo ============================================
@@ -579,7 +613,19 @@ if %errorlevel% equ 0 (
     echo ============================================
     echo  ERROR CREATING TASK
     echo ============================================
-    echo Failed to create task. Check Task Scheduler.
+    echo.
+    echo Failed to create task. Debugging info:
+    echo  - PowerShell exit code: %TASK_RESULT%
+    echo  - Task exists: %TASK_EXISTS%
+    echo  - Trigger type: %triggerType%
+    echo  - Hour: %hour%
+    echo  - Hidden: %taskHidden%
+    echo.
+    echo Please check Task Scheduler manually:
+    echo  1. Press Win+R
+    echo  2. Type: taskschd.msc
+    echo  3. Look for "WindowsOptimizerMaintenance"
+    echo.
 )
 
 echo.
