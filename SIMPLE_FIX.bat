@@ -21,15 +21,15 @@ echo. >> "%LOGFILE%"
 
 echo Cleaning user temp folder...
 echo Cleaning: %TEMP% >> "%LOGFILE%"
-del /F /S /Q "%TEMP%\*" 2>> "%LOGFILE%"
-for /D %%p in ("%TEMP%\*") do rmdir "%%p" /S /Q 2>> "%LOGFILE%"
-echo Done >> "%LOGFILE%"
+del /F /S /Q "%TEMP%\*" >nul 2>&1
+for /D %%p in ("%TEMP%\*") do rmdir "%%p" /S /Q >nul 2>&1
+echo Done - User temp folder cleaned >> "%LOGFILE%"
 
 echo Cleaning Windows temp folder...
 echo Cleaning: C:\Windows\Temp >> "%LOGFILE%"
-del /F /S /Q "C:\Windows\Temp\*" 2>> "%LOGFILE%"
-for /D %%p in ("C:\Windows\Temp\*") do rmdir "%%p" /S /Q 2>> "%LOGFILE%"
-echo Done >> "%LOGFILE%"
+del /F /S /Q "C:\Windows\Temp\*" >nul 2>&1
+for /D %%p in ("C:\Windows\Temp\*") do rmdir "%%p" /S /Q >nul 2>&1
+echo Done - Windows temp folder cleaned >> "%LOGFILE%"
 
 echo.
 echo ========================================
