@@ -525,11 +525,29 @@ if "%taskHidden%"=="1" (
 :: Create a temporary PowerShell script to avoid argument escaping issues
 set "tempPS=%TEMP%\\CreateScheduledTask_%RANDOM%.ps1"
 
+:: Verify the scheduled script exists
+if not exist "%SCHEDULED_SCRIPT%" (
+    echo ============================================
+    echo  ERROR: SCRIPT FILE NOT FOUND
+    echo ============================================
+    echo.
+    echo The scheduled script was not found:
+    echo %SCHEDULED_SCRIPT%
+    echo.
+    echo Please ensure all 3 files are in the same folder:
+    echo  - START_HERE_Windows_Optimizer.bat
+    echo  - Windows_Optimizer_OneTime.ps1
+    echo  - Windows_Optimizer_Scheduled.ps1
+    echo.
+    pause
+    goto MENU
+)
+
 :: Build the PowerShell script content
 (
 echo $ErrorActionPreference = 'Stop'
 echo try {
-echo     $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-ExecutionPolicy Bypass -File \"%SCHEDULED_SCRIPT%\""
+echo     $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-ExecutionPolicy Bypass -File \"\"%SCHEDULED_SCRIPT%\"\""
 echo.
 if "%triggerType%"=="DAILY" (
 echo     $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00
@@ -539,12 +557,12 @@ echo     $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At %hou
 echo     $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00
 )
 echo.
-echo     $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
+echo     $principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\\$env:USERNAME" -RunLevel Highest
 echo.
 if "%taskHidden%"=="1" (
-echo     $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden
+echo     $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 2) -Hidden
 ) else (
-echo     $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable
+echo     $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 2)
 )
 echo.
 echo     Register-ScheduledTask -TaskName "%taskName%" -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force ^| Out-Null
@@ -583,25 +601,29 @@ if "%TASK_EXISTS%"=="1" (
     echo Frequency: %triggerType%
     echo Time: %hour%:00
     echo Visibility: %visibilityText%
-    echo Script: %SCHEDULED_SCRIPT%
+    echo Run As: %USERDOMAIN%\\%USERNAME%
     echo.
-    echo Logs will be saved to:
+    echo Script Location:
+    echo %SCHEDULED_SCRIPT%
+    echo.
+    echo Log Location:
     echo %SCRIPT_DIR%
     echo.
-    echo Your PC will now be automatically maintained!
+    echo Next Run: Check Task Scheduler for exact time
     echo.
     echo ============================================
     echo  HOW TO MANAGE THIS TASK
     echo ============================================
     echo.
-    echo To check or modify:
+    echo To check, run, or modify:
     echo  1. Press Win+R
     echo  2. Type: taskschd.msc
     echo  3. Find "WindowsOptimizerMaintenance"
+    echo  4. Right-click and select "Run" to test now
     echo.
     echo To stop automatic maintenance:
-    echo  - Right-click the task
-    echo  - Select "Disable" or "Delete"
+    echo  - Right-click the task in Task Scheduler
+    echo  - Select "Disable" (pause) or "Delete" (remove)
     echo.
     echo.
     pause
