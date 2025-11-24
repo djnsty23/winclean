@@ -145,10 +145,73 @@ function generateScript(previewMode = false, scheduleMode = false) {
         showModal('Weekly Maintenance Task', modalContent);
         window.currentScript = taskScript;
     } else {
-        // Regular mode - show instructions then download
-        const filename = `Windows_Optimizer_${getTimestamp()}.ps1`;
-        showInstructionsModal(filename, script, 'optimize');
+        // Regular mode - generate BOTH one-time and scheduled scripts
+        const timestamp = getTimestamp();
+        const oneTimeFilename = `Windows_Optimizer_${timestamp}.ps1`;
+        const scheduledFilename = `Windows_Optimizer_SCHEDULED_${timestamp}.ps1`;
+        
+        // Generate one-time script (current selections)
+        const oneTimeScript = script;
+        
+        // Generate scheduled script (recurring tasks only)
+        const scheduledScript = buildScheduledMaintenanceScript(selected);
+        
+        showBothScriptsModal(oneTimeFilename, scheduledFilename, oneTimeScript, scheduledScript);
     }
+}
+
+function showBothScriptsModal(oneTimeFilename, scheduledFilename, oneTimeScript, scheduledScript) {
+    const modalContent = `
+        <div class="alert alert-success">
+            <div style="font-size:1.5rem">SUCCESS</div>
+            <div><strong>Two Scripts Generated!</strong><br>Your optimization scripts are ready to download.</div>
+        </div>
+        <div class="instructions-box">
+            <h4>What You're Getting:</h4>
+            <div style="margin: 1rem 0; padding: 1rem; background: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 4px;">
+                <strong>1. One-Time Optimizer</strong> (${oneTimeFilename})<br>
+                <small>Runs ALL selected optimizations immediately. Use this for your first run.</small>
+            </div>
+            <div style="margin: 1rem 0; padding: 1rem; background: #f3e5f5; border-left: 4px solid #9c27b0; border-radius: 4px;">
+                <strong>2. Scheduled Maintenance</strong> (${scheduledFilename})<br>
+                <small>Runs ONLY recurring tasks (temp cleanup, logs, etc.). Perfect for automated maintenance.</small>
+            </div>
+            
+            <h4 style="margin-top: 1.5rem;">How to Use:</h4>
+            <ol>
+                <li><strong>Download both scripts</strong> using the buttons below</li>
+                <li><strong>Run Windows_Optimizer_Launcher.bat</strong> from the download folder</li>
+                <li><strong>Choose option 1</strong> to run one-time optimization</li>
+                <li><strong>Choose option 2</strong> to schedule recurring maintenance</li>
+            </ol>
+            
+            <div style="margin-top: 1rem; padding: 1rem; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 4px;">
+                <strong>TIP:</strong> The launcher handles admin permissions automatically!
+            </div>
+        </div>
+        <div style="margin-top: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+            <button class="btn btn-generate" style="flex: 1;" onclick="downloadBothScripts()">
+                Download Both Scripts
+            </button>
+            <button class="btn btn-preview" onclick="closeModal()">
+                Cancel
+            </button>
+        </div>
+    `;
+    
+    showModal('Scripts Ready to Download', modalContent);
+    window.oneTimeScriptData = { filename: oneTimeFilename, content: oneTimeScript };
+    window.scheduledScriptData = { filename: scheduledFilename, content: scheduledScript };
+}
+
+function downloadBothScripts() {
+    downloadScript(window.oneTimeScriptData.filename, window.oneTimeScriptData.content);
+    setTimeout(() => {
+        downloadScript(window.scheduledScriptData.filename, window.scheduledScriptData.content);
+    }, 500);
+    closeModal();
+    
+    showNotification('Both scripts downloaded! Use Windows_Optimizer_Launcher.bat to run them.', 'success');
 }
 
 function downloadPreviewScript() {
@@ -551,9 +614,12 @@ foreach ($reg in $regPaths) {
     try {
         if (Test-Path $reg.Path) {
             $value = Get-ItemProperty -Path $reg.Path -Name $reg.Name -ErrorAction SilentlyContinue
-            if ($value) {
+            if ($value -and $null -ne $value.$($reg.Name)) {
                 $key = "$($reg.Path)\\$($reg.Name)"
-                $backup.Registry[$key] = $value.$($reg.Name)
+                $backup.Registry[$key] = @{
+                    Value = $value.$($reg.Name)
+                    Type = $value.$($reg.Name).GetType().Name
+                }
             }
         }
     }
@@ -614,7 +680,7 @@ $restoreScript = @'
 # RESTORE Windows Settings
 # Backup created: TIMESTAMP_PLACEHOLDER
 # ============================================
-# IMPORTANT: Run as Administrator for full functionality
+# NOTE: Run via Windows_Optimizer_Launcher.bat for automatic admin elevation
 # ============================================
 
 # Define Write-Log function FIRST
@@ -647,6 +713,19 @@ Write-Log ""
 $restored = 0
 $errors = 0
 
+# Check if running as Administrator
+Write-Log "[CHECK] Checking admin privileges..." "Cyan"
+$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+if (-not $isAdmin) {
+    Write-Log ""
+    Write-Log "WARNING: Not running as Administrator!" "Yellow"
+    Write-Log "Some settings may fail to restore without admin rights." "Yellow"
+    Write-Log ""
+    Write-Log "Press any key to continue anyway..." "Gray"
+    $null = Read-Host
+}
+Write-Log ""
+
 # Restore Registry Settings
 Write-Log "[BACKUP] Restoring registry settings..." "Yellow"
 foreach ($key in $backup.Registry.PSObject.Properties) {
@@ -657,13 +736,14 @@ foreach ($key in $backup.Registry.PSObject.Properties) {
     
     try {
         if (-not (Test-Path $regPath)) {
-            New-Item -Path $regPath -Force | Out-Null
+            New-Item -Path $regPath -Force -ErrorAction Stop | Out-Null
         }
-        Set-ItemProperty -Path $regPath -Name $valueName -Value $key.Value -ErrorAction Stop
+        $valueData = if ($key.Value.Value) { $key.Value.Value } else { $key.Value }
+        Set-ItemProperty -Path $regPath -Name $valueName -Value $valueData -ErrorAction Stop
         Write-Log "   OK: Restored: $fullPath" "Green"
         $restored++
     } catch {
-        Write-Log "   ERROR: Failed: $fullPath" "Red"
+        Write-Log "   WARNING: Skipped: $fullPath - $($_.Exception.Message)" "Yellow"
         $errors++
     }
 }
@@ -673,14 +753,18 @@ Write-Log ""
 Write-Log "[SERVICE] Restoring service states..." "Yellow"
 foreach ($svc in $backup.Services.PSObject.Properties) {
     try {
-        $service = Get-Service -Name $svc.Name -ErrorAction Stop
-        $startType = $svc.Value.StartType
+        $service = Get-Service -Name $svc.Name -ErrorAction SilentlyContinue
+        if ($null -eq $service) {
+            Write-Log "   SKIP: Service not found: $($svc.Name)" "Gray"
+            continue
+        }
         
+        $startType = $svc.Value.StartType
         Set-Service -Name $svc.Name -StartupType $startType -ErrorAction Stop
         Write-Log "   OK: Restored service: $($svc.Name) -> $startType" "Green"
         $restored++
     } catch {
-        Write-Log "   ERROR: Failed to restore service: $($svc.Name)" "Red"
+        Write-Log "   WARNING: Could not restore service: $($svc.Name) - $($_.Exception.Message)" "Yellow"
         $errors++
     }
 }
@@ -1228,7 +1312,32 @@ $script:itemsCleaned++
 }
 
 // ============================================
-// SCHEDULED TASK SCRIPT BUILDER
+// SCHEDULED MAINTENANCE SCRIPT BUILDER
+// ============================================
+// Only includes recurring tasks that benefit from periodic execution
+
+function buildScheduledMaintenanceScript(selected) {
+    // Filter to only recurring tasks
+    const recurringTasks = {
+        temp: selected.temp || {}, // Temp files accumulate - RECURRING
+        disk: {
+            winsxs: false, // One-time cleanup - takes too long
+            updates: selected.disk?.updates || false, // Can recur
+            logs: selected.disk?.logs || false // Can recur
+        },
+        // Privacy, performance, services, startup - ONE-TIME only
+        privacy: {}, // These are settings, not cleanup
+        performance: {}, // One-time configuration
+        services: {}, // One-time configuration  
+        startup: {} // Analysis, not maintenance
+    };
+    
+    // Build script without backup (automated task doesn't need interactive backup)
+    return buildPowerShellScript(recurringTasks, false, false, false);
+}
+
+// ============================================
+// SCHEDULED TASK SCRIPT BUILDER (OLD - DEPRECATED)
 // ============================================
 
 function buildScheduledTaskScript(selected) {
