@@ -291,7 +291,8 @@ Write-Host "Creating log file..." -ForegroundColor Cyan
 try {
     "═══════════════════════════════════════════════════════════" | Out-File -FilePath $logFile -Encoding UTF8 -Force
     "Windows 11 Optimization Script - ${mode} MODE" | Add-Content -Path $logFile
-    "Started: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" | Add-Content -Path $logFile
+    $startTime = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    "Started: $startTime" | Add-Content -Path $logFile
     "Log file: $logFile" | Add-Content -Path $logFile
     "═══════════════════════════════════════════════════════════" | Add-Content -Path $logFile
     "" | Add-Content -Path $logFile
@@ -352,7 +353,8 @@ Write-Log ""
 Write-Log "[RESTORE] Creating System Restore Point..." "Yellow"
 try {
     Enable-ComputerRestore -Drive "C:\\"
-    Checkpoint-Computer -Description "Before Optimization - $(Get-Date -Format 'yyyy-MM-dd HH:mm')" -RestorePointType "MODIFY_SETTINGS"
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm"
+    Checkpoint-Computer -Description "Before Optimization - $timestamp" -RestorePointType "MODIFY_SETTINGS"
     Write-Log "   OK: Restore point created successfully!" "Green"
 } catch {
     Write-Log "   WARNING: Could not create restore point: $($_.Exception.Message)" "Yellow"
@@ -427,7 +429,8 @@ Write-Log "[FILE] Full log saved to: $logFile" "Cyan"
 Write-Log ""
 Write-Log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" "Gray"
 Write-Log ""
-Write-Log "Script completed at $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" "Gray"
+$completeTime = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+Write-Log "Script completed at $completeTime" "Gray"
 Write-Log ""
 
 # Open log file automatically
@@ -474,9 +477,10 @@ Write-Host ""
     # Try to save error to same folder as script
     try {
         $errorFile = "$PSScriptRoot\\Windows_Optimization_ERROR_$(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss').txt"
+        $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
         @"
 WINDOWS OPTIMIZATION SCRIPT ERROR LOG
-Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
+Generated: $timestamp
 
 ERROR MESSAGE:
 $($_.Exception.Message)
@@ -1154,6 +1158,7 @@ foreach ($path in $regPaths) {
 
 # Create HTML report in same folder as script
 $reportPath = "$PSScriptRoot\\Startup_Report_$(Get-Date -Format 'yyyy-MM-dd_HH-mm').html"
+$reportTime = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 $html = @"
 <!DOCTYPE html>
 <html>
@@ -1170,8 +1175,8 @@ $html = @"
     </style>
 </head>
 <body>
-    <h1>🚀 Startup Programs Report</h1>
-    <p>Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')</p>
+    <h1>Startup Programs Report</h1>
+    <p>Generated: $reportTime</p>
     <p>Found $($startupItems.Count) startup items</p>
     <table>
         <tr>
