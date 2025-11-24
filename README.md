@@ -1,5 +1,17 @@
 # 🚀 Windows 11 Optimization Portal
 
+## ⚠️ SCRIPTS WON'T RUN? QUICK FIX:
+
+**If PowerShell scripts close instantly:**
+
+### ✅ Option 1: Use BAT File (Always Works)
+Download **`SIMPLE_FIX.bat`** → Right-click → Run as Administrator
+
+### ✅ Option 2: Fix PowerShell Execution Policy  
+Run PowerShell as Admin, then paste: `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force`
+
+---
+
 A modern, safe, and transparent web-based tool for optimizing your Windows 11 installation. No installation required, no compilation needed - just open in your browser and go!
 
 ![Windows 11](https://img.shields.io/badge/Windows-11-0078D4?style=for-the-badge&logo=windows&logoColor=white)
