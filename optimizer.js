@@ -174,13 +174,21 @@ function showInstructionsModal(filename, scriptContent, type) {
                     <li><strong>Download the script</strong> by clicking the button below</li>
                     <li><strong>Locate the file</strong> in your Downloads folder (<code>${filename}</code>)</li>
                     <li><strong>Right-click the file</strong> → Select <strong>"Run with PowerShell"</strong></li>
-                    <li>If prompted, click <strong>"Yes"</strong> to allow administrator access</li>
-                    <li><strong>Review the output</strong> - the script shows exactly what it's doing</li>
-                    <li><strong>Check your Desktop</strong> for backup files (if backup was enabled)</li>
+                    <li>Click <strong>"Yes"</strong> if Windows asks for permission</li>
+                    <li>A black window will appear - <strong>WAIT for it to complete</strong></li>
+                    <li><strong>Notepad opens automatically</strong> with a complete log of what happened</li>
                 </ol>
+                <div style="margin-top: 1rem; padding: 1rem; background: #fff4e6; border-radius: 6px; border-left: 4px solid var(--warning);">
+                    <strong>⚠️ If the window closes instantly:</strong><br>
+                    1. Right-click the script again<br>
+                    2. Select <strong>"Run as Administrator"</strong> (not just "Run with PowerShell")<br>
+                    3. Still not working? Open PowerShell as Admin and run:<br>
+                    <code style="background: rgba(0,0,0,0.1); padding: 0.3rem; border-radius: 3px; display: block; margin-top: 0.5rem;">Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass</code>
+                    Then drag and drop the script file into the PowerShell window and press Enter.
+                </div>
                 <div style="margin-top: 1rem; padding: 1rem; background: #e6f3ff; border-radius: 6px;">
-                    <strong>💡 Pro Tip:</strong> If you enabled auto-backup, you'll find a <strong>RESTORE script</strong> on your Desktop. 
-                    Just run it to undo all changes!
+                    <strong>💡 What to expect:</strong> A log file will appear on your <strong>Desktop</strong> showing everything that happened. 
+                    If backup was enabled, you'll also see <strong>RESTORE script</strong> and <strong>backup JSON file</strong>.
                 </div>
             </div>
         `;
