@@ -513,73 +513,163 @@ echo.
 
 set "taskName=WindowsOptimizerMaintenance"
 
-:: Set PowerShell argument based on visibility
-if "%taskHidden%"=="1" (
-    set "psArgs=-WindowStyle Hidden -ExecutionPolicy Bypass -File \"%SCHEDULED_SCRIPT%\""
-    set "visibilityText=Hidden (Silent)"
-) else (
-    set "psArgs=-ExecutionPolicy Bypass -File \"%SCHEDULED_SCRIPT%\""
-    set "visibilityText=Visible Window"
+:: Verify script exists before creating task
+if not exist "%SCHEDULED_SCRIPT%" (
+    echo ============================================
+    echo  ERROR: Script File Not Found
+    echo ============================================
+    echo.
+    echo Cannot find: %SCHEDULED_SCRIPT%
+    echo.
+    echo Please ensure Windows_Optimizer_Scheduled.ps1
+    echo is in the same folder as this BAT file.
+    echo.
+    pause
+    goto MENU
 )
 
-if "%triggerType%"=="DAILY" (
-    if "%taskHidden%"=="1" (
-        powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden:$true; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"
-    ) else (
-        powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"
-    )
-)
+:: Unblock the script file (remove Mark of the Web)
+echo Unblocking script file...
+powershell.exe -ExecutionPolicy Bypass -Command "Unblock-File -Path '%SCHEDULED_SCRIPT%' -ErrorAction SilentlyContinue"
 
-if "%triggerType%"=="WEEKLY" (
-    if "%taskHidden%"=="1" (
-        powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden:$true; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"
-    ) else (
-        powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"
-    )
-)
+:: Create a temporary PowerShell script for task creation (avoids complex escaping)
+set "tempPS=%TEMP%\\CreateTask_%RANDOM%.ps1"
 
-if "%triggerType%"=="MONTHLY" (
-    if "%taskHidden%"=="1" (
-        powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden:$true; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"
-    ) else (
-        powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"
-    )
-)
+echo # Temporary task creation script > "%tempPS%"
+echo $ErrorActionPreference = 'Stop' >> "%tempPS%"
+echo try { >> "%tempPS%"
+echo     $scriptPath = '%SCHEDULED_SCRIPT%' >> "%tempPS%"
+echo     $taskName = '%taskName%' >> "%tempPS%"
+echo     $hour = '%hour%' >> "%tempPS%"
+echo     $triggerType = '%triggerType%' >> "%tempPS%"
+echo     $taskHidden = '%taskHidden%' >> "%tempPS%"
+echo. >> "%tempPS%"
+echo     # Remove existing task if present >> "%tempPS%"
+echo     Unregister-ScheduledTask -TaskName $taskName -Confirm:$false -ErrorAction SilentlyContinue >> "%tempPS%"
+echo. >> "%tempPS%"
+echo     # Build task action >> "%tempPS%"
+echo     if ($taskHidden -eq '1') { >> "%tempPS%"
+echo         $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-WindowStyle Hidden -ExecutionPolicy Bypass -File `"$scriptPath`"" -WorkingDirectory (Split-Path $scriptPath) >> "%tempPS%"
+echo     } else { >> "%tempPS%"
+echo         $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-ExecutionPolicy Bypass -File `"$scriptPath`"" -WorkingDirectory (Split-Path $scriptPath) >> "%tempPS%"
+echo     } >> "%tempPS%"
+echo. >> "%tempPS%"
+echo     # Build trigger >> "%tempPS%"
+echo     if ($triggerType -eq 'DAILY') { >> "%tempPS%"
+echo         $trigger = New-ScheduledTaskTrigger -Daily -At "$hour:00" >> "%tempPS%"
+echo     } elseif ($triggerType -eq 'WEEKLY') { >> "%tempPS%"
+echo         $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At "$hour:00" >> "%tempPS%"
+echo     } else { >> "%tempPS%"
+echo         $trigger = New-ScheduledTaskTrigger -Daily -At "$hour:00" >> "%tempPS%"
+echo     } >> "%tempPS%"
+echo. >> "%tempPS%"
+echo     # Use current user account (SYSTEM can't access Downloads folder) >> "%tempPS%"
+echo     $principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType Interactive -RunLevel Highest >> "%tempPS%"
+echo. >> "%tempPS%"
+echo     # Task settings >> "%tempPS%"
+echo     if ($taskHidden -eq '1') { >> "%tempPS%"
+echo         $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 2) -Hidden:$true >> "%tempPS%"
+echo     } else { >> "%tempPS%"
+echo         $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 2) >> "%tempPS%"
+echo     } >> "%tempPS%"
+echo. >> "%tempPS%"
+echo     # Register task >> "%tempPS%"
+echo     Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force ^| Out-Null >> "%tempPS%"
+echo. >> "%tempPS%"
+echo     # Verify it was created >> "%tempPS%"
+echo     $verify = Get-ScheduledTask -TaskName $taskName -ErrorAction Stop >> "%tempPS%"
+echo     if ($verify) { >> "%tempPS%"
+echo         Write-Output "SUCCESS" >> "%tempPS%"
+echo     } else { >> "%tempPS%"
+echo         Write-Error "Task not found after creation" >> "%tempPS%"
+echo     } >> "%tempPS%"
+echo } catch { >> "%tempPS%"
+echo     Write-Output "ERROR: $($_.Exception.Message)" >> "%tempPS%"
+echo     exit 1 >> "%tempPS%"
+echo } >> "%tempPS%"
 
+:: Run the task creation script and capture output
+for /f "delims=" %%i in ('powershell.exe -ExecutionPolicy Bypass -File "%tempPS%" 2^>^&1') do set "result=%%i"
+
+:: Clean up temp script
+del "%tempPS%" 2>nul
+
+:: Check result
+echo %result% | find "SUCCESS" >nul
 if %errorlevel% equ 0 (
-    echo ============================================
-    echo  SCHEDULED TASK CREATED SUCCESSFULLY!
-    echo ============================================
-    echo.
-    echo Task Name: %taskName%
-    echo Frequency: %triggerType%
-    echo Time: %hour%:00
-    echo Visibility: %visibilityText%
-    echo Script: %SCHEDULED_SCRIPT%
-    echo.
-    echo Logs will be saved to:
-    echo %SCRIPT_DIR%
-    echo.
-    echo Your PC will now be automatically maintained!
-    echo.
-    echo ============================================
-    echo  HOW TO MANAGE THIS TASK
-    echo ============================================
-    echo.
-    echo To check or modify:
-    echo  1. Press Win+R
-    echo  2. Type: taskschd.msc
-    echo  3. Find "WindowsOptimizerMaintenance"
-    echo.
-    echo To stop automatic maintenance:
-    echo  - Right-click the task
-    echo  - Select "Disable" or "Delete"
-    echo.
+    :: Verify task exists using schtasks
+    schtasks /query /tn "%taskName%" >nul 2>&1
+    if %errorlevel% equ 0 (
+        if "%taskHidden%"=="1" (
+            set "visibilityText=Hidden (Silent)"
+        ) else (
+            set "visibilityText=Visible Window"
+        )
+        
+        echo ============================================
+        echo  SCHEDULED TASK CREATED SUCCESSFULLY!
+        echo ============================================
+        echo.
+        echo Task Name: %taskName%
+        echo Frequency: %triggerType%
+        echo Time: %hour%:00
+        echo Visibility: !visibilityText!
+        echo Script: %SCHEDULED_SCRIPT%
+        echo.
+        echo Logs will be saved to:
+        echo %SCRIPT_DIR%
+        echo.
+        echo Your PC will now be automatically maintained!
+        echo.
+        echo ============================================
+        echo  HOW TO MANAGE THIS TASK
+        echo ============================================
+        echo.
+        echo To check or modify:
+        echo  1. Press Win+R
+        echo  2. Type: taskschd.msc
+        echo  3. Find "WindowsOptimizerMaintenance"
+        echo.
+        echo To view logs after it runs:
+        echo  - Check %SCRIPT_DIR%
+        echo  - Look for Windows_Optimization_Log_*.txt files
+        echo.
+        echo To stop automatic maintenance:
+        echo  - Open Task Scheduler (taskschd.msc)
+        echo  - Right-click the task
+        echo  - Select "Disable" or "Delete"
+        echo.
+    ) else (
+        echo ============================================
+        echo  ERROR: Task Creation Failed
+        echo ============================================
+        echo.
+        echo Task registration reported success but
+        echo task is not visible in Task Scheduler.
+        echo.
+        echo Please check Task Scheduler manually:
+        echo  1. Press Win+R
+        echo  2. Type: taskschd.msc
+        echo  3. Look for "%taskName%"
+        echo.
+    )
 ) else (
     echo ============================================
     echo  ERROR CREATING TASK
     echo ============================================
-    echo Failed to create task. Check Task Scheduler.
+    echo.
+    echo Details: %result%
+    echo.
+    echo Common causes:
+    echo  1. Script file is blocked by Windows
+    echo  2. Insufficient permissions
+    echo  3. Task Scheduler service not running
+    echo.
+    echo Troubleshooting:
+    echo  - Right-click %SCHEDULED_SCRIPT%
+    echo  - Properties -^> Unblock (if present) -^> OK
+    echo  - Try running this BAT file as Admin again
+    echo.
 )
 
 echo.

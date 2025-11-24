@@ -47,7 +47,7 @@ A comprehensive, user-friendly tool to optimize Windows 11 performance, privacy,
 - Or manually select your desired optimizations
 - Click "Generate My Optimizer"
 - 3 files download automatically:
-  - `Windows_Optimizer.bat` - Interactive launcher
+  - `START_HERE_Windows_Optimizer.bat` - Interactive launcher
   - `Windows_Optimizer_OneTime.ps1` - Full optimization
   - `Windows_Optimizer_Scheduled.ps1` - Recurring tasks only
 

@@ -1063,6 +1063,13 @@
             }
         });
 
+        // ESC key closes modal
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.getElementById('modalOverlay')) {
+                closeModal();
+            }
+        });
+
         // Quick action functions
         function selectRecommended() {
             deselectAll();
