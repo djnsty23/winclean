@@ -1,14 +1,29 @@
 # 🚀 Windows 11 Optimization Portal
 
-## ⚠️ SCRIPTS WON'T RUN? QUICK FIX:
+## ⚠️ SCRIPTS WON'T RUN? SECURE FIX:
 
-**If PowerShell scripts close instantly:**
+**If PowerShell scripts close instantly, use ONE of these secure methods:**
 
-### ✅ Option 1: Use BAT File (Always Works)
+### ✅ Option 1: Unblock Downloaded File (Recommended - Most Secure)
+1. Right-click the downloaded `.ps1` file
+2. Select **Properties**
+3. Check the box **"Unblock"** at the bottom
+4. Click **OK**
+5. Now right-click → **Run with PowerShell**
+
+**Why this is secure:** Only affects THIS specific file, not all scripts.
+
+### ✅ Option 2: Use BAT File (No Execution Policy Needed)
 Download **`SIMPLE_FIX.bat`** → Right-click → Run as Administrator
 
-### ✅ Option 2: Fix PowerShell Execution Policy  
-Run PowerShell as Admin, then paste: `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force`
+### ✅ Option 3: One-Time Bypass (Per Script)
+Right-click script → **Copy as path**  
+Open PowerShell as Admin and run:
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File "C:\Path\To\Your\Script.ps1"
+```
+
+**Why this is secure:** Only bypasses policy for THAT ONE execution.
 
 ---
 
