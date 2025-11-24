@@ -1083,35 +1083,44 @@
             // Deselect all first
             deselectAll();
             
-            // Temp Files - RECOMMENDED
+            // Temp Files - From image
             document.getElementById('temp-user').checked = true;
             document.getElementById('temp-windows').checked = true;
+            document.getElementById('temp-prefetch').checked = true;
+            document.getElementById('temp-thumbnail').checked = true;
+            // Recycle bin - NOT checked in image
             
-            // Privacy - RECOMMENDED
+            // Privacy - From image
             document.getElementById('privacy-telemetry').checked = true;
             document.getElementById('privacy-ads').checked = true;
+            document.getElementById('privacy-cortana').checked = true;
+            // Location - NOT checked in image
             
-            // Performance - RECOMMENDED
+            // Performance - From image
             document.getElementById('perf-gamemode').checked = true;
+            document.getElementById('perf-hibernation').checked = true;
+            // Visual effects - NOT checked in image
             
-            // Disk - RECOMMENDED
+            // Disk - From image
+            document.getElementById('disk-winsxs').checked = true;
             document.getElementById('disk-updates').checked = true;
             document.getElementById('disk-logs').checked = true;
-            document.getElementById('disk-winsxs').checked = true;
+            document.getElementById('disk-system-repair').checked = true;
             
-            // Browser - RECOMMENDED (all browsers)
+            // Browser - From image (all browsers)
             document.getElementById('browser-edge').checked = true;
             document.getElementById('browser-chrome').checked = true;
             document.getElementById('browser-brave').checked = true;
             document.getElementById('browser-opera').checked = true;
             
-            // Services - RECOMMENDED
+            // Services - From image
             document.getElementById('service-diagtrack').checked = true;
             document.getElementById('service-sysmain').checked = true;
+            document.getElementById('service-wsearch').checked = true;
             
-            // Startup - RECOMMENDED
-            document.getElementById('startup-scan').checked = true;
-            document.getElementById('startup-report').checked = true;
+            // Startup - NOT in image (no checkboxes visible)
+            // document.getElementById('startup-scan').checked = true;
+            // document.getElementById('startup-report').checked = true;
             
             // Keep backup enabled
             document.getElementById('create-backup').checked = true;
