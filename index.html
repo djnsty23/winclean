@@ -779,17 +779,6 @@
                     </div>
                 </div>
 
-                <div class="option-item" onclick="toggleCheckbox('perf-superfetch')">
-                    <input type="checkbox" id="perf-superfetch">
-                    <div class="option-item-content">
-                        <div class="option-item-header">
-                            <span class="option-item-title">Disable Superfetch</span>
-                            <span class="option-badge badge-ssd">SSD Only</span>
-                        </div>
-                        <p class="option-item-desc">⚠️ Only disable if you have an SSD, not a hard drive!</p>
-                    </div>
-                </div>
-
                 <div class="option-item" onclick="toggleCheckbox('perf-hibernation')">
                     <input type="checkbox" id="perf-hibernation">
                     <div class="option-item-content">
@@ -844,6 +833,72 @@
                         <p class="option-item-desc">Removes old event logs. Saves space and cleans up clutter.</p>
                     </div>
                 </div>
+
+                <div class="option-item" onclick="toggleCheckbox('disk-system-repair')">
+                    <input type="checkbox" id="disk-system-repair">
+                    <div class="option-item-content">
+                        <div class="option-item-header">
+                            <span class="option-item-title">System File Repair (DISM + SFC)</span>
+                            <span class="option-badge badge-optional" style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);">⏰ Monthly Only</span>
+                        </div>
+                        <p class="option-item-desc">Repairs corrupted Windows system files. Runs automatically before other tasks. Takes 15-30 minutes. Scheduled tasks run this monthly only (first week).</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Browser Cache Cleanup -->
+            <div class="option-card">
+                <div class="option-card-header">
+                    <div class="option-icon">🌐</div>
+                    <div>
+                        <h3>Browser Cache Cleanup</h3>
+                        <p>Clear browser caches to free space (browsers must be closed)</p>
+                    </div>
+                </div>
+
+                <div class="option-item" onclick="toggleCheckbox('browser-edge')">
+                    <input type="checkbox" id="browser-edge">
+                    <div class="option-item-content">
+                        <div class="option-item-header">
+                            <span class="option-item-title">Microsoft Edge Cache</span>
+                            <span class="option-badge badge-safe">Safe</span>
+                        </div>
+                        <p class="option-item-desc">Clears Edge browser cache. Edge must be closed. Can free 100MB-2GB.</p>
+                    </div>
+                </div>
+
+                <div class="option-item" onclick="toggleCheckbox('browser-chrome')">
+                    <input type="checkbox" id="browser-chrome">
+                    <div class="option-item-content">
+                        <div class="option-item-header">
+                            <span class="option-item-title">Google Chrome Cache</span>
+                            <span class="option-badge badge-safe">Safe</span>
+                        </div>
+                        <p class="option-item-desc">Clears Chrome browser cache. Chrome must be closed. Can free 100MB-2GB.</p>
+                    </div>
+                </div>
+
+                <div class="option-item" onclick="toggleCheckbox('browser-brave')">
+                    <input type="checkbox" id="browser-brave">
+                    <div class="option-item-content">
+                        <div class="option-item-header">
+                            <span class="option-item-title">Brave Browser Cache</span>
+                            <span class="option-badge badge-safe">Safe</span>
+                        </div>
+                        <p class="option-item-desc">Clears Brave browser cache. Brave must be closed. Can free 100MB-2GB.</p>
+                    </div>
+                </div>
+
+                <div class="option-item" onclick="toggleCheckbox('browser-opera')">
+                    <input type="checkbox" id="browser-opera">
+                    <div class="option-item-content">
+                        <div class="option-item-header">
+                            <span class="option-item-title">Opera Browser Cache</span>
+                            <span class="option-badge badge-safe">Safe</span>
+                        </div>
+                        <p class="option-item-desc">Clears Opera browser cache. Opera must be closed. Can free 100MB-2GB.</p>
+                    </div>
+                </div>
             </div>
 
             <!-- Windows Services -->
@@ -871,10 +926,10 @@
                     <input type="checkbox" id="service-sysmain">
                     <div class="option-item-content">
                         <div class="option-item-header">
-                            <span class="option-item-title">Set Superfetch to Manual</span>
-                            <span class="option-badge badge-safe">Safe</span>
+                            <span class="option-item-title">Set SysMain (Superfetch) to Manual</span>
+                            <span class="option-badge badge-recommended">SSD Recommended</span>
                         </div>
-                        <p class="option-item-desc">Reduces background disk usage. Service runs only when needed.</p>
+                        <p class="option-item-desc">Recommended for SSDs. Reduces background disk usage and improves responsiveness. Service runs only when needed.</p>
                     </div>
                 </div>
 

@@ -39,7 +39,8 @@
 - **Use this for your first run**
 
 ### [2] Schedule Recurring Maintenance
-- Sets up automatic cleanup (temp files, logs, disk cleanup, WinSxS)
+- Sets up automatic cleanup (temp files, browser caches, logs, disk cleanup, WinSxS)
+- System repair (DISM+SFC) runs monthly only (first week)
 - Choose frequency: Daily, Weekly, or Monthly
 - Select time to run (0-23 hours)
 - Choose visibility: Hidden (silent) or Show Window
@@ -81,15 +82,18 @@
 
 ### Always Safe ✅
 - All temp file cleanups
+- Browser cache cleanup (Edge, Chrome, Brave, Opera)
 - Recycle bin emptying
 - Old Windows update cleanup
 - System log clearing
+- System file repair (DISM + SFC)
 
 ### Usually Safe ✅
 - Telemetry minimization
 - Advertising ID disable
 - Prefetch cleanup
 - Game Mode enable
+- SysMain/Superfetch to Manual (recommended for SSDs)
 
 ### Consider Carefully ⚠️
 - Cortana disable (if you use voice commands)
@@ -157,13 +161,16 @@ Downloads/
 ## 🎯 Pro Tips
 
 1. **First Run**: Enable the backup option for safety
-2. **Scheduling**: Set maintenance to 3 AM for no interruptions
-3. **Hidden Tasks**: Use "Hidden (Silent)" mode for scheduled tasks to avoid interruptions
-4. **Logs**: All logs are saved in the same folder as your BAT file for easy access
-5. **Startup**: Use the startup report to disable bloatware
-6. **Restore**: Keep restore scripts for at least 30 days (saved in script folder)
-7. **Weekly**: Most users benefit from weekly scheduled maintenance
-8. **WinSxS**: Include it in scheduled tasks for deep cleanup every week/month
+2. **System Repair**: Enable DISM+SFC for monthly automated Windows repair
+3. **Browser Cache**: Close all browsers before running cleanup for best results
+4. **Scheduling**: Set maintenance to 3 AM for no interruptions
+5. **Hidden Tasks**: Use "Hidden (Silent)" mode for scheduled tasks to avoid interruptions
+6. **Logs**: All logs are saved in the same folder as your BAT file for easy access
+7. **Startup**: Use the startup report to disable bloatware
+8. **Restore**: Keep restore scripts for at least 30 days (saved in script folder)
+9. **Weekly**: Most users benefit from weekly scheduled maintenance
+10. **WinSxS**: Include it in scheduled tasks for deep cleanup every week/month
+11. **Monthly Repair**: System repair automatically runs monthly only (first week) to avoid unnecessary overhead
 
 ---
 

@@ -21,16 +21,20 @@ A comprehensive, user-friendly tool to optimize Windows 11 performance, privacy,
 
 ### One-Time Optimizations
 - **Temp Files Cleanup**: User temp, Windows temp, prefetch, thumbnails, recycle bin
+- **Browser Cache Cleanup**: Edge, Chrome, Brave, Opera caches
 - **Privacy Settings**: Disable telemetry, ads, Cortana, location tracking
-- **Performance Tuning**: Optimize visual effects, enable Game Mode, disable superfetch
+- **Performance Tuning**: Optimize visual effects, enable Game Mode
 - **Disk Maintenance**: Clean WinSxS, remove old updates, clear system logs
-- **Services**: Optimize DiagTrack, SysMain, Windows Search
+- **System Repair**: DISM + SFC to fix corrupted Windows files (runs before other tasks)
+- **Services**: Optimize DiagTrack, SysMain/Superfetch, Windows Search
 - **Startup Analysis**: Generate HTML report of startup programs
 
 ### Recurring Maintenance (Scheduled)
 - **Temp Files**: Automatic cleanup of accumulated temporary files
+- **Browser Caches**: Clear Edge, Chrome, Brave, Opera caches
 - **Windows Updates**: Remove old update files periodically
 - **System Logs**: Clear old event logs to save space
+- **System Repair**: DISM + SFC (runs monthly only, first week of month)
 
 ## 📋 How It Works
 
@@ -148,12 +152,27 @@ Every optimization run creates:
 
 ## 📊 What Gets Optimized
 
+### System Repair (New!)
+- **DISM**: Repairs Windows system image (foundation)
+- **SFC**: Scans and fixes corrupted system files
+- Runs BEFORE other optimizations for maximum effectiveness
+- Scheduled tasks: Runs monthly only (first week)
+- Takes 15-30 minutes
+
 ### Temp Files Cleanup
 - `%TEMP%` - User temporary files
 - `C:\Windows\Temp` - System temporary files
 - `C:\Windows\Prefetch` - Prefetch cache
 - Thumbnail cache
 - Recycle Bin
+
+### Browser Cache Cleanup (New!)
+- Microsoft Edge cache
+- Google Chrome cache
+- Brave Browser cache
+- Opera Browser cache
+- Can free 100MB-2GB per browser
+- Browsers must be closed
 
 ### Privacy Enhancements
 - Minimize Windows telemetry
@@ -164,7 +183,6 @@ Every optimization run creates:
 ### Performance Improvements
 - Optimize visual effects for performance
 - Enable Game Mode
-- Disable Superfetch (SSD optimization)
 - Disable Hibernation (frees disk space)
 
 ### Disk Maintenance
@@ -174,7 +192,7 @@ Every optimization run creates:
 
 ### Service Optimization
 - Disable DiagTrack (telemetry)
-- Set SysMain to Manual
+- Set SysMain/Superfetch to Manual (SSD recommended)
 - Set Windows Search to Manual
 
 ## 🗂️ Project Structure

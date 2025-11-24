@@ -81,13 +81,19 @@ function generateScript() {
         performance: {
             visual: document.getElementById('perf-visual')?.checked || false,
             gamemode: document.getElementById('perf-gamemode')?.checked || false,
-            superfetch: document.getElementById('perf-superfetch')?.checked || false,
             hibernation: document.getElementById('perf-hibernation')?.checked || false
         },
         disk: {
             winsxs: document.getElementById('disk-winsxs')?.checked || false,
             updates: document.getElementById('disk-updates')?.checked || false,
-            logs: document.getElementById('disk-logs')?.checked || false
+            logs: document.getElementById('disk-logs')?.checked || false,
+            systemRepair: document.getElementById('disk-system-repair')?.checked || false
+        },
+        browser: {
+            edge: document.getElementById('browser-edge')?.checked || false,
+            chrome: document.getElementById('browser-chrome')?.checked || false,
+            brave: document.getElementById('browser-brave')?.checked || false,
+            opera: document.getElementById('browser-opera')?.checked || false
         },
         startup: {
             scan: document.getElementById('startup-scan')?.checked || false,
@@ -142,7 +148,9 @@ function showBatScriptModal(batFilename, batScript, selected) {
                 <small>
                 🎯 <strong>START_HERE_Windows_Optimizer.bat</strong> ← Run this one!<br>
                 📄 Windows_Optimizer_OneTime.ps1 (auto-used by BAT)<br>
-                📄 Windows_Optimizer_Scheduled.ps1 (auto-used by BAT)
+                📄 Windows_Optimizer_Scheduled.ps1 (auto-used by BAT)<br>
+                <br>
+                ✨ <strong>New:</strong> System repair (DISM+SFC) & browser cache cleanup!
                 </small>
             </div>
             
@@ -422,9 +430,11 @@ echo ============================================
 echo.
 echo This will schedule ONLY recurring tasks:
 echo  - Temp files cleanup (user, Windows, prefetch, thumbnails)
+echo  - Browser cache cleanup (Edge, Chrome, Brave, Opera)
 echo  - Old Windows update cleanup
 echo  - System logs cleanup
 echo  - Component store cleanup (WinSxS, if selected)
+echo  - System file repair (DISM+SFC, monthly only)
 echo.
 echo (Privacy/performance/services settings are one-time only)
 echo.
@@ -813,9 +823,20 @@ $errorCount = 0
 
 `;
 
+    // SYSTEM REPAIR SECTION - ALWAYS RUN FIRST (if selected)
+    // This repairs Windows foundation before cleaning anything
+    if (selected.disk?.systemRepair) {
+        script += generateSystemRepairSection(selected.disk.systemRepair, scheduleMode);
+    }
+
     // TEMP FILES SECTION
     if (Object.values(selected.temp).some(v => v)) {
         script += generateTempCleanupSection(selected.temp, whatIf);
+    }
+
+    // BROWSER CACHE SECTION
+    if (selected.browser && Object.values(selected.browser).some(v => v)) {
+        script += generateBrowserCacheSection(selected.browser, whatIf);
     }
 
     // PRIVACY SECTION
@@ -1424,21 +1445,6 @@ try {
 `;
     }
 
-    if (perf.superfetch) {
-        section += `
-Write-Log "[TARGET] Disabling Superfetch (for SSD)..." "Cyan"
-try {
-    Set-Service -Name "SysMain" -StartupType Disabled ${whatIf} -ErrorAction Stop
-    Stop-Service -Name "SysMain" -Force ${whatIf} -ErrorAction SilentlyContinue
-    Write-Log "   OK: Superfetch disabled" "Green"
-    $script:itemsCleaned++
-} catch {
-    Write-Log "   WARNING: Could not disable Superfetch" "Yellow"
-    $script:errorCount++
-}
-`;
-    }
-
     if (perf.hibernation) {
         section += `
 Write-Log "[TARGET] Disabling Hibernation..." "Cyan"
@@ -1510,6 +1516,194 @@ try {
     }
 
     section += "\nWrite-Host \"\"\n";
+    return section;
+}
+
+function generateSystemRepairSection(systemRepair, scheduleMode) {
+    if (!systemRepair) return '';
+    
+    let section = `
+Write-Log "=============================================================" "Magenta"
+Write-Log "              SYSTEM FILE REPAIR (DISM + SFC)             " "Magenta"
+Write-Log "=============================================================" "Magenta"
+Write-Log ""
+`;
+
+    if (scheduleMode) {
+        // For scheduled tasks, only run in first week of month
+        section += `
+# Monthly Check: Only run system repair in first week of month
+$currentDay = (Get-Date).Day
+if ($currentDay -le 7) {
+    Write-Log "[REPAIR] Running monthly system file repair..." "Cyan"
+    Write-Log "   [INFO] This runs once per month to maintain system health" "Gray"
+`;
+    } else {
+        section += `
+Write-Log "[REPAIR] Running system file repair..." "Cyan"
+Write-Log "   [INFO] This may take 15-30 minutes..." "Gray"
+Write-Log ""
+`;
+    }
+
+    section += `
+# Step 1: DISM - Repair Windows System Image
+Write-Log "[REPAIR] Step 1/2: Running DISM to repair system image..." "Yellow"
+Write-Log "   [INFO] This may pause around 62% - this is normal" "Gray"
+try {
+    $dismResult = Dism.exe /Online /Cleanup-Image /RestoreHealth
+    if ($LASTEXITCODE -eq 0) {
+        Write-Log "   OK: DISM repair completed successfully" "Green"
+    } else {
+        Write-Log "   WARNING: DISM completed with warnings" "Yellow"
+    }
+    $script:itemsCleaned++
+} catch {
+    Write-Log "   ERROR: DISM repair failed: $($_.Exception.Message)" "Red"
+    $script:errorCount++
+}
+Write-Log ""
+
+# Step 2: SFC - Scan and Fix System Files
+Write-Log "[REPAIR] Step 2/2: Running SFC to verify system files..." "Yellow"
+try {
+    $sfcResult = sfc /scannow
+    if ($LASTEXITCODE -eq 0) {
+        Write-Log "   OK: SFC scan completed - all files verified" "Green"
+    } else {
+        Write-Log "   INFO: SFC found and repaired some files" "Cyan"
+    }
+    $script:itemsCleaned++
+} catch {
+    Write-Log "   ERROR: SFC scan failed: $($_.Exception.Message)" "Red"
+    $script:errorCount++
+}
+Write-Log ""
+Write-Log "[REPAIR] System file repair complete!" "Green"
+`;
+
+    if (scheduleMode) {
+        section += `
+} else {
+    Write-Log "[REPAIR] Skipping system repair (runs monthly in first week only)" "Gray"
+    Write-Log "   [INFO] Next repair will run on day 1-7 of next month" "Gray"
+}
+`;
+    }
+
+    section += `
+Write-Log ""
+
+`;
+    
+    return section;
+}
+
+function generateBrowserCacheSection(browser, whatIf) {
+    let section = '';
+    
+    const hasAnyBrowser = browser && (browser.edge || browser.chrome || browser.brave || browser.opera);
+    if (!hasAnyBrowser) return section;
+    
+    section = `
+Write-Log "=============================================================" "DarkYellow"
+Write-Log "               BROWSER CACHE CLEANUP                       " "DarkYellow"
+Write-Log "=============================================================" "DarkYellow"
+Write-Log ""
+Write-Log "[INFO] Browsers must be closed for cache cleanup to work" "Yellow"
+Write-Log ""
+
+`;
+
+    if (browser.edge) {
+        section += `
+Write-Log "[BROWSER] Cleaning Microsoft Edge cache..." "Cyan"
+try {
+    $edgeCachePath = "$env:LOCALAPPDATA\\Microsoft\\Edge\\User Data\\Default\\Cache"
+    if (Test-Path $edgeCachePath) {
+        $sizeBefore = (Get-ChildItem $edgeCachePath -Recurse -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
+        $sizeInMB = [math]::Round($sizeBefore / 1MB, 2)
+        Remove-Item "$edgeCachePath\\*" -Recurse -Force ${whatIf} -ErrorAction SilentlyContinue
+        $script:totalCleaned += $sizeBefore
+        Write-Log "   Edge cache cleared - $sizeInMB MB" "Green"
+        $script:itemsCleaned++
+    } else {
+        Write-Log "   SKIP: Edge cache not found" "Gray"
+    }
+} catch {
+    Write-Log "   WARNING: Edge must be closed - $($_.Exception.Message)" "Yellow"
+}
+`;
+    }
+
+    if (browser.chrome) {
+        section += `
+Write-Log "[BROWSER] Cleaning Google Chrome cache..." "Cyan"
+try {
+    $chromeCachePath = "$env:LOCALAPPDATA\\Google\\Chrome\\User Data\\Default\\Cache"
+    if (Test-Path $chromeCachePath) {
+        $sizeBefore = (Get-ChildItem $chromeCachePath -Recurse -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
+        $sizeInMB = [math]::Round($sizeBefore / 1MB, 2)
+        Remove-Item "$chromeCachePath\\*" -Recurse -Force ${whatIf} -ErrorAction SilentlyContinue
+        $script:totalCleaned += $sizeBefore
+        Write-Log "   Chrome cache cleared - $sizeInMB MB" "Green"
+        $script:itemsCleaned++
+    } else {
+        Write-Log "   SKIP: Chrome cache not found" "Gray"
+    }
+} catch {
+    Write-Log "   WARNING: Chrome must be closed - $($_.Exception.Message)" "Yellow"
+}
+`;
+    }
+
+    if (browser.brave) {
+        section += `
+Write-Log "[BROWSER] Cleaning Brave Browser cache..." "Cyan"
+try {
+    $braveCachePath = "$env:LOCALAPPDATA\\BraveSoftware\\Brave-Browser\\User Data\\Default\\Cache"
+    if (Test-Path $braveCachePath) {
+        $sizeBefore = (Get-ChildItem $braveCachePath -Recurse -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
+        $sizeInMB = [math]::Round($sizeBefore / 1MB, 2)
+        Remove-Item "$braveCachePath\\*" -Recurse -Force ${whatIf} -ErrorAction SilentlyContinue
+        $script:totalCleaned += $sizeBefore
+        Write-Log "   Brave cache cleared - $sizeInMB MB" "Green"
+        $script:itemsCleaned++
+    } else {
+        Write-Log "   SKIP: Brave cache not found" "Gray"
+    }
+} catch {
+    Write-Log "   WARNING: Brave must be closed - $($_.Exception.Message)" "Yellow"
+}
+`;
+    }
+
+    if (browser.opera) {
+        section += `
+Write-Log "[BROWSER] Cleaning Opera Browser cache..." "Cyan"
+try {
+    $operaCachePath = "$env:APPDATA\\Opera Software\\Opera Stable\\Cache"
+    if (Test-Path $operaCachePath) {
+        $sizeBefore = (Get-ChildItem $operaCachePath -Recurse -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
+        $sizeInMB = [math]::Round($sizeBefore / 1MB, 2)
+        Remove-Item "$operaCachePath\\*" -Recurse -Force ${whatIf} -ErrorAction SilentlyContinue
+        $script:totalCleaned += $sizeBefore
+        Write-Log "   Opera cache cleared - $sizeInMB MB" "Green"
+        $script:itemsCleaned++
+    } else {
+        Write-Log "   SKIP: Opera cache not found" "Gray"
+    }
+} catch {
+    Write-Log "   WARNING: Opera must be closed - $($_.Exception.Message)" "Yellow"
+}
+`;
+    }
+
+    section += `
+Write-Log ""
+
+`;
+    
     return section;
 }
 
@@ -1701,8 +1895,10 @@ function buildScheduledMaintenanceScript(selected) {
         disk: {
             winsxs: selected.disk?.winsxs || false, // Can recur if user wants deep cleanup
             updates: selected.disk?.updates || false, // Can recur
-            logs: selected.disk?.logs || false // Can recur
+            logs: selected.disk?.logs || false, // Can recur
+            systemRepair: selected.disk?.systemRepair || false // Will run monthly only with check
         },
+        browser: selected.browser || {}, // Browser caches accumulate - RECURRING
         // Privacy, performance, services, startup - ONE-TIME only
         privacy: {}, // These are settings, not cleanup
         performance: {}, // One-time configuration
@@ -1711,7 +1907,8 @@ function buildScheduledMaintenanceScript(selected) {
     };
     
     // Build script without backup (automated task doesn't need interactive backup)
-    return buildPowerShellScript(recurringTasks, false, false, false);
+    // Mark as scheduled mode to add monthly check for system repair
+    return buildPowerShellScript(recurringTasks, false, true, false);
 }
 
 // ============================================
