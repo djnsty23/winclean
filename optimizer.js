@@ -116,8 +116,8 @@ function generateScript() {
     // Generate scheduled script (recurring tasks only)
     const scheduledScript = buildScheduledMaintenanceScript(selected);
     
-    // Build the unified BAT file
-    const batFilename = `Windows_Optimizer.bat`;
+    // Build the unified BAT file with clear naming
+    const batFilename = `START_HERE_Windows_Optimizer.bat`;
     const batScript = buildUnifiedBatFile(oneTimeScript, scheduledScript, selected, createBackup);
     
     // Show modal with download option
@@ -139,29 +139,35 @@ function showBatScriptModal(batFilename, batScript, selected) {
             <h4>📦 What You're Getting:</h4>
             <div style="margin: 1rem 0; padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                 <strong style="font-size: 1.1rem;">3 Files (Downloaded Together)</strong><br>
-                <small>• Windows_Optimizer.bat - Interactive launcher<br>
-                • Windows_Optimizer_OneTime.ps1 - Full optimization<br>
-                • Windows_Optimizer_Scheduled.ps1 - Recurring tasks</small>
+                <small>
+                🎯 <strong>START_HERE_Windows_Optimizer.bat</strong> ← Run this one!<br>
+                📄 Windows_Optimizer_OneTime.ps1 (auto-used by BAT)<br>
+                📄 Windows_Optimizer_Scheduled.ps1 (auto-used by BAT)
+                </small>
             </div>
             
             <h4 style="margin-top: 1.5rem;">🚀 How to Use:</h4>
             <ol style="line-height: 1.8;">
                 <li><strong>Download all files</strong> (3 files will download automatically)</li>
                 <li><strong>Keep all 3 files together</strong> in the same folder</li>
-                <li><strong>Right-click Windows_Optimizer.bat</strong> → <strong>Run as Administrator</strong></li>
+                <li><strong>Right-click START_HERE_Windows_Optimizer.bat</strong> → <strong>Run as Administrator</strong></li>
                 <li><strong>Choose from the menu:</strong>
                     <ul style="margin-top: 0.5rem;">
-                        <li>[1] Run optimization now</li>
-                        <li>[2] Schedule recurring maintenance</li>
-                        <li>[3] View logs</li>
-                        <li>[4] View startup report</li>
-                        <li>[5] Restore previous settings</li>
+                        <li>[1] Run optimization now - Creates backup & logs</li>
+                        <li>[2] Schedule recurring maintenance - Set frequency, time & visibility</li>
+                        <li>[3] View logs - Check what was optimized</li>
+                        <li>[4] View startup report - See all startup programs</li>
+                        <li>[5] Restore previous settings - Undo changes</li>
                     </ul>
                 </li>
             </ol>
             
             <div style="margin-top: 1rem; padding: 1rem; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 4px;">
-                <strong>⚠️ IMPORTANT:</strong> All 3 files must be in the same folder to work!
+                <strong>⚠️ IMPORTANT:</strong> Run ONLY the .bat file - the .ps1 files are used automatically!
+            </div>
+            
+            <div style="margin-top: 0.5rem; padding: 1rem; background: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 4px;">
+                <strong>📁 Files & Logs:</strong> Backups, restore points, and logs are saved in the same folder as your BAT file for easy access.
             </div>
         </div>
         <div style="margin-top: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
@@ -193,7 +199,7 @@ function downloadAllOptimizerFiles() {
     }, 600);
     
     closeModal();
-    showNotification('All files downloaded! Keep them together and run the BAT file as Admin.', 'success');
+    showNotification('✅ 3 files downloaded! Right-click START_HERE_Windows_Optimizer.bat and Run as Admin.', 'success');
 }
 
 function downloadPreviewScript() {
@@ -365,12 +371,18 @@ echo.
 echo Select an option:
 echo.
 echo  [1] Run Optimization Now
+echo      Execute all your selected optimizations
+echo.
 echo  [2] Schedule Recurring Maintenance
+echo      Auto-run cleanup tasks (temp, logs, updates)
+echo.
 echo  [3] View Last Log
 echo  [4] View Startup Report
 echo  [5] Restore Previous Settings
 echo  [6] Exit
 echo.
+echo ============================================
+echo  Files saved in: %SCRIPT_DIR%
 echo ============================================
 echo.
 set /p choice="Enter your choice (1-6): "
@@ -408,6 +420,16 @@ echo ============================================
 echo  SCHEDULE RECURRING MAINTENANCE
 echo ============================================
 echo.
+echo This will schedule ONLY recurring tasks:
+echo  - Temp files cleanup (user, Windows, prefetch, thumbnails)
+echo  - Old Windows update cleanup
+echo  - System logs cleanup
+echo  - Component store cleanup (WinSxS, if selected)
+echo.
+echo (Privacy/performance/services settings are one-time only)
+echo.
+echo Logs will be saved to: %SCRIPT_DIR%
+echo.
 echo Select frequency:
 echo.
 echo  [1] Daily
@@ -442,12 +464,36 @@ set /p hour="Hour: "
 set /a testHour=%hour% 2>nul
 if %testHour% LSS 0 goto INVALID_HOUR
 if %testHour% GTR 23 goto INVALID_HOUR
-goto CREATE_TASK
+goto SELECT_VISIBILITY
 
 :INVALID_HOUR
 echo Invalid hour. Please enter 0-23.
 timeout /t 2 >nul
 goto SELECT_TIME
+
+:SELECT_VISIBILITY
+cls
+echo.
+echo ============================================
+echo  SELECT TASK VISIBILITY
+echo ============================================
+echo.
+echo How should the task run?
+echo.
+echo  [1] Hidden (Silent) - No window shown
+echo       Recommended for unattended maintenance
+echo.
+echo  [2] Show Window - Display PowerShell window
+echo       Useful for monitoring or troubleshooting
+echo.
+set /p visibility="Enter choice (1-2): "
+
+if "%visibility%"=="1" set "taskHidden=1" & goto CREATE_TASK
+if "%visibility%"=="2" set "taskHidden=0" & goto CREATE_TASK
+
+echo Invalid choice. Please enter 1 or 2.
+timeout /t 2 >nul
+goto SELECT_VISIBILITY
 
 :CREATE_TASK
 cls
@@ -457,32 +503,59 @@ echo.
 
 set "taskName=WindowsOptimizerMaintenance"
 
+:: Set PowerShell argument based on visibility
+if "%taskHidden%"=="1" (
+    set "psArgs=-WindowStyle Hidden -ExecutionPolicy Bypass -File \"%SCHEDULED_SCRIPT%\""
+    set "visibilityText=Hidden (Silent)"
+) else (
+    set "psArgs=-ExecutionPolicy Bypass -File \"%SCHEDULED_SCRIPT%\""
+    set "visibilityText=Visible Window"
+)
+
 if "%triggerType%"=="DAILY" (
-    powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-ExecutionPolicy Bypass -File \"%SCHEDULED_SCRIPT%\"'; $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force" >nul 2>&1
+    powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden:$%taskHidden%; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force" >nul 2>&1
 )
 
 if "%triggerType%"=="WEEKLY" (
-    powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-ExecutionPolicy Bypass -File \"%SCHEDULED_SCRIPT%\"'; $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force" >nul 2>&1
+    powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden:$%taskHidden%; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force" >nul 2>&1
 )
 
 if "%triggerType%"=="MONTHLY" (
-    powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-ExecutionPolicy Bypass -File \"%SCHEDULED_SCRIPT%\"'; $day = 1; $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00; $trigger.DaysInterval = 30; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force" >nul 2>&1
+    powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $day = 1; $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00; $trigger.DaysInterval = 30; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden:$%taskHidden%; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force" >nul 2>&1
 )
 
 if %errorlevel% equ 0 (
     echo ============================================
-    echo  SUCCESS
+    echo  SCHEDULED TASK CREATED SUCCESSFULLY!
     echo ============================================
     echo.
-    echo Task: %taskName%
+    echo Task Name: %taskName%
     echo Frequency: %triggerType%
     echo Time: %hour%:00
+    echo Visibility: %visibilityText%
     echo Script: %SCHEDULED_SCRIPT%
     echo.
+    echo Logs will be saved to:
+    echo %SCRIPT_DIR%
+    echo.
     echo Your PC will now be automatically maintained!
+    echo.
+    echo ============================================
+    echo  HOW TO MANAGE THIS TASK
+    echo ============================================
+    echo.
+    echo To check or modify:
+    echo  1. Press Win+R
+    echo  2. Type: taskschd.msc
+    echo  3. Find "WindowsOptimizerMaintenance"
+    echo.
+    echo To stop automatic maintenance:
+    echo  - Right-click the task
+    echo  - Select "Disable" or "Delete"
+    echo.
 ) else (
     echo ============================================
-    echo  ERROR
+    echo  ERROR CREATING TASK
     echo ============================================
     echo Failed to create task. Check Task Scheduler.
 )
@@ -499,12 +572,20 @@ echo  VIEWING LAST LOG
 echo ============================================
 echo.
 
+:: Check script folder first
+for /f "delims=" %%f in ('dir "%SCRIPT_DIR%WinOptimizer_*.log" /b /o-d 2^>nul') do (
+    set "latestLog=%SCRIPT_DIR%%%f"
+    goto FOUND_LOG
+)
+
+:: Fallback to Desktop
 for /f "delims=" %%f in ('dir "%USERPROFILE%\\Desktop\\WinOptimizer_*.log" /b /o-d 2^>nul') do (
     set "latestLog=%USERPROFILE%\\Desktop\\%%f"
     goto FOUND_LOG
 )
 
-echo No log files found on Desktop.
+echo No log files found.
+echo Logs are created after running optimization.
 pause
 goto MENU
 
@@ -521,12 +602,20 @@ echo  VIEWING STARTUP REPORT
 echo ============================================
 echo.
 
+:: Check script folder first
+for /f "delims=" %%f in ('dir "%SCRIPT_DIR%StartupPrograms_*.txt" /b /o-d 2^>nul') do (
+    set "latestReport=%SCRIPT_DIR%%%f"
+    goto FOUND_REPORT
+)
+
+:: Fallback to Desktop
 for /f "delims=" %%f in ('dir "%USERPROFILE%\\Desktop\\StartupPrograms_*.txt" /b /o-d 2^>nul') do (
     set "latestReport=%USERPROFILE%\\Desktop\\%%f"
     goto FOUND_REPORT
 )
 
 echo No startup reports found.
+echo Reports are created when startup analysis is enabled.
 pause
 goto MENU
 
@@ -546,14 +635,16 @@ echo Available restore points:
 echo.
 
 set count=0
-for /f "delims=" %%f in ('dir "%USERPROFILE%\\Desktop\\RESTORE_Windows_Settings_*.ps1" /b /o-d 2^>nul') do (
+for /f "delims=" %%f in ('dir "%SCRIPT_DIR%RESTORE_Windows_Settings_*.ps1" /b /o-d 2^>nul') do (
     set /a count+=1
-    set "restore!count!=%USERPROFILE%\\Desktop\\%%f"
+    set "restore!count!=%SCRIPT_DIR%%%f"
     echo  [!count!] %%f
 )
 
 if %count% equ 0 (
-    echo No restore points found on Desktop.
+    echo No restore points found in this folder.
+    echo.
+    echo Make sure restore scripts are in the same folder as this BAT file.
     pause
     goto MENU
 )
@@ -1596,7 +1687,7 @@ function buildScheduledMaintenanceScript(selected) {
     const recurringTasks = {
         temp: selected.temp || {}, // Temp files accumulate - RECURRING
         disk: {
-            winsxs: false, // One-time cleanup - takes too long
+            winsxs: selected.disk?.winsxs || false, // Can recur if user wants deep cleanup
             updates: selected.disk?.updates || false, // Can recur
             logs: selected.disk?.logs || false // Can recur
         },

@@ -8,14 +8,14 @@ A comprehensive, user-friendly tool to optimize Windows 11 performance, privacy,
 2. Select the optimizations you want
 3. Click "Generate My Optimizer"
 4. Download all 3 files (downloads automatically):
-   - `Windows_Optimizer.bat` - The launcher (run this!)
-   - `Windows_Optimizer_OneTime.ps1` - Full optimization script
-   - `Windows_Optimizer_Scheduled.ps1` - Recurring maintenance script
+   - `START_HERE_Windows_Optimizer.bat` ← **Run this one!**
+   - `Windows_Optimizer_OneTime.ps1` (used automatically)
+   - `Windows_Optimizer_Scheduled.ps1` (used automatically)
 5. **Keep all 3 files in the same folder**
-6. **Right-click `Windows_Optimizer.bat`** → **Run as Administrator**
+6. **Right-click `START_HERE_Windows_Optimizer.bat`** → **Run as Administrator**
 7. Select from the interactive menu
 
-**IMPORTANT**: All 3 files must be together in the same folder. Only run the .bat file!
+**IMPORTANT**: Only run the START_HERE .bat file! The .ps1 files are used automatically.
 
 ## ✨ Features
 
@@ -104,11 +104,11 @@ Every optimization run creates:
 ```
 1. Generate Your Optimizer (index.html)
    └─> Downloads 3 files:
-       ├─> Windows_Optimizer.bat (launcher)
-       ├─> Windows_Optimizer_OneTime.ps1 (full optimization)
-       └─> Windows_Optimizer_Scheduled.ps1 (recurring tasks)
+       ├─> START_HERE_Windows_Optimizer.bat ← RUN THIS!
+       ├─> Windows_Optimizer_OneTime.ps1 (auto-used)
+       └─> Windows_Optimizer_Scheduled.ps1 (auto-used)
 
-2. Run Launcher (Windows_Optimizer.bat) ← RIGHT-CLICK → RUN AS ADMIN
+2. Run Launcher (START_HERE_Windows_Optimizer.bat) ← RIGHT-CLICK → RUN AS ADMIN
    ├─> Checks for admin privileges
    ├─> Verifies PS1 files are present
    └─> Shows interactive menu
@@ -118,12 +118,13 @@ Every optimization run creates:
    │   ├─> Executes Windows_Optimizer_OneTime.ps1
    │   ├─> Creates backup (if enabled)
    │   ├─> Shows progress in real-time
-   │   └─> Saves log to Desktop
+   │   └─> Saves log to script folder
    │
    ├─> [2] Schedule Recurring Maintenance
    │   ├─> Executes Windows_Optimizer_Scheduled.ps1
    │   ├─> Choose: Daily/Weekly/Monthly
    │   ├─> Set time (0-23 hours)
+   │   ├─> Choose: Hidden/Visible window
    │   └─> Creates Windows scheduled task
    │
    ├─> [3] View Last Log
@@ -142,8 +143,8 @@ Every optimization run creates:
 
 **KEY RULES**: 
 - ⚠️ Keep all 3 files in the same folder
-- ⚠️ Always run the .bat file as Administrator
-- ⚠️ Never run .ps1 files directly!
+- ⚠️ Only run START_HERE_Windows_Optimizer.bat as Administrator
+- ⚠️ Never run .ps1 files directly - they're used automatically!
 
 ## 📊 What Gets Optimized
 
@@ -188,9 +189,9 @@ winclean-1/
 └── LICENSE                          # MIT License
 
 Generated files (downloaded):
-├── Windows_Optimizer.bat            # Interactive launcher (run this!)
-├── Windows_Optimizer_OneTime.ps1    # Full optimization script
-└── Windows_Optimizer_Scheduled.ps1  # Recurring maintenance script
+├── START_HERE_Windows_Optimizer.bat ← RUN THIS ONE!
+├── Windows_Optimizer_OneTime.ps1    # Auto-used by BAT
+└── Windows_Optimizer_Scheduled.ps1  # Auto-used by BAT
 ```
 
 ## ⚙️ Advanced Usage

@@ -7,17 +7,17 @@
 2. Select the optimizations you want (recommended options are pre-selected)
 3. Click **"Generate My Optimizer"**
 4. **3 files download automatically**:
-   - `Windows_Optimizer.bat` (the launcher)
-   - `Windows_Optimizer_OneTime.ps1` (full optimization)
-   - `Windows_Optimizer_Scheduled.ps1` (recurring tasks)
+   - `START_HERE_Windows_Optimizer.bat` ← **Run this one!**
+   - `Windows_Optimizer_OneTime.ps1` (used automatically)
+   - `Windows_Optimizer_Scheduled.ps1` (used automatically)
 
 ### Step 2: Run as Administrator
 1. Navigate to your Downloads folder
-2. **Right-click `Windows_Optimizer.bat`**
+2. **Right-click `START_HERE_Windows_Optimizer.bat`**
 3. Select **"Run as Administrator"**
 4. You'll see an interactive menu with 6 options
 
-⚠️ **CRITICAL**: All 3 files must be in the same folder! Always use the .bat launcher!
+⚠️ **CRITICAL**: All 3 files must be in the same folder! Only run START_HERE .bat file!
 
 ### Step 3: Choose What to Do
 - **[1]** Run optimization now
@@ -39,10 +39,12 @@
 - **Use this for your first run**
 
 ### [2] Schedule Recurring Maintenance
-- Sets up automatic cleanup (temp files, logs, disk cleanup)
+- Sets up automatic cleanup (temp files, logs, disk cleanup, WinSxS)
 - Choose frequency: Daily, Weekly, or Monthly
 - Select time to run (0-23 hours)
+- Choose visibility: Hidden (silent) or Show Window
 - Creates Windows scheduled task
+- Logs saved to script folder
 - **Use this for hands-free maintenance**
 
 ### [3] View Last Log
@@ -93,7 +95,7 @@
 - Cortana disable (if you use voice commands)
 - Windows Search to Manual (may slow file searches)
 - Hibernation disable (if you use hibernate feature)
-- Component Store cleanup (WinSxS - takes 5-10 minutes)
+- Component Store cleanup (WinSxS - takes 5-10 minutes, but can be scheduled)
 
 ---
 
@@ -101,11 +103,12 @@
 
 - [ ] Generated optimizer from index.html
 - [ ] All 3 files downloaded to same folder
-- [ ] Right-clicked Windows_Optimizer.bat
+- [ ] Right-clicked START_HERE_Windows_Optimizer.bat
 - [ ] Selected "Run as Administrator"
 - [ ] Chose option [1] for first optimization
-- [ ] Reviewed the log file on Desktop
+- [ ] Reviewed the log file (saved in same folder as BAT)
 - [ ] (Optional) Set up option [2] for weekly maintenance
+- [ ] (Optional) Choose "Hidden" mode for silent scheduled tasks
 
 ---
 
@@ -142,9 +145,9 @@ After downloading, your folder should look like this:
 
 ```
 Downloads/
-├── Windows_Optimizer.bat               ← Right-click this!
-├── Windows_Optimizer_OneTime.ps1       ← Don't run directly
-└── Windows_Optimizer_Scheduled.ps1     ← Don't run directly
+├── START_HERE_Windows_Optimizer.bat    ← Right-click this, Run as Admin!
+├── Windows_Optimizer_OneTime.ps1       ← Used automatically
+└── Windows_Optimizer_Scheduled.ps1     ← Used automatically
 ```
 
 **All 3 files MUST stay together!**
@@ -155,10 +158,12 @@ Downloads/
 
 1. **First Run**: Enable the backup option for safety
 2. **Scheduling**: Set maintenance to 3 AM for no interruptions
-3. **Logs**: Save logs to review what was optimized
-4. **Startup**: Use the startup report to disable bloatware
-5. **Restore**: Keep restore scripts for at least 30 days
-6. **Weekly**: Most users benefit from weekly scheduled maintenance
+3. **Hidden Tasks**: Use "Hidden (Silent)" mode for scheduled tasks to avoid interruptions
+4. **Logs**: All logs are saved in the same folder as your BAT file for easy access
+5. **Startup**: Use the startup report to disable bloatware
+6. **Restore**: Keep restore scripts for at least 30 days (saved in script folder)
+7. **Weekly**: Most users benefit from weekly scheduled maintenance
+8. **WinSxS**: Include it in scheduled tasks for deep cleanup every week/month
 
 ---
 
