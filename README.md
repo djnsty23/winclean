@@ -5,7 +5,7 @@ A comprehensive, user-friendly tool to optimize Windows 11 performance, privacy,
 ## 🚀 Quick Start
 
 1. Open `index.html` in your browser
-2. Select the optimizations you want
+2. Click **"⭐ Apply Recommended Settings"** or select manually
 3. Click "Generate My Optimizer"
 4. Download all 3 files (downloads automatically):
    - `START_HERE_Windows_Optimizer.bat` ← **Run this one!**
@@ -40,7 +40,11 @@ A comprehensive, user-friendly tool to optimize Windows 11 performance, privacy,
 
 ### 1. Generate Your Custom Optimizer
 - Open `index.html` in any browser
-- Select your desired optimizations
+- Use **Quick Actions**:
+  - **⭐ Apply Recommended Settings** - Instantly selects all safe, recommended optimizations
+  - **✅ Select All** - Enable every optimization option
+  - **❌ Clear All** - Start fresh with no selections
+- Or manually select your desired optimizations
 - Click "Generate My Optimizer"
 - 3 files download automatically:
   - `Windows_Optimizer.bat` - Interactive launcher

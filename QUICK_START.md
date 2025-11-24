@@ -4,7 +4,10 @@
 
 ### Step 1: Generate Your Optimizer
 1. Open `index.html` in any web browser
-2. Select the optimizations you want (recommended options are pre-selected)
+2. **Quick Actions** (new!):
+   - Click **"⭐ Apply Recommended Settings"** for instant safe optimization
+   - Or click **"✅ Select All"** or **"❌ Clear All"**
+   - Or manually select your optimizations
 3. Click **"Generate My Optimizer"**
 4. **3 files download automatically**:
    - `START_HERE_Windows_Optimizer.bat` ← **Run this one!**
