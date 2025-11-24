@@ -6,12 +6,16 @@ A comprehensive, user-friendly tool to optimize Windows 11 performance, privacy,
 
 1. Open `index.html` in your browser
 2. Select the optimizations you want
-3. Click "Generate Optimization Script"
-4. Download both generated scripts to the same folder as `Windows_Optimizer_Launcher.bat`
-5. **Run ONLY the .bat file** - it handles everything with admin privileges
-6. Choose what you want to do from the menu
+3. Click "Generate My Optimizer"
+4. Download all 3 files (downloads automatically):
+   - `Windows_Optimizer.bat` - The launcher (run this!)
+   - `Windows_Optimizer_OneTime.ps1` - Full optimization script
+   - `Windows_Optimizer_Scheduled.ps1` - Recurring maintenance script
+5. **Keep all 3 files in the same folder**
+6. **Right-click `Windows_Optimizer.bat`** → **Run as Administrator**
+7. Select from the interactive menu
 
-**IMPORTANT**: Always use the `.bat` launcher - don't run `.ps1` files directly! The launcher automatically elevates to admin and manages all operations.
+**IMPORTANT**: All 3 files must be together in the same folder. Only run the .bat file!
 
 ## ✨ Features
 
@@ -30,23 +34,27 @@ A comprehensive, user-friendly tool to optimize Windows 11 performance, privacy,
 
 ## 📋 How It Works
 
-### 1. Generate Scripts
+### 1. Generate Your Custom Optimizer
 - Open `index.html` in any browser
 - Select your desired optimizations
-- Click "Generate Optimization Script"
-- Download BOTH scripts:
-  - `Windows_Optimizer_[timestamp].ps1` - One-time full optimization
-  - `Windows_Optimizer_SCHEDULED_[timestamp].ps1` - Recurring maintenance only
+- Click "Generate My Optimizer"
+- 3 files download automatically:
+  - `Windows_Optimizer.bat` - Interactive launcher
+  - `Windows_Optimizer_OneTime.ps1` - Full optimization
+  - `Windows_Optimizer_Scheduled.ps1` - Recurring tasks only
 
-### 2. Run with Launcher (THE ONLY WAY)
-**Always use `Windows_Optimizer_Launcher.bat`** - it's the single entry point that:
-- ✅ Automatically elevates to Administrator
-- ✅ Handles all PowerShell execution with proper permissions
-- ✅ Provides a clean menu interface
-- ✅ Shows results and logs
-- ✅ Manages restore operations
+### 2. Run the BAT File as Administrator
+**Right-click `Windows_Optimizer.bat` → Run as Administrator**
 
-**Never run `.ps1` files directly** - they won't have proper admin rights!
+The launcher provides an interactive menu:
+- ✅ [1] Run optimization now (executes OneTime script)
+- ✅ [2] Schedule recurring maintenance (sets up scheduled tasks)
+- ✅ [3] View last log file
+- ✅ [4] View startup programs report
+- ✅ [5] Restore previous settings
+- ✅ [6] Exit
+
+**Never run `.ps1` files directly** - always use the .bat launcher!
 
 ```
 [1] Run One-Time Optimization Now
@@ -94,42 +102,48 @@ Every optimization run creates:
 ## 🔄 Complete Workflow
 
 ```
-1. Generate Scripts (index.html)
-   └─> Downloads: Windows_Optimizer_[date].ps1
-   └─> Downloads: Windows_Optimizer_SCHEDULED_[date].ps1
+1. Generate Your Optimizer (index.html)
+   └─> Downloads 3 files:
+       ├─> Windows_Optimizer.bat (launcher)
+       ├─> Windows_Optimizer_OneTime.ps1 (full optimization)
+       └─> Windows_Optimizer_Scheduled.ps1 (recurring tasks)
 
-2. Run Launcher (Windows_Optimizer_Launcher.bat) ← ALWAYS START HERE
-   ├─> Auto-elevates to Administrator
-   └─> Shows menu with 6 options
+2. Run Launcher (Windows_Optimizer.bat) ← RIGHT-CLICK → RUN AS ADMIN
+   ├─> Checks for admin privileges
+   ├─> Verifies PS1 files are present
+   └─> Shows interactive menu
 
-3. Choose Operation:
-   ├─> [1] One-Time Optimization
-   │   ├─> Runs Windows_Optimizer_[date].ps1
-   │   ├─> Creates backup automatically
+3. Choose from Menu:
+   ├─> [1] Run Optimization Now
+   │   ├─> Executes Windows_Optimizer_OneTime.ps1
+   │   ├─> Creates backup (if enabled)
    │   ├─> Shows progress in real-time
-   │   └─> Opens log when complete
+   │   └─> Saves log to Desktop
    │
-   ├─> [2] Schedule Maintenance
-   │   ├─> Uses Windows_Optimizer_SCHEDULED_[date].ps1
+   ├─> [2] Schedule Recurring Maintenance
+   │   ├─> Executes Windows_Optimizer_Scheduled.ps1
    │   ├─> Choose: Daily/Weekly/Monthly
    │   ├─> Set time (0-23 hours)
-   │   └─> Creates Windows Task
+   │   └─> Creates Windows scheduled task
    │
    ├─> [3] View Last Log
-   │   └─> Opens most recent log in Notepad
+   │   └─> Opens most recent WinOptimizer_*.log in Notepad
    │
    ├─> [4] View Startup Report
-   │   └─> Opens HTML report in browser
+   │   └─> Opens StartupPrograms_*.txt in Notepad
    │
-   ├─> [5] Restore Settings
-   │   ├─> Lists all backup points
-   │   ├─> Runs restore with admin
+   ├─> [5] Restore Previous Settings
+   │   ├─> Lists all RESTORE_*.ps1 files
+   │   ├─> Runs selected restore script
    │   └─> Shows results
    │
    └─> [6] Exit
 ```
 
-**KEY RULE**: ⚠️ Always use the `.bat` launcher - never run `.ps1` files directly!
+**KEY RULES**: 
+- ⚠️ Keep all 3 files in the same folder
+- ⚠️ Always run the .bat file as Administrator
+- ⚠️ Never run .ps1 files directly!
 
 ## 📊 What Gets Optimized
 
@@ -166,13 +180,17 @@ Every optimization run creates:
 
 ```
 winclean-1/
-├── index.html                          # Web UI for script generation
-├── optimizer.js                        # Script generation logic
-├── Windows_Optimizer_Launcher.bat     # Main launcher (auto-admin)
-├── README.md                           # This file
-├── QUICK_START.md                      # Quick reference guide
-├── FEATURES.md                         # Detailed feature list
-└── LICENSE                             # MIT License
+├── index.html                       # Web UI for script generation
+├── optimizer.js                     # Script generation logic
+├── README.md                        # This file
+├── QUICK_START.md                   # Quick reference guide
+├── FEATURES.md                      # Detailed feature list
+└── LICENSE                          # MIT License
+
+Generated files (downloaded):
+├── Windows_Optimizer.bat            # Interactive launcher (run this!)
+├── Windows_Optimizer_OneTime.ps1    # Full optimization script
+└── Windows_Optimizer_Scheduled.ps1  # Recurring maintenance script
 ```
 
 ## ⚙️ Advanced Usage

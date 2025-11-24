@@ -59,7 +59,7 @@ function getTimestamp() {
 // MAIN SCRIPT GENERATION FUNCTION
 // ============================================
 
-function generateScript(previewMode = false, scheduleMode = false) {
+function generateScript() {
     // Check if backup is enabled
     const createBackup = document.getElementById('create-backup')?.checked || false;
     
@@ -106,7 +106,7 @@ function generateScript(previewMode = false, scheduleMode = false) {
     );
 
     if (!hasSelection) {
-        showNotification('WARNING Please select at least one optimization option!', 'warning');
+        showNotification('Please select at least one optimization option!', 'warning');
         return;
     }
 
@@ -145,10 +145,9 @@ function generateScript(previewMode = false, scheduleMode = false) {
         showModal('Weekly Maintenance Task', modalContent);
         window.currentScript = taskScript;
     } else {
-        // Regular mode - generate BOTH one-time and scheduled scripts
+        // Regular mode - generate unified BAT file with embedded PowerShell
         const timestamp = getTimestamp();
-        const oneTimeFilename = `Windows_Optimizer_${timestamp}.ps1`;
-        const scheduledFilename = `Windows_Optimizer_SCHEDULED_${timestamp}.ps1`;
+        const batFilename = `Windows_Optimizer.bat`;
         
         // Generate one-time script (current selections)
         const oneTimeScript = script;
@@ -156,42 +155,56 @@ function generateScript(previewMode = false, scheduleMode = false) {
         // Generate scheduled script (recurring tasks only)
         const scheduledScript = buildScheduledMaintenanceScript(selected);
         
-        showBothScriptsModal(oneTimeFilename, scheduledFilename, oneTimeScript, scheduledScript);
+        // Build the unified BAT file
+        const batScript = buildUnifiedBatFile(oneTimeScript, scheduledScript, selected, createBackup);
+        
+        showBatScriptModal(batFilename, batScript, selected);
     }
 }
 
-function showBothScriptsModal(oneTimeFilename, scheduledFilename, oneTimeScript, scheduledScript) {
+function showBatScriptModal(batFilename, batScript, selected) {
+    // Count selected optimizations
+    const totalSelected = Object.values(selected).reduce((sum, category) => {
+        return sum + Object.values(category).filter(v => v === true).length;
+    }, 0);
+    
     const modalContent = `
         <div class="alert alert-success">
             <div style="font-size:1.5rem">SUCCESS</div>
-            <div><strong>Two Scripts Generated!</strong><br>Your optimization scripts are ready to download.</div>
+            <div><strong>Your Optimizer is Ready!</strong><br>Custom script generated with ${totalSelected} optimizations.</div>
         </div>
         <div class="instructions-box">
-            <h4>What You're Getting:</h4>
-            <div style="margin: 1rem 0; padding: 1rem; background: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 4px;">
-                <strong>1. One-Time Optimizer</strong> (${oneTimeFilename})<br>
-                <small>Runs ALL selected optimizations immediately. Use this for your first run.</small>
-            </div>
-            <div style="margin: 1rem 0; padding: 1rem; background: #f3e5f5; border-left: 4px solid #9c27b0; border-radius: 4px;">
-                <strong>2. Scheduled Maintenance</strong> (${scheduledFilename})<br>
-                <small>Runs ONLY recurring tasks (temp cleanup, logs, etc.). Perfect for automated maintenance.</small>
+            <h4>📦 What You're Getting:</h4>
+            <div style="margin: 1rem 0; padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <strong style="font-size: 1.1rem;">3 Files (Downloaded Together)</strong><br>
+                <small>• Windows_Optimizer.bat - Interactive launcher<br>
+                • Windows_Optimizer_OneTime.ps1 - Full optimization<br>
+                • Windows_Optimizer_Scheduled.ps1 - Recurring tasks</small>
             </div>
             
-            <h4 style="margin-top: 1.5rem;">How to Use:</h4>
-            <ol>
-                <li><strong>Download both scripts</strong> using the buttons below</li>
-                <li><strong>Run Windows_Optimizer_Launcher.bat</strong> from the download folder</li>
-                <li><strong>Choose option 1</strong> to run one-time optimization</li>
-                <li><strong>Choose option 2</strong> to schedule recurring maintenance</li>
+            <h4 style="margin-top: 1.5rem;">🚀 How to Use:</h4>
+            <ol style="line-height: 1.8;">
+                <li><strong>Download all files</strong> (3 files will download automatically)</li>
+                <li><strong>Keep all 3 files together</strong> in the same folder</li>
+                <li><strong>Right-click Windows_Optimizer.bat</strong> → <strong>Run as Administrator</strong></li>
+                <li><strong>Choose from the menu:</strong>
+                    <ul style="margin-top: 0.5rem;">
+                        <li>[1] Run optimization now</li>
+                        <li>[2] Schedule recurring maintenance</li>
+                        <li>[3] View logs</li>
+                        <li>[4] View startup report</li>
+                        <li>[5] Restore previous settings</li>
+                    </ul>
+                </li>
             </ol>
             
             <div style="margin-top: 1rem; padding: 1rem; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 4px;">
-                <strong>TIP:</strong> The launcher handles admin permissions automatically!
+                <strong>⚠️ IMPORTANT:</strong> All 3 files must be in the same folder to work!
             </div>
         </div>
         <div style="margin-top: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
-            <button class="btn btn-generate" style="flex: 1;" onclick="downloadBothScripts()">
-                Download Both Scripts
+            <button class="btn btn-generate" style="flex: 1;" onclick="downloadAllOptimizerFiles()">
+                📥 Download All Files
             </button>
             <button class="btn btn-preview" onclick="closeModal()">
                 Cancel
@@ -199,19 +212,26 @@ function showBothScriptsModal(oneTimeFilename, scheduledFilename, oneTimeScript,
         </div>
     `;
     
-    showModal('Scripts Ready to Download', modalContent);
-    window.oneTimeScriptData = { filename: oneTimeFilename, content: oneTimeScript };
-    window.scheduledScriptData = { filename: scheduledFilename, content: scheduledScript };
+    showModal('Optimizer Ready', modalContent);
+    window.batScriptData = { filename: batFilename, content: batScript };
 }
 
-function downloadBothScripts() {
-    downloadScript(window.oneTimeScriptData.filename, window.oneTimeScriptData.content);
-    setTimeout(() => {
-        downloadScript(window.scheduledScriptData.filename, window.scheduledScriptData.content);
-    }, 500);
-    closeModal();
+function downloadAllOptimizerFiles() {
+    // Download BAT file
+    downloadScript(window.batScriptData.filename, window.batScriptData.content);
     
-    showNotification('Both scripts downloaded! Use Windows_Optimizer_Launcher.bat to run them.', 'success');
+    // Download OneTime PS1 file
+    setTimeout(() => {
+        downloadScript('Windows_Optimizer_OneTime.ps1', window.oneTimePowerShellScript);
+    }, 300);
+    
+    // Download Scheduled PS1 file
+    setTimeout(() => {
+        downloadScript('Windows_Optimizer_Scheduled.ps1', window.scheduledPowerShellScript);
+    }, 600);
+    
+    closeModal();
+    showNotification('All files downloaded! Keep them together and run the BAT file as Admin.', 'success');
 }
 
 function downloadPreviewScript() {
@@ -313,6 +333,299 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// ============================================
+// UNIFIED BAT FILE BUILDER
+// ============================================
+
+function buildUnifiedBatFile(oneTimeScript, scheduledScript, selected, createBackup) {
+    // Instead of embedding, we'll create companion PS1 files
+    // This makes the BAT file cleaner and avoids encoding issues
+    
+    // Store the scripts for later download
+    window.oneTimePowerShellScript = oneTimeScript;
+    window.scheduledPowerShellScript = scheduledScript;
+    
+    const batScript = `@echo off
+setlocal EnableDelayedExpansion
+
+:: ============================================
+:: Windows 11 Optimizer - Interactive Menu
+:: Generated: ${new Date().toLocaleString()}
+:: ============================================
+:: IMPORTANT: Place the companion PS1 files in the same folder!
+:: - Windows_Optimizer_OneTime.ps1
+:: - Windows_Optimizer_Scheduled.ps1
+:: ============================================
+
+:: Check for admin privileges
+net session >nul 2>&1
+if %errorLevel% neq 0 (
+    echo.
+    echo ============================================
+    echo  ADMIN PRIVILEGES REQUIRED
+    echo ============================================
+    echo This script needs administrator privileges.
+    echo Please right-click and select "Run as Administrator"
+    echo.
+    pause
+    exit /b 1
+)
+
+:: Get the directory where this BAT file is located
+set "SCRIPT_DIR=%~dp0"
+set "ONETIME_SCRIPT=%SCRIPT_DIR%Windows_Optimizer_OneTime.ps1"
+set "SCHEDULED_SCRIPT=%SCRIPT_DIR%Windows_Optimizer_Scheduled.ps1"
+
+:: Check if PS1 files exist
+if not exist "%ONETIME_SCRIPT%" (
+    echo ERROR: Cannot find Windows_Optimizer_OneTime.ps1
+    echo Please ensure all downloaded files are in the same folder.
+    pause
+    exit /b 1
+)
+
+if not exist "%SCHEDULED_SCRIPT%" (
+    echo ERROR: Cannot find Windows_Optimizer_Scheduled.ps1
+    echo Please ensure all downloaded files are in the same folder.
+    pause
+    exit /b 1
+)
+
+:MENU
+cls
+echo.
+echo ============================================
+echo    WINDOWS 11 OPTIMIZER
+echo ============================================
+echo.
+echo Select an option:
+echo.
+echo  [1] Run Optimization Now
+echo  [2] Schedule Recurring Maintenance
+echo  [3] View Last Log
+echo  [4] View Startup Report
+echo  [5] Restore Previous Settings
+echo  [6] Exit
+echo.
+echo ============================================
+echo.
+set /p choice="Enter your choice (1-6): "
+
+if "%choice%"=="1" goto RUN_OPTIMIZATION
+if "%choice%"=="2" goto SCHEDULE_MENU
+if "%choice%"=="3" goto VIEW_LOG
+if "%choice%"=="4" goto VIEW_STARTUP
+if "%choice%"=="5" goto RESTORE_MENU
+if "%choice%"=="6" goto EXIT
+echo Invalid choice. Please try again.
+timeout /t 2 >nul
+goto MENU
+
+:RUN_OPTIMIZATION
+cls
+echo.
+echo ============================================
+echo  RUNNING OPTIMIZATION
+echo ============================================
+echo.
+powershell.exe -ExecutionPolicy Bypass -File "%ONETIME_SCRIPT%"
+echo.
+echo ============================================
+echo  OPTIMIZATION COMPLETE
+echo ============================================
+echo.
+pause
+goto MENU
+
+:SCHEDULE_MENU
+cls
+echo.
+echo ============================================
+echo  SCHEDULE RECURRING MAINTENANCE
+echo ============================================
+echo.
+echo Select frequency:
+echo.
+echo  [1] Daily
+echo  [2] Weekly (every Sunday)
+echo  [3] Monthly (1st of each month)
+echo  [4] Back to Main Menu
+echo.
+set /p freq="Enter choice (1-4): "
+
+if "%freq%"=="4" goto MENU
+if "%freq%"=="1" set "triggerType=DAILY" & goto SELECT_TIME
+if "%freq%"=="2" set "triggerType=WEEKLY" & goto SELECT_TIME
+if "%freq%"=="3" set "triggerType=MONTHLY" & goto SELECT_TIME
+
+echo Invalid choice.
+timeout /t 2 >nul
+goto SCHEDULE_MENU
+
+:SELECT_TIME
+cls
+echo.
+echo ============================================
+echo  SELECT TIME
+echo ============================================
+echo.
+echo Enter the hour to run (0-23):
+echo  Example: 3 for 3 AM, 14 for 2 PM
+echo.
+set /p hour="Hour: "
+
+:: Validate hour
+set /a testHour=%hour% 2>nul
+if %testHour% LSS 0 goto INVALID_HOUR
+if %testHour% GTR 23 goto INVALID_HOUR
+goto CREATE_TASK
+
+:INVALID_HOUR
+echo Invalid hour. Please enter 0-23.
+timeout /t 2 >nul
+goto SELECT_TIME
+
+:CREATE_TASK
+cls
+echo.
+echo Creating scheduled task...
+echo.
+
+set "taskName=WindowsOptimizerMaintenance"
+
+if "%triggerType%"=="DAILY" (
+    powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-ExecutionPolicy Bypass -File \"%SCHEDULED_SCRIPT%\"'; $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force" >nul 2>&1
+)
+
+if "%triggerType%"=="WEEKLY" (
+    powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-ExecutionPolicy Bypass -File \"%SCHEDULED_SCRIPT%\"'; $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force" >nul 2>&1
+)
+
+if "%triggerType%"=="MONTHLY" (
+    powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-ExecutionPolicy Bypass -File \"%SCHEDULED_SCRIPT%\"'; $day = 1; $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00; $trigger.DaysInterval = 30; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force" >nul 2>&1
+)
+
+if %errorlevel% equ 0 (
+    echo ============================================
+    echo  SUCCESS
+    echo ============================================
+    echo.
+    echo Task: %taskName%
+    echo Frequency: %triggerType%
+    echo Time: %hour%:00
+    echo Script: %SCHEDULED_SCRIPT%
+    echo.
+    echo Your PC will now be automatically maintained!
+) else (
+    echo ============================================
+    echo  ERROR
+    echo ============================================
+    echo Failed to create task. Check Task Scheduler.
+)
+
+echo.
+pause
+goto MENU
+
+:VIEW_LOG
+cls
+echo.
+echo ============================================
+echo  VIEWING LAST LOG
+echo ============================================
+echo.
+
+for /f "delims=" %%f in ('dir "%USERPROFILE%\\Desktop\\WinOptimizer_*.log" /b /o-d 2^>nul') do (
+    set "latestLog=%USERPROFILE%\\Desktop\\%%f"
+    goto FOUND_LOG
+)
+
+echo No log files found on Desktop.
+pause
+goto MENU
+
+:FOUND_LOG
+start notepad.exe "%latestLog%"
+timeout /t 1 >nul
+goto MENU
+
+:VIEW_STARTUP
+cls
+echo.
+echo ============================================
+echo  VIEWING STARTUP REPORT
+echo ============================================
+echo.
+
+for /f "delims=" %%f in ('dir "%USERPROFILE%\\Desktop\\StartupPrograms_*.txt" /b /o-d 2^>nul') do (
+    set "latestReport=%USERPROFILE%\\Desktop\\%%f"
+    goto FOUND_REPORT
+)
+
+echo No startup reports found.
+pause
+goto MENU
+
+:FOUND_REPORT
+start notepad.exe "%latestReport%"
+timeout /t 1 >nul
+goto MENU
+
+:RESTORE_MENU
+cls
+echo.
+echo ============================================
+echo  RESTORE PREVIOUS SETTINGS
+echo ============================================
+echo.
+echo Available restore points:
+echo.
+
+set count=0
+for /f "delims=" %%f in ('dir "%USERPROFILE%\\Desktop\\RESTORE_Windows_Settings_*.ps1" /b /o-d 2^>nul') do (
+    set /a count+=1
+    set "restore!count!=%USERPROFILE%\\Desktop\\%%f"
+    echo  [!count!] %%f
+)
+
+if %count% equ 0 (
+    echo No restore points found on Desktop.
+    pause
+    goto MENU
+)
+
+echo.
+echo  [0] Back to Main Menu
+echo.
+set /p restoreChoice="Select restore point (0-%count%): "
+
+if "%restoreChoice%"=="0" goto MENU
+if %restoreChoice% LSS 1 goto INVALID_RESTORE
+if %restoreChoice% GTR %count% goto INVALID_RESTORE
+
+call set "selectedRestore=%%restore%restoreChoice%%%"
+echo.
+echo Running: %selectedRestore%
+powershell.exe -ExecutionPolicy Bypass -File "%selectedRestore%"
+pause
+goto MENU
+
+:INVALID_RESTORE
+echo Invalid selection.
+timeout /t 2 >nul
+goto RESTORE_MENU
+
+:EXIT
+cls
+echo.
+echo Thank you for using Windows 11 Optimizer!
+timeout /t 2 >nul
+exit /b 0
+`;
+
+    return batScript;
 }
 
 // ============================================

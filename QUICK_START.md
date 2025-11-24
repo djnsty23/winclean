@@ -1,70 +1,77 @@
 # Quick Start Guide
 
-## 3-Step Process
+## 🚀 3 Simple Steps
 
-### Step 1: Generate Scripts
+### Step 1: Generate Your Optimizer
 1. Open `index.html` in any web browser
-2. Check the optimizations you want
-3. Click **"Generate Optimization Script"**
-4. Download **BOTH** scripts that appear
+2. Select the optimizations you want (recommended options are pre-selected)
+3. Click **"Generate My Optimizer"**
+4. **3 files download automatically**:
+   - `Windows_Optimizer.bat` (the launcher)
+   - `Windows_Optimizer_OneTime.ps1` (full optimization)
+   - `Windows_Optimizer_Scheduled.ps1` (recurring tasks)
 
-### Step 2: Run Launcher (ALWAYS USE THIS)
-1. **Double-click `Windows_Optimizer_Launcher.bat`** (NOT the .ps1 files!)
-2. Click "Yes" when Windows asks for admin permission
-3. Choose an option from the menu
+### Step 2: Run as Administrator
+1. Navigate to your Downloads folder
+2. **Right-click `Windows_Optimizer.bat`**
+3. Select **"Run as Administrator"**
+4. You'll see an interactive menu with 6 options
 
-⚠️ **CRITICAL**: Always use the BAT launcher! It automatically:
-- Requests admin privileges
-- Runs all scripts with proper permissions
-- Handles restore operations correctly
-- Shows all results in one place
+⚠️ **CRITICAL**: All 3 files must be in the same folder! Always use the .bat launcher!
 
-### Step 3: Enjoy Optimized System!
+### Step 3: Choose What to Do
+- **[1]** Run optimization now
+- **[2]** Schedule recurring maintenance
+- **[3]** View last log
+- **[4]** View startup report
+- **[5]** Restore previous settings
+- **[6]** Exit
 
 ---
 
 ## Menu Options Explained
 
-### [1] Run One-Time Optimization Now
-- Runs ALL your selected optimizations immediately
-- Creates backup before making changes
-- Shows detailed progress
-- Opens log file when complete
+### [1] Run Optimization Now
+- Executes ALL your selected optimizations immediately
+- Creates backup before making changes (if enabled)
+- Shows detailed progress in console
+- Saves log file to Desktop
 - **Use this for your first run**
 
 ### [2] Schedule Recurring Maintenance
-- Sets up automatic cleanup (temp files, logs, etc.)
-- Choose how often: Daily, Weekly, or Monthly
-- Set what time it should run
-- Runs silently in background
+- Sets up automatic cleanup (temp files, logs, disk cleanup)
+- Choose frequency: Daily, Weekly, or Monthly
+- Select time to run (0-23 hours)
+- Creates Windows scheduled task
 - **Use this for hands-free maintenance**
 
-### [3] View Last Optimization Log
+### [3] View Last Log
+- Opens most recent WinOptimizer_*.log file
 - See what was cleaned/changed
 - Review space freed
 - Check for any errors
 
-### [4] View Startup Programs Report
-- HTML report of all startup programs
-- Recommendations for each program
-- Helps you disable unnecessary startup items
+### [4] View Startup Report
+- Opens StartupPrograms_*.txt file
+- List of all startup programs
+- Helps you identify what to disable manually
 
 ### [5] Restore Previous Settings
-- Undo changes from a specific run
-- Choose which backup to restore
-- Safe way to revert if needed
+- Undo changes from a specific optimization run
+- Choose which backup point to restore
+- Safe way to revert if something doesn't work right
 
 ---
 
 ## Scheduling Recommendations
 
-| Frequency | Best For |
-|-----------|----------|
-| **Daily** | Heavy computer use, lots of downloads |
-| **Weekly** | Normal use (Recommended) |
-| **Monthly** | Light use |
+| Frequency | Best For | Recommended Time |
+|-----------|----------|------------------|
+| **Daily** | Heavy computer use, lots of downloads | 3 AM |
+| **Weekly** | Normal use (Recommended) | Sunday 3 AM |
+| **Monthly** | Light use | 1st of month, 3 AM |
 
-**Recommended Time**: 2 AM (computer idle)
+**Why 3 AM?** Computer is typically idle, won't interrupt your work.
 
 ---
 
@@ -72,9 +79,9 @@
 
 ### Always Safe ✅
 - All temp file cleanups
-- Recycle bin
-- Old Windows updates
-- System logs
+- Recycle bin emptying
+- Old Windows update cleanup
+- System log clearing
 
 ### Usually Safe ✅
 - Telemetry minimization
@@ -85,48 +92,74 @@
 ### Consider Carefully ⚠️
 - Cortana disable (if you use voice commands)
 - Windows Search to Manual (may slow file searches)
-- Hibernation disable (if you use hibernate)
-- Component Store cleanup (takes 5-10 minutes)
+- Hibernation disable (if you use hibernate feature)
+- Component Store cleanup (WinSxS - takes 5-10 minutes)
 
 ---
 
 ## First Run Checklist
 
-- [ ] Generated both scripts from index.html
-- [ ] Both .ps1 files are in the same folder as the .bat launcher
-- [ ] Running Windows_Optimizer_Launcher.bat
-- [ ] Allowed admin access
-- [ ] Selected option [1] for first optimization
-- [ ] Reviewed the log file after completion
+- [ ] Generated optimizer from index.html
+- [ ] All 3 files downloaded to same folder
+- [ ] Right-clicked Windows_Optimizer.bat
+- [ ] Selected "Run as Administrator"
+- [ ] Chose option [1] for first optimization
+- [ ] Reviewed the log file on Desktop
 - [ ] (Optional) Set up option [2] for weekly maintenance
 
 ---
 
 ## Troubleshooting
 
-**Launcher won't start?**
-- Make sure you're double-clicking the `.bat` file, not a `.ps1` file
-- If UAC doesn't appear, right-click → "Run as administrator"
+**"ADMIN PRIVILEGES REQUIRED" message?**
+- Right-click the .bat file and select "Run as Administrator"
+- Don't just double-click it
 
-**Scripts not found?**
-- Make sure both .ps1 files are in the SAME folder as the .bat file
-- File names should be: `Windows_Optimizer_[date].ps1` and `Windows_Optimizer_SCHEDULED_[date].ps1`
+**"Cannot find Windows_Optimizer_OneTime.ps1"?**
+- Make sure all 3 downloaded files are in the SAME folder
+- Check file names match exactly
 
-**Restore not working?**
-- DON'T run restore .ps1 directly!
-- Use the launcher menu option [5] - it handles admin rights automatically
+**Scripts close immediately?**
+- You must right-click the .bat file
+- Select "Run as Administrator"
 
 **Want to undo changes?**
-- Run the launcher
-- Choose option [5]
-- Select which restore point to use
+- Run the launcher (right-click → Run as Admin)
+- Choose option [5] (Restore Previous Settings)
+- Select which backup point to restore from
 
 **Scheduled task not running?**
-- Open Task Scheduler (Win+R → taskschd.msc)
-- Find "Windows Optimizer Maintenance"
+- Open Task Scheduler (Win+R → `taskschd.msc`)
+- Find "WindowsOptimizerMaintenance"
 - Right-click → Properties → Verify settings
-- Check "Run with highest privileges" is enabled
+- Ensure "Run with highest privileges" is checked
 
 ---
 
-Need more details? See **README.md** for complete documentation.
+## 📁 File Organization
+
+After downloading, your folder should look like this:
+
+```
+Downloads/
+├── Windows_Optimizer.bat               ← Right-click this!
+├── Windows_Optimizer_OneTime.ps1       ← Don't run directly
+└── Windows_Optimizer_Scheduled.ps1     ← Don't run directly
+```
+
+**All 3 files MUST stay together!**
+
+---
+
+## 🎯 Pro Tips
+
+1. **First Run**: Enable the backup option for safety
+2. **Scheduling**: Set maintenance to 3 AM for no interruptions
+3. **Logs**: Save logs to review what was optimized
+4. **Startup**: Use the startup report to disable bloatware
+5. **Restore**: Keep restore scripts for at least 30 days
+6. **Weekly**: Most users benefit from weekly scheduled maintenance
+
+---
+
+**Need more details?** See [README.md](README.md) for complete documentation.
