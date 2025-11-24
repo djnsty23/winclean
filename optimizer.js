@@ -776,9 +776,9 @@ function Clean-Directory {
         $items = Get-ChildItem -Path $Path -Recurse -Force -ErrorAction SilentlyContinue
         $itemCount = ($items | Measure-Object).Count
         $sizeBefore = ($items | Measure-Object -Property Length -Sum -ErrorAction SilentlyContinue).Sum
-        $sizeMB = [math]::Round($sizeBefore / 1MB, 2)
+        $sizeInMB = [math]::Round($sizeBefore / 1MB, 2)
         
-        Write-Log "   📊 Found $itemCount items ($sizeMB MB)" "Gray"
+        Write-Log "   📊 Found $itemCount items ($sizeInMB MB)" "Gray"
         
         foreach ($item in $items) {
             try {
@@ -793,7 +793,7 @@ function Clean-Directory {
         $script:itemsCleaned += $filesRemoved
         
         if ($filesRemoved -gt 0) {
-            Write-Log "   ✅ Cleaned: $filesRemoved items ($sizeMB MB)" "Green"
+            Write-Log "   ✅ Cleaned: $filesRemoved items ($sizeInMB MB)" "Green"
         }
         if ($filesSkipped -gt 0) {
             Write-Log "   ⏭️  Skipped: $filesSkipped items (in use)" "Yellow"
@@ -1080,10 +1080,10 @@ try {
     $updatePath = "C:\\Windows\\SoftwareDistribution\\Download"
     if (Test-Path $updatePath) {
         $sizeBefore = (Get-ChildItem $updatePath -Recurse | Measure-Object -Property Length -Sum).Sum
-        $sizeMB = [math]::Round($sizeBefore / 1MB, 2)
+        $sizeInMB = [math]::Round($sizeBefore / 1MB, 2)
         Remove-Item "$updatePath\\*" -Recurse -Force ${whatIf} -ErrorAction Stop
         $script:totalCleaned += $sizeBefore
-        Write-Log "   ✓ Old updates removed ($sizeMB MB)" "Green"
+        Write-Log "   ✓ Old updates removed ($sizeInMB MB)" "Green"
         $script:itemsCleaned++
     }
 } catch {
