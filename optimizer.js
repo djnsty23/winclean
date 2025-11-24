@@ -289,25 +289,10 @@ Write-Log ""
 `;
     }
 
-    script += `# Create log file on Desktop
-$logFile = "$env:USERPROFILE\\Desktop\\Windows_Optimization_Log_$(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss').txt"
+    script += `# Initialize counters
 $totalCleaned = 0
 $itemsCleaned = 0
 $errorCount = 0
-
-# Function to write to both console and log
-function Write-Log {
-    param([string]$Message, [string]$Color = "White")
-    Write-Host $Message -ForegroundColor $Color
-    Add-Content -Path $logFile -Value $Message
-}
-
-# Start logging
-Write-Log "═══════════════════════════════════════════════════════════" "Cyan"
-Write-Log "Windows 11 Optimization Script - Started at $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" "Cyan"
-Write-Log "Log file: $logFile" "Gray"
-Write-Log "═══════════════════════════════════════════════════════════" "Cyan"
-Write-Log ""
 
 `;
 
@@ -376,8 +361,22 @@ Write-Log "Opening log file..." "Cyan"
 Start-Process notepad.exe $logFile
 
 Write-Log ""
-Write-Log "Press any key to close this window..." "Yellow"
-$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+Write-Log "Opening log file in Notepad..." "Cyan"
+try {
+    Start-Process notepad.exe $logFile
+    Write-Log "✅ Log file opened" "Green"
+} catch {
+    Write-Log "⚠️  Could not open log file automatically" "Yellow"
+    Write-Log "   You can find it at: $logFile" "Gray"
+}
+
+Write-Log ""
+Write-Log "═══════════════════════════════════════════════════════════" "Cyan"
+Write-Log "Script completed. Window will stay open." "Cyan"
+Write-Log "═══════════════════════════════════════════════════════════" "Cyan"
+Write-Host ""
+Write-Host "Press any key to exit..." -ForegroundColor Yellow
+pause
 `;
 
     return script;
