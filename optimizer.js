@@ -110,56 +110,18 @@ function generateScript() {
         return;
     }
 
-    // Generate the script
-    const script = buildPowerShellScript(selected, previewMode, scheduleMode, createBackup);
+    // Generate the one-time optimization script (full selections)
+    const oneTimeScript = buildPowerShellScript(selected, false, false, createBackup);
     
-    if (previewMode) {
-        // Show preview in modal
-        const modalContent = `
-            <div class="alert alert-info">
-                <div style="font-size:1.5rem">INFO</div>
-                <div><strong>Preview Mode</strong><br>This script will analyze what would be cleaned without making changes.</div>
-            </div>
-            <div class="script-preview">${escapeHtml(script)}</div>
-            <div style="margin-top:1rem; display:flex; gap:1rem;">
-                <button class="btn btn-generate" onclick="downloadPreviewScript()">📥 Download Preview Script</button>
-                <button class="btn btn-preview" onclick="closeModal()">Close</button>
-            </div>
-        `;
-        showModal('Script Preview - Safe to Review', modalContent);
-        window.currentScript = script;
-    } else if (scheduleMode) {
-        // Generate scheduled task script
-        const taskScript = buildScheduledTaskScript(selected);
-        const modalContent = `
-            <div class="alert alert-info">
-                <div style="font-size:1.5rem">⏰</div>
-                <div><strong>Scheduled Task Creator</strong><br>This will create a weekly maintenance task that runs your selected optimizations automatically.</div>
-            </div>
-            <div class="script-preview">${escapeHtml(taskScript)}</div>
-            <div style="margin-top:1rem; display:flex; gap:1rem;">
-                <button class="btn btn-schedule" onclick="downloadScheduledScript()">📥 Download Task Scheduler</button>
-                <button class="btn btn-preview" onclick="closeModal()">Close</button>
-            </div>
-        `;
-        showModal('Weekly Maintenance Task', modalContent);
-        window.currentScript = taskScript;
-    } else {
-        // Regular mode - generate unified BAT file with embedded PowerShell
-        const timestamp = getTimestamp();
-        const batFilename = `Windows_Optimizer.bat`;
-        
-        // Generate one-time script (current selections)
-        const oneTimeScript = script;
-        
-        // Generate scheduled script (recurring tasks only)
-        const scheduledScript = buildScheduledMaintenanceScript(selected);
-        
-        // Build the unified BAT file
-        const batScript = buildUnifiedBatFile(oneTimeScript, scheduledScript, selected, createBackup);
-        
-        showBatScriptModal(batFilename, batScript, selected);
-    }
+    // Generate scheduled script (recurring tasks only)
+    const scheduledScript = buildScheduledMaintenanceScript(selected);
+    
+    // Build the unified BAT file
+    const batFilename = `Windows_Optimizer.bat`;
+    const batScript = buildUnifiedBatFile(oneTimeScript, scheduledScript, selected, createBackup);
+    
+    // Show modal with download option
+    showBatScriptModal(batFilename, batScript, selected);
 }
 
 function showBatScriptModal(batFilename, batScript, selected) {
