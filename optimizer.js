@@ -550,6 +550,12 @@ $restoreScript = @'
 # Backup created: TIMESTAMP_PLACEHOLDER
 # ============================================
 
+# Define Write-Log function FIRST
+function Write-Log {
+    param([string]$Message, [string]$Color = "White")
+    Write-Host $Message -ForegroundColor $Color
+}
+
 Write-Log ""
 Write-Log "╔═══════════════════════════════════════════════════════════╗" "Magenta"
 Write-Log "║           RESTORING WINDOWS SETTINGS                      ║" "Magenta"

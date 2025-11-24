@@ -1,29 +1,31 @@
 # 🚀 Windows 11 Optimization Portal
 
-## ⚠️ SCRIPTS WON'T RUN? SECURE FIX:
+## ⚠️ SCRIPTS CLOSING INSTANTLY? COMPLETE FIX GUIDE:
 
-**If PowerShell scripts close instantly, use ONE of these secure methods:**
+### 🔒 **MUST DO FIRST: Unblock Downloaded File**
 
-### ✅ Option 1: Unblock Downloaded File (Recommended - Most Secure)
-1. Right-click the downloaded `.ps1` file
-2. Select **Properties**
-3. Check the box **"Unblock"** at the bottom
+**This fixes 99% of issues:**
+
+1. Locate the downloaded `.ps1` file
+2. **Right-click** → **Properties**
+3. At the bottom: Check **☑ Unblock**
 4. Click **OK**
-5. Now right-click → **Run with PowerShell**
+5. Now **right-click** → **Run as Administrator**
 
-**Why this is secure:** Only affects THIS specific file, not all scripts.
+**Why:** Windows blocks downloaded PowerShell scripts by default. Unblocking tells Windows you trust THIS file specifically (secure!).
 
-### ✅ Option 2: Use BAT File (No Execution Policy Needed)
-Download **`SIMPLE_FIX.bat`** → Right-click → Run as Administrator
-
-### ✅ Option 3: One-Time Bypass (Per Script)
-Right-click script → **Copy as path**  
-Open PowerShell as Admin and run:
+**Alternative (One-Time Bypass):**
 ```powershell
-powershell.exe -ExecutionPolicy Bypass -File "C:\Path\To\Your\Script.ps1"
+# Open PowerShell as Admin, then:
+powershell -ExecutionPolicy Bypass -File "C:\Downloads\YourScript.ps1"
 ```
 
-**Why this is secure:** Only bypasses policy for THAT ONE execution.
+### 🆘 **Still Not Working?**
+
+See **[SCRIPTS_NOT_RUNNING.md](SCRIPTS_NOT_RUNNING.md)** for complete troubleshooting (all known issues & fixes).
+
+### ✅ **Fallback: Use BAT File**
+Download `SIMPLE_FIX.bat` → Run as Administrator (always works, no policy issues)
 
 ---
 
