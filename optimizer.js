@@ -1156,6 +1156,12 @@ function buildScheduledTaskScript(selected) {
 # Generated: ${new Date().toLocaleString()}
 # ============================================
 
+# Define Write-Log function for this wrapper script
+function Write-Log {
+    param([string]$Message, [string]$Color = "White")
+    Write-Host $Message -ForegroundColor $Color
+}
+
 Write-Log ""
 Write-Log "╔═══════════════════════════════════════════════════════════╗" "Cyan"
 Write-Log "║      WEEKLY MAINTENANCE TASK CREATOR                      ║" "Cyan"

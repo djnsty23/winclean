@@ -11,7 +11,9 @@ echo   Windows Temp File Cleanup
 echo ========================================
 echo.
 
-set LOGFILE=%USERPROFILE%\Desktop\Cleanup_Log_%DATE:~-4%%DATE:~4,2%%DATE:~7,2%_%TIME:~0,2%%TIME:~3,2%.txt
+REM Use PowerShell to get reliable timestamp
+for /f "tokens=*" %%a in ('powershell -NoProfile -Command "Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'"') do set TIMESTAMP=%%a
+set LOGFILE=%USERPROFILE%\Desktop\Cleanup_Log_%TIMESTAMP%.txt
 
 echo Starting cleanup... > "%LOGFILE%"
 echo Date: %DATE% %TIME% >> "%LOGFILE%"
