@@ -472,8 +472,20 @@ echo  Example: 3 for 3 AM, 14 for 2 PM
 echo.
 set /p hour="Hour: "
 
-:: Validate hour
+:: Validate hour is not empty
+if "%hour%"=="" (
+    echo Please enter a number.
+    timeout /t 2 >nul
+    goto SELECT_TIME
+)
+
+:: Validate hour is numeric and in range
 set /a testHour=%hour% 2>nul
+if not "%hour%"=="%testHour%" (
+    echo Please enter a number, not text.
+    timeout /t 2 >nul
+    goto SELECT_TIME
+)
 if %testHour% LSS 0 goto INVALID_HOUR
 if %testHour% GTR 23 goto INVALID_HOUR
 goto SELECT_VISIBILITY
@@ -533,6 +545,15 @@ if not exist "%SCHEDULED_SCRIPT%" (
 :: Unblock the script file (remove Mark of the Web)
 echo Unblocking script file...
 powershell.exe -ExecutionPolicy Bypass -Command "Unblock-File -Path '%SCHEDULED_SCRIPT%' -ErrorAction SilentlyContinue"
+
+:: Debug output
+echo.
+echo [DEBUG] Creating task with these settings:
+echo   Task Name: WindowsOptimizerMaintenance
+echo   Frequency: %triggerType%
+echo   Hour: %hour%
+echo   Script: %SCHEDULED_SCRIPT%
+echo.
 
 :: Create a temporary PowerShell script for task creation (avoids complex escaping)
 set "tempPS=%TEMP%\\CreateTask_%RANDOM%.ps1"
