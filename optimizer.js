@@ -173,18 +173,26 @@ function showInstructionsModal(filename, scriptContent, type) {
                 <ol>
                     <li><strong>Download the script</strong> by clicking the button below</li>
                     <li><strong>Locate the file</strong> in your Downloads folder (<code>${filename}</code>)</li>
-                    <li><strong>Right-click the file</strong> → Select <strong>"Run with PowerShell"</strong></li>
-                    <li>Click <strong>"Yes"</strong> if Windows asks for permission</li>
+                    <li><strong>🔒 UNBLOCK THE FILE (Important!):</strong>
+                        <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
+                            <li>Right-click the .ps1 file → <strong>Properties</strong></li>
+                            <li>At the bottom, check <strong>☑ Unblock</strong></li>
+                            <li>Click <strong>OK</strong></li>
+                        </ul>
+                    </li>
+                    <li><strong>Now right-click the file</strong> → Select <strong>"Run with PowerShell"</strong> (or "Run as Administrator")</li>
                     <li>A black window will appear - <strong>WAIT for it to complete</strong></li>
                     <li><strong>Notepad opens automatically</strong> with a complete log of what happened</li>
                 </ol>
+                <div style="margin-top: 1rem; padding: 1rem; background: #e8f5e9; border-radius: 6px; border-left: 4px solid #4caf50;">
+                    <strong>✅ Why Unblock?</strong><br>
+                    This tells Windows you trust THIS specific file. It's MORE SECURE than changing your PowerShell execution policy globally!
+                </div>
                 <div style="margin-top: 1rem; padding: 1rem; background: #fff4e6; border-radius: 6px; border-left: 4px solid var(--warning);">
-                    <strong>⚠️ If the window closes instantly:</strong><br>
-                    1. Right-click the script again<br>
-                    2. Select <strong>"Run as Administrator"</strong> (not just "Run with PowerShell")<br>
-                    3. Still not working? Open PowerShell as Admin and run:<br>
-                    <code style="background: rgba(0,0,0,0.1); padding: 0.3rem; border-radius: 3px; display: block; margin-top: 0.5rem;">Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass</code>
-                    Then drag and drop the script file into the PowerShell window and press Enter.
+                    <strong>⚠️ Alternative: One-Time Bypass (Also Secure)</strong><br>
+                    If you prefer NOT to unblock, open PowerShell as Admin and run:<br>
+                    <code style="background: rgba(0,0,0,0.1); padding: 0.3rem; border-radius: 3px; display: block; margin-top: 0.5rem;">powershell -ExecutionPolicy Bypass -File "C:\\Downloads\\${filename}"</code>
+                    This only bypasses policy for THIS ONE execution (secure!).
                 </div>
                 <div style="margin-top: 1rem; padding: 1rem; background: #e6f3ff; border-radius: 6px;">
                     <strong>💡 What to expect:</strong> A log file will appear on your <strong>Desktop</strong> showing everything that happened. 
