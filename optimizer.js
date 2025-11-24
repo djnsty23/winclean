@@ -513,15 +513,27 @@ if "%taskHidden%"=="1" (
 )
 
 if "%triggerType%"=="DAILY" (
-    powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden:$%taskHidden%; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force" >nul 2>&1
+    if "%taskHidden%"=="1" (
+        powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden:$true; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"
+    ) else (
+        powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"
+    )
 )
 
 if "%triggerType%"=="WEEKLY" (
-    powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden:$%taskHidden%; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force" >nul 2>&1
+    if "%taskHidden%"=="1" (
+        powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden:$true; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"
+    ) else (
+        powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"
+    )
 )
 
 if "%triggerType%"=="MONTHLY" (
-    powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $day = 1; $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00; $trigger.DaysInterval = 30; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden:$%taskHidden%; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force" >nul 2>&1
+    if "%taskHidden%"=="1" (
+        powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden:$true; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"
+    ) else (
+        powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"
+    )
 )
 
 if %errorlevel% equ 0 (
@@ -573,13 +585,13 @@ echo ============================================
 echo.
 
 :: Check script folder first
-for /f "delims=" %%f in ('dir "%SCRIPT_DIR%WinOptimizer_*.log" /b /o-d 2^>nul') do (
+for /f "delims=" %%f in ('dir "%SCRIPT_DIR%Windows_Optimization_Log_*.txt" /b /o-d 2^>nul') do (
     set "latestLog=%SCRIPT_DIR%%%f"
     goto FOUND_LOG
 )
 
 :: Fallback to Desktop
-for /f "delims=" %%f in ('dir "%USERPROFILE%\\Desktop\\WinOptimizer_*.log" /b /o-d 2^>nul') do (
+for /f "delims=" %%f in ('dir "%USERPROFILE%\\Desktop\\Windows_Optimization_Log_*.txt" /b /o-d 2^>nul') do (
     set "latestLog=%USERPROFILE%\\Desktop\\%%f"
     goto FOUND_LOG
 )
