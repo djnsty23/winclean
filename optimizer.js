@@ -244,29 +244,72 @@ function buildPowerShellScript(selected, previewMode, scheduleMode, createBackup
     const mode = previewMode ? 'PREVIEW' : 'OPTIMIZATION';
     const whatIf = previewMode ? '-WhatIf' : '';
     
-    let script = `#Requires -RunAsAdministrator
-# ============================================
-# Windows 11 ${mode} Script
+    let script = `# ============================================
+# Windows 11 ${mode} Script  
 # Generated: ${new Date().toLocaleString()}
 # ============================================
+# HOW TO RUN:
+#   1. Right-click this file
+#   2. Select "Run with PowerShell"
+#   3. If it closes instantly, select "Run as Administrator" instead
+# ============================================
+
+# CREATE LOG FILE FIRST (before anything can fail)
+$logFile = "$env:USERPROFILE\\Desktop\\Windows_Optimization_Log_$(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss').txt"
+
+Write-Host "Creating log file..." -ForegroundColor Cyan
+try {
+    "═══════════════════════════════════════════════════════════" | Out-File -FilePath $logFile -Encoding UTF8 -Force
+    "Windows 11 Optimization Script - ${mode} MODE" | Add-Content -Path $logFile
+    "Started: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" | Add-Content -Path $logFile
+    "Log file: $logFile" | Add-Content -Path $logFile
+    "═══════════════════════════════════════════════════════════" | Add-Content -Path $logFile
+    "" | Add-Content -Path $logFile
+    Write-Host "✓ Log file created at: $logFile" -ForegroundColor Green
+} catch {
+    Write-Host "❌ ERROR: Could not create log file!" -ForegroundColor Red
+    Write-Host "   Location: $logFile" -ForegroundColor Yellow
+    Write-Host "   Error: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Press any key to exit..." -ForegroundColor Yellow
+    pause
+    exit 1
+}
+
+# Define logging function
+function Write-Log {
+    param([string]$Message, [string]$Color = "White")
+    Write-Host $Message -ForegroundColor $Color
+    try {
+        Add-Content -Path $logFile -Value $Message -ErrorAction SilentlyContinue
+    } catch {
+        # Silently ignore logging errors
+    }
+}
 
 Write-Log ""
 Write-Log "╔═══════════════════════════════════════════════════════════╗" "Cyan"
-Write-Log "║                                                           ║" "Cyan"
-Write-Log "║     Windows 11 ${mode.padEnd(36)} ║" "Cyan"
-Write-Log "║                                                           ║" "Cyan"
+Write-Log "║           WINDOWS 11 ${mode} SCRIPT                    ║" "Cyan"
 Write-Log "╚═══════════════════════════════════════════════════════════╝" "Cyan"
 Write-Log ""
 
-# Check for admin privileges
-$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-if (-not $isAdmin) {
-    Write-Log "❌ ERROR: This script requires Administrator privileges!" "Red"
-    Write-Log "   Right-click the script and select 'Run as Administrator'" "Yellow"
-    Write-Log ""
-    Read-Host "Press Enter to exit"
-    exit 1
+# Check admin privileges
+try {
+    $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    if (-not $isAdmin) {
+        Write-Log "⚠️  WARNING: Not running as Administrator" "Yellow"
+        Write-Log "   Some operations may fail without admin rights." "Yellow"
+        Write-Log "   To fix: Close this, right-click script → 'Run as Administrator'" "Gray"
+        Write-Log ""
+        Write-Log "Continuing in 5 seconds..." "Yellow"
+        Start-Sleep -Seconds 5
+    } else {
+        Write-Log "✅ Running with Administrator privileges" "Green"
+    }
+} catch {
+    Write-Log "⚠️  Could not verify admin status" "Yellow"
 }
+Write-Log ""
 
 `;
 
