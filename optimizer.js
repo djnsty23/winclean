@@ -548,7 +548,7 @@ if not exist "%SCHEDULED_SCRIPT%" (
 echo $ErrorActionPreference = 'Stop'
 echo try {
 echo     $scriptPath = "%SCHEDULED_SCRIPT%"
-echo     $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-ExecutionPolicy Bypass -File `"$scriptPath`""
+echo     $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-ExecutionPolicy Bypass -File \`"$scriptPath\`""
 echo.
 if "%triggerType%"=="DAILY" (
 echo     $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00

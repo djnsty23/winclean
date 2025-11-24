@@ -685,7 +685,7 @@
             <!-- Temp Files -->
             <div class="option-card">
                 <div class="option-card-header">
-                    <div class="option-icon">[TEMP]</div>
+                    <div class="option-icon">🗑️</div>
                     <div>
                         <h3>Temp File Cleaner</h3>
                         <p>Clean temporary files (500 MB - 5 GB typically)</p>
@@ -751,7 +751,7 @@
             <!-- Privacy & Telemetry -->
             <div class="option-card">
                 <div class="option-card-header">
-                    <div class="option-icon">[PRIVACY]</div>
+                    <div class="option-icon">🔒</div>
                     <div>
                         <h3>Privacy & Telemetry</h3>
                         <p>Reduce data sent to Microsoft (fully reversible)</p>
@@ -806,7 +806,7 @@
             <!-- Performance Tuning -->
             <div class="option-card">
                 <div class="option-card-header">
-                    <div class="option-icon">[PERF]</div>
+                    <div class="option-icon">🎯</div>
                     <div>
                         <h3>Performance Tuning</h3>
                         <p>Speed up Windows (great for older PCs)</p>
@@ -850,7 +850,7 @@
             <!-- Disk Maintenance -->
             <div class="option-card">
                 <div class="option-card-header">
-                    <div class="option-icon">[DISK]</div>
+                    <div class="option-icon">💾</div>
                     <div>
                         <h3>Disk Maintenance</h3>
                         <p>Deep cleanup (can free 5-15 GB or more)</p>
@@ -905,7 +905,7 @@
             <!-- Browser Cache Cleanup -->
             <div class="option-card">
                 <div class="option-card-header">
-                    <div class="option-icon">[WEB]</div>
+                    <div class="option-icon">🌐</div>
                     <div>
                         <h3>Browser Cache Cleanup</h3>
                         <p>Clear browser caches to free space (browsers must be closed)</p>
@@ -960,7 +960,7 @@
             <!-- Windows Services -->
             <div class="option-card">
                 <div class="option-card-header">
-                    <div class="option-icon">[SVC]</div>
+                    <div class="option-icon">⚙️</div>
                     <div>
                         <h3>Windows Services</h3>
                         <p>Optimize background services (advanced users)</p>
@@ -1004,7 +1004,7 @@
             <!-- Startup Optimizer -->
             <div class="option-card">
                 <div class="option-card-header">
-                    <div class="option-icon">[START]</div>
+                    <div class="option-icon">⚡</div>
                     <div>
                         <h3>Startup Optimizer</h3>
                         <p>Analyze startup programs (30-60s faster boot)</p>
@@ -1080,65 +1080,49 @@
 
         // Quick action functions
         function selectRecommended() {
-            // Deselect all first
             deselectAll();
             
-            // Temp Files - From image
-            document.getElementById('temp-user').checked = true;
-            document.getElementById('temp-windows').checked = true;
-            document.getElementById('temp-prefetch').checked = true;
-            document.getElementById('temp-thumbnail').checked = true;
-            // Recycle bin - NOT checked in image
+            document.getElementById("temp-user").checked = true;
+            document.getElementById("temp-windows").checked = true;
+            document.getElementById("temp-prefetch").checked = true;
+            document.getElementById("temp-thumbnail").checked = true;
             
-            // Privacy - From image
-            document.getElementById('privacy-telemetry').checked = true;
-            document.getElementById('privacy-ads').checked = true;
-            document.getElementById('privacy-cortana').checked = true;
-            // Location - NOT checked in image
+            document.getElementById("privacy-telemetry").checked = true;
+            document.getElementById("privacy-ads").checked = true;
+            document.getElementById("privacy-cortana").checked = true;
             
-            // Performance - From image
-            document.getElementById('perf-gamemode').checked = true;
-            document.getElementById('perf-hibernation').checked = true;
-            // Visual effects - NOT checked in image
+            document.getElementById("perf-gamemode").checked = true;
+            document.getElementById("perf-hibernation").checked = true;
             
-            // Disk - From image
-            document.getElementById('disk-winsxs').checked = true;
-            document.getElementById('disk-updates').checked = true;
-            document.getElementById('disk-logs').checked = true;
-            document.getElementById('disk-system-repair').checked = true;
+            document.getElementById("disk-winsxs").checked = true;
+            document.getElementById("disk-updates").checked = true;
+            document.getElementById("disk-logs").checked = true;
+            document.getElementById("disk-system-repair").checked = true;
             
-            // Browser - From image (all browsers)
-            document.getElementById('browser-edge').checked = true;
-            document.getElementById('browser-chrome').checked = true;
-            document.getElementById('browser-brave').checked = true;
-            document.getElementById('browser-opera').checked = true;
+            document.getElementById("browser-edge").checked = true;
+            document.getElementById("browser-chrome").checked = true;
+            document.getElementById("browser-brave").checked = true;
+            document.getElementById("browser-opera").checked = true;
             
-            // Services - From image
-            document.getElementById('service-diagtrack').checked = true;
-            document.getElementById('service-sysmain').checked = true;
-            document.getElementById('service-wsearch').checked = true;
+            document.getElementById("service-diagtrack").checked = true;
+            document.getElementById("service-sysmain").checked = true;
+            document.getElementById("service-wsearch").checked = true;
             
-            // Startup - NOT in image (no checkboxes visible)
-            // document.getElementById('startup-scan').checked = true;
-            // document.getElementById('startup-report').checked = true;
+            document.getElementById("create-backup").checked = true;
             
-            // Keep backup enabled
-            document.getElementById('create-backup').checked = true;
-            
-            // Show notification
-            showNotification('Recommended settings applied!', 'success');
+            showNotification("Recommended settings applied!", "success");
         }
 
         function selectAll() {
-            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            const checkboxes = document.querySelectorAll("input[type=checkbox]");
             checkboxes.forEach(cb => cb.checked = true);
-            showNotification('All options selected!', 'success');
+            showNotification("All options selected!", "success");
         }
 
         function deselectAll() {
-            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            const checkboxes = document.querySelectorAll("input[type=checkbox]");
             checkboxes.forEach(cb => cb.checked = false);
-            showNotification('All options cleared!', 'info');
+            showNotification("All options cleared!", "info");
         }
     </script>
 </body>
