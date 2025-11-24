@@ -1,5 +1,26 @@
 # 🚀 Windows 11 Optimization Portal
 
+## 🚨 SCRIPTS CLOSING INSTANTLY? EMERGENCY FIX:
+
+### **🆘 STEP 1: Run Diagnostic Test FIRST**
+
+Before anything else, test if PowerShell works:
+
+1. Download **`DIAGNOSTIC_TEST.ps1`**
+2. Right-click → Properties → Unblock → OK  
+3. Right-click → Run with PowerShell
+
+**This will tell you EXACTLY what's wrong!**
+
+If diagnostic test ALSO closes instantly:
+1. Download **`RUN_WITH_ERROR_CAPTURE.bat`**
+2. Double-click it
+3. Drag your script into the window
+4. Press Enter
+5. **It will save ALL errors to Desktop!**
+
+---
+
 ## ⚠️ SCRIPTS CLOSING INSTANTLY? COMPLETE FIX GUIDE:
 
 ### 🔒 **MUST DO FIRST: Unblock Downloaded File**
