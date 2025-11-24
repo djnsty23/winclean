@@ -477,7 +477,7 @@ Write-Host ""
     # Try to save error to same folder as script
     try {
         $errorFile = "$PSScriptRoot\\Windows_Optimization_ERROR_$(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss').txt"
-        $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+        $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
         @"
 WINDOWS OPTIMIZATION SCRIPT ERROR LOG
 Generated: $timestamp
@@ -551,19 +551,20 @@ $regPaths = @(
     @{Path="HKCU:\\Software\\Microsoft\\GameBar"; Name="AutoGameModeEnabled"}
 )
 
-foreach ($reg in $regPaths) {
-    try {
-        if (Test-Path $reg.Path) {
-            $value = Get-ItemProperty -Path $reg.Path -Name $reg.Name -ErrorAction SilentlyContinue
-            if ($value) {
-                $key = "$($reg.Path)\\$($reg.Name)"
-                $backup.Registry[$key] = $value.$($reg.Name)
+    foreach ($reg in $regPaths) {
+        try {
+            if (Test-Path $reg.Path) {
+                $value = Get-ItemProperty -Path $reg.Path -Name $reg.Name -ErrorAction SilentlyContinue
+                if ($value) {
+                    $key = "$($reg.Path)\\$($reg.Name)"
+                    $backup.Registry[$key] = $value.$($reg.Name)
+                }
             }
         }
-    } catch {
-        # Path doesn't exist, skip
+        catch {
+            # Path doesn't exist, skip
+        }
     }
-}
 
 # Backup Service States
 Write-Log "   [SERVICE] Backing up service states..." "Gray"
@@ -1203,6 +1204,7 @@ foreach ($item in $startupItems) {
             <td class="recommendation">$recommendation</td>
         </tr>
 "@
+
 }
 
 $html += @"
@@ -1212,6 +1214,7 @@ $html += @"
 </body>
 </html>
 "@
+
 
 $html | Out-File -FilePath $reportPath -Encoding UTF8
 
