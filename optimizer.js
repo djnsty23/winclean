@@ -26,7 +26,7 @@ function showNotification(message, type = 'info') {
     notification.style.zIndex = '10000';
     notification.style.minWidth = '300px';
     notification.style.animation = 'slideIn 0.3s ease-out';
-    notification.innerHTML = `<div style="font-size:1.5rem">${type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️'}</div><div>${message}</div>`;
+    notification.innerHTML = `<div style="font-size:1.5rem">${type === 'success' ? 'SUCCESS' : type === 'warning' ? 'WARNING' : 'INFO'}</div><div>${message}</div>`;
     
     document.body.appendChild(notification);
     
@@ -47,7 +47,7 @@ function downloadScript(filename, content) {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    showNotification('✅ Script downloaded! Check your Downloads folder.', 'success');
+    showNotification('SUCCESS: Script downloaded! Check your Downloads folder.', 'success');
 }
 
 function getTimestamp() {
@@ -106,7 +106,7 @@ function generateScript(previewMode = false, scheduleMode = false) {
     );
 
     if (!hasSelection) {
-        showNotification('⚠️ Please select at least one optimization option!', 'warning');
+        showNotification('WARNING Please select at least one optimization option!', 'warning');
         return;
     }
 
@@ -117,7 +117,7 @@ function generateScript(previewMode = false, scheduleMode = false) {
         // Show preview in modal
         const modalContent = `
             <div class="alert alert-info">
-                <div style="font-size:1.5rem">ℹ️</div>
+                <div style="font-size:1.5rem">INFO</div>
                 <div><strong>Preview Mode</strong><br>This script will analyze what would be cleaned without making changes.</div>
             </div>
             <div class="script-preview">${escapeHtml(script)}</div>
@@ -169,11 +169,11 @@ function showInstructionsModal(filename, scriptContent, type) {
     if (type === 'optimize') {
         instructions = `
             <div class="instructions-box">
-                <h4>📋 How to Run Your Optimization Script</h4>
+                <h4>[BACKUP] How to Run Your Optimization Script</h4>
                 <ol>
                     <li><strong>Download the script</strong> by clicking the button below</li>
                     <li><strong>Locate the file</strong> in your Downloads folder (<code>${filename}</code>)</li>
-                    <li><strong>🔒 UNBLOCK THE FILE (Important!):</strong>
+                    <li><strong>[SECURE] UNBLOCK THE FILE (Important!):</strong>
                         <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
                             <li>Right-click the .ps1 file → <strong>Properties</strong></li>
                             <li>At the bottom, check <strong>☑ Unblock</strong></li>
@@ -185,17 +185,17 @@ function showInstructionsModal(filename, scriptContent, type) {
                     <li><strong>Notepad opens automatically</strong> with a complete log of what happened</li>
                 </ol>
                 <div style="margin-top: 1rem; padding: 1rem; background: #e8f5e9; border-radius: 6px; border-left: 4px solid #4caf50;">
-                    <strong>✅ Why Unblock?</strong><br>
+                    <strong>SUCCESS: Why Unblock?</strong><br>
                     This tells Windows you trust THIS specific file. It's MORE SECURE than changing your PowerShell execution policy globally!
                 </div>
                 <div style="margin-top: 1rem; padding: 1rem; background: #fff4e6; border-radius: 6px; border-left: 4px solid var(--warning);">
-                    <strong>⚠️ Alternative: One-Time Bypass (Also Secure)</strong><br>
+                    <strong>WARNING Alternative: One-Time Bypass (Also Secure)</strong><br>
                     If you prefer NOT to unblock, open PowerShell as Admin and run:<br>
                     <code style="background: rgba(0,0,0,0.1); padding: 0.3rem; border-radius: 3px; display: block; margin-top: 0.5rem;">powershell -ExecutionPolicy Bypass -File "C:\\Downloads\\${filename}"</code>
                     This only bypasses policy for THIS ONE execution (secure!).
                 </div>
                 <div style="margin-top: 1rem; padding: 1rem; background: #e6f3ff; border-radius: 6px;">
-                    <strong>💡 What to expect:</strong> A log file will appear on your <strong>Desktop</strong> showing everything that happened. 
+                    <strong>[TIP] What to expect:</strong> A log file will appear on your <strong>Desktop</strong> showing everything that happened. 
                     If backup was enabled, you'll also see <strong>RESTORE script</strong> and <strong>backup JSON file</strong>.
                 </div>
             </div>
@@ -203,7 +203,7 @@ function showInstructionsModal(filename, scriptContent, type) {
     } else if (type === 'schedule') {
         instructions = `
             <div class="instructions-box">
-                <h4>📋 How to Set Up Scheduled Maintenance</h4>
+                <h4>[BACKUP] How to Set Up Scheduled Maintenance</h4>
                 <ol>
                     <li><strong>Download the script</strong> by clicking the button below</li>
                     <li><strong>Locate the file</strong> in your Downloads folder (<code>${filename}</code>)</li>
@@ -213,7 +213,7 @@ function showInstructionsModal(filename, scriptContent, type) {
                     <li>To manage it later, press <strong>Win+R</strong>, type <code>taskschd.msc</code>, and look for <strong>"Windows Weekly Optimization"</strong></li>
                 </ol>
                 <div style="margin-top: 1rem; padding: 1rem; background: #e6f9e6; border-radius: 6px;">
-                    <strong>✅ What it does:</strong> Creates a scheduled task that automatically runs your selected optimizations every week. 
+                    <strong>SUCCESS: What it does:</strong> Creates a scheduled task that automatically runs your selected optimizations every week. 
                     You can disable or delete it anytime from Task Scheduler.
                 </div>
             </div>
@@ -222,7 +222,7 @@ function showInstructionsModal(filename, scriptContent, type) {
     
     const modalContent = `
         <div class="alert alert-success">
-            <div style="font-size:1.5rem">✅</div>
+            <div style="font-size:1.5rem">SUCCESS</div>
             <div><strong>Script Ready!</strong><br>Your PowerShell script has been generated and is ready to download.</div>
         </div>
         ${instructions}
@@ -295,10 +295,10 @@ try {
     "Log file: $logFile" | Add-Content -Path $logFile
     "═══════════════════════════════════════════════════════════" | Add-Content -Path $logFile
     "" | Add-Content -Path $logFile
-    Write-Host "✓ Log file created at: $logFile" -ForegroundColor Green
+    Write-Host "OK: Log file created at: $logFile" -ForegroundColor Green
     Write-Host ""
 } catch {
-    Write-Host "❌ ERROR: Could not create log file!" -ForegroundColor Red
+    Write-Host "ERROR: ERROR: Could not create log file!" -ForegroundColor Red
     Write-Host "   Location: $logFile" -ForegroundColor Yellow
     Write-Host "   Error: $($_.Exception.Message)" -ForegroundColor Red
     Write-Host ""
@@ -328,17 +328,17 @@ Write-Log ""
 try {
     $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
     if (-not $isAdmin) {
-        Write-Log "⚠️  WARNING: Not running as Administrator" "Yellow"
+        Write-Log "WARNING: WARNING: Not running as Administrator" "Yellow"
         Write-Log "   Some operations may fail without admin rights." "Yellow"
         Write-Log "   To fix: Close this, right-click script → 'Run as Administrator'" "Gray"
         Write-Log ""
         Write-Log "Continuing in 5 seconds..." "Yellow"
         Start-Sleep -Seconds 5
     } else {
-        Write-Log "✅ Running with Administrator privileges" "Green"
+        Write-Log "SUCCESS: Running with Administrator privileges" "Green"
     }
 } catch {
-    Write-Log "⚠️  Could not verify admin status" "Yellow"
+    Write-Log "WARNING: Could not verify admin status" "Yellow"
 }
 Write-Log ""
 
@@ -349,13 +349,13 @@ Write-Log ""
     } else if (!previewMode) {
         script += `
 # Create System Restore Point
-Write-Log "🛡️  Creating System Restore Point..." "Yellow"
+Write-Log "[RESTORE] Creating System Restore Point..." "Yellow"
 try {
     Enable-ComputerRestore -Drive "C:\\"
     Checkpoint-Computer -Description "Before Optimization - $(Get-Date -Format 'yyyy-MM-dd HH:mm')" -RestorePointType "MODIFY_SETTINGS"
-    Write-Log "   ✓ Restore point created successfully!" "Green"
+    Write-Log "   OK: Restore point created successfully!" "Green"
 } catch {
-    Write-Log "   ⚠️  Could not create restore point: $($_.Exception.Message)" "Yellow"
+    Write-Log "   WARNING: Could not create restore point: $($_.Exception.Message)" "Yellow"
     Write-Log "   Continuing anyway..." "Gray"
 }
 Write-Log ""
@@ -411,19 +411,19 @@ Write-Log "╔══════════════════════
 Write-Log "║                  ${mode} COMPLETE!                     ║" "Green"
 Write-Log "╚═══════════════════════════════════════════════════════════╝" "Green"
 Write-Log ""
-Write-Log "📊 FINAL SUMMARY:" "Cyan"
+Write-Log "[STATS] FINAL SUMMARY:" "Cyan"
 Write-Log ""
-Write-Log "   ✅ Items processed: $itemsCleaned" "Green"
-Write-Log "   💾 Space freed: $([math]::Round($totalCleaned / 1MB, 2)) MB" "Green"
+Write-Log "   SUCCESS: Items processed: $itemsCleaned" "Green"
+Write-Log "   [DISK] Space freed: $([math]::Round($totalCleaned / 1MB, 2)) MB" "Green"
 if ($errorCount -gt 0) {
-    Write-Log "   ⚠️  Items skipped (files in use): $errorCount" "Yellow"
+    Write-Log "   WARNING: Items skipped (files in use): $errorCount" "Yellow"
 }
 Write-Log ""
 Write-Log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" "Gray"
 Write-Log ""
-Write-Log "✅ SUCCESS! Your system has been optimized!" "Green"
+Write-Log "SUCCESS: SUCCESS! Your system has been optimized!" "Green"
 Write-Log ""
-Write-Log "📄 Full log saved to: $logFile" "Cyan"
+Write-Log "[FILE] Full log saved to: $logFile" "Cyan"
 Write-Log ""
 Write-Log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" "Gray"
 Write-Log ""
@@ -438,9 +438,9 @@ Write-Log ""
 Write-Log "Opening log file in Notepad..." "Cyan"
 try {
     Start-Process notepad.exe $logFile
-    Write-Log "✅ Log file opened" "Green"
+    Write-Log "SUCCESS: Log file opened" "Green"
 } catch {
-    Write-Log "⚠️  Could not open log file automatically" "Yellow"
+    Write-Log "WARNING: Could not open log file automatically" "Yellow"
     Write-Log "   You can find it at: $logFile" "Gray"
 }
 
@@ -490,10 +490,10 @@ $($_ | Format-List * -Force | Out-String)
 STACK TRACE:
 $($_.ScriptStackTrace)
 "@ | Out-File -FilePath $errorFile -Encoding UTF8
-        Write-Host "✅ Error details saved to: $errorFile" -ForegroundColor Green
+        Write-Host "SUCCESS: Error details saved to: $errorFile" -ForegroundColor Green
         Start-Process notepad.exe $errorFile
     } catch {
-        Write-Host "⚠️  Could not save error log to file" -ForegroundColor Yellow
+        Write-Host "WARNING: Could not save error log to file" -ForegroundColor Yellow
     }
 }
 
@@ -524,7 +524,7 @@ $backupTimestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
 $backupPath = "$PSScriptRoot\\Windows_Optimization_Backup_$backupTimestamp.json"
 $restoreScriptPath = "$PSScriptRoot\\RESTORE_Windows_Settings_$backupTimestamp.ps1"
 
-Write-Log "💾 Creating backup of current settings..." "Cyan"
+Write-Log "[DISK] Creating backup of current settings..." "Cyan"
 
 $backup = @{
     Timestamp = $backupTimestamp
@@ -536,7 +536,7 @@ $backup = @{
 }
 
 # Backup Registry Settings
-Write-Log "   📋 Backing up registry settings..." "Gray"
+Write-Log "   [BACKUP] Backing up registry settings..." "Gray"
 
 $regPaths = @(
     @{Path="HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection"; Name="AllowTelemetry"},
@@ -562,7 +562,7 @@ foreach ($reg in $regPaths) {
 }
 
 # Backup Service States
-Write-Log "   ⚙️  Backing up service states..." "Gray"
+Write-Log "   [SERVICE] Backing up service states..." "Gray"
 
 $services = @("DiagTrack", "SysMain", "WSearch", "dmwappushservice", "MapsBroker", "XblAuthManager", "XblGameSave", "XboxGipSvc", "XboxNetApiSvc", "Spooler", "Fax")
 
@@ -591,21 +591,21 @@ try {
 # Save backup to JSON
 try {
     $backup | ConvertTo-Json -Depth 10 | Out-File -FilePath $backupPath -Encoding UTF8
-    Write-Log "   ✓ Backup saved to: $backupPath" "Green"
+    Write-Log "   OK: Backup saved to: $backupPath" "Green"
     
     # Verify backup was created
     if (Test-Path $backupPath) {
         $backupSize = (Get-Item $backupPath).Length
-        Write-Log "   ✓ Backup file size: $([math]::Round($backupSize / 1KB, 2)) KB" "Green"
+        Write-Log "   OK: Backup file size: $([math]::Round($backupSize / 1KB, 2)) KB" "Green"
     } else {
-        Write-Log "   ⚠️  Warning: Backup file not found!" "Yellow"
+        Write-Log "   WARNING: Warning: Backup file not found!" "Yellow"
     }
 } catch {
-    Write-Log "   ❌ Failed to create backup: $($_.Exception.Message)" "Red"
+    Write-Log "   ERROR: Failed to create backup: $($_.Exception.Message)" "Red"
 }
 
 # Generate Restore Script
-Write-Log "   📝 Generating restore script..." "Gray"
+Write-Log "   [LOG] Generating restore script..." "Gray"
 
 $restoreScript = @'
 # ============================================
@@ -630,7 +630,7 @@ Write-Log ""
 $backupFile = "BACKUP_PATH_PLACEHOLDER"
 
 if (-not (Test-Path $backupFile)) {
-    Write-Log "❌ ERROR: Backup file not found: $backupFile" "Red"
+    Write-Log "ERROR: ERROR: Backup file not found: $backupFile" "Red"
     Read-Host "Press Enter to exit"
     exit 1
 }
@@ -638,15 +638,15 @@ if (-not (Test-Path $backupFile)) {
 Write-Log "📂 Loading backup from: $backupFile" "Cyan"
 $backup = Get-Content $backupFile | ConvertFrom-Json
 
-Write-Log "   ℹ️  Backup created: $($backup.Timestamp)" "Gray"
-Write-Log "   ℹ️  Computer: $($backup.ComputerName)" "Gray"
+Write-Log "   [INFO] Backup created: $($backup.Timestamp)" "Gray"
+Write-Log "   [INFO] Computer: $($backup.ComputerName)" "Gray"
 Write-Log ""
 
 $restored = 0
 $errors = 0
 
 # Restore Registry Settings
-Write-Log "📋 Restoring registry settings..." "Yellow"
+Write-Log "[BACKUP] Restoring registry settings..." "Yellow"
 foreach ($key in $backup.Registry.PSObject.Properties) {
     $fullPath = $key.Name
     $parts = $fullPath -split '\\\\'
@@ -658,27 +658,27 @@ foreach ($key in $backup.Registry.PSObject.Properties) {
             New-Item -Path $regPath -Force | Out-Null
         }
         Set-ItemProperty -Path $regPath -Name $valueName -Value $key.Value -ErrorAction Stop
-        Write-Log "   ✓ Restored: $fullPath" "Green"
+        Write-Log "   OK: Restored: $fullPath" "Green"
         $restored++
     } catch {
-        Write-Log "   ❌ Failed: $fullPath" "Red"
+        Write-Log "   ERROR: Failed: $fullPath" "Red"
         $errors++
     }
 }
 
 # Restore Services
 Write-Log ""
-Write-Log "⚙️  Restoring service states..." "Yellow"
+Write-Log "[SERVICE] Restoring service states..." "Yellow"
 foreach ($svc in $backup.Services.PSObject.Properties) {
     try {
         $service = Get-Service -Name $svc.Name -ErrorAction Stop
         $startType = $svc.Value.StartType
         
         Set-Service -Name $svc.Name -StartupType $startType -ErrorAction Stop
-        Write-Log "   ✓ Restored service: $($svc.Name) -> $startType" "Green"
+        Write-Log "   OK: Restored service: $($svc.Name) -> $startType" "Green"
         $restored++
     } catch {
-        Write-Log "   ❌ Failed to restore service: $($svc.Name)" "Red"
+        Write-Log "   ERROR: Failed to restore service: $($svc.Name)" "Red"
         $errors++
     }
 }
@@ -686,13 +686,13 @@ foreach ($svc in $backup.Services.PSObject.Properties) {
 # Restore Hibernation
 Write-Log ""
 if ($backup.SystemSettings.HibernationEnabled -eq $true) {
-    Write-Log "🔋 Re-enabling hibernation..." "Yellow"
+    Write-Log "[POWER] Re-enabling hibernation..." "Yellow"
     try {
         powercfg -h on
-        Write-Log "   ✓ Hibernation enabled" "Green"
+        Write-Log "   OK: Hibernation enabled" "Green"
         $restored++
     } catch {
-        Write-Log "   ❌ Could not enable hibernation" "Red"
+        Write-Log "   ERROR: Could not enable hibernation" "Red"
         $errors++
     }
 }
@@ -702,11 +702,11 @@ Write-Log "╔══════════════════════
 Write-Log "║                 RESTORE COMPLETE!                         ║" "Green"
 Write-Log "╚═══════════════════════════════════════════════════════════╝" "Green"
 Write-Log ""
-Write-Log "📊 Summary:" "Cyan"
+Write-Log "[STATS] Summary:" "Cyan"
 Write-Log "   • Settings restored: $restored" "White"
 Write-Log "   • Errors: $errors" "White"
 Write-Log ""
-Write-Log "✅ Your settings have been restored to their previous state!" "Green"
+Write-Log "SUCCESS: Your settings have been restored to their previous state!" "Green"
 Write-Log ""
 Read-Host "Press Enter to exit"
 '@
@@ -720,27 +720,27 @@ try {
     
     # Verify restore script was created
     if (Test-Path $restoreScriptPath) {
-        Write-Log "   ✓ Restore script created: $restoreScriptPath" "Green"
+        Write-Log "   OK: Restore script created: $restoreScriptPath" "Green"
         $restoreSize = (Get-Item $restoreScriptPath).Length
-        Write-Log "   ✓ Restore script size: $([math]::Round($restoreSize / 1KB, 2)) KB" "Green"
+        Write-Log "   OK: Restore script size: $([math]::Round($restoreSize / 1KB, 2)) KB" "Green"
     } else {
-        Write-Log "   ⚠️  Warning: Restore script not found!" "Yellow"
+        Write-Log "   WARNING: Warning: Restore script not found!" "Yellow"
     }
 } catch {
-    Write-Log "   ❌ Failed to create restore script: $($_.Exception.Message)" "Red"
+    Write-Log "   ERROR: Failed to create restore script: $($_.Exception.Message)" "Red"
 }
 
 Write-Log ""
 Write-Log "╔═══════════════════════════════════════════════════════════╗" "Green"
-Write-Log "║  ✅ BACKUP COMPLETE - Safe to proceed with optimization   ║" "Green"
+Write-Log "║  SUCCESS: BACKUP COMPLETE - Safe to proceed with optimization   ║" "Green"
 Write-Log "╚═══════════════════════════════════════════════════════════╝" "Green"
 Write-Log ""
-Write-Log "📁 Files saved in script folder:" "Cyan"
+Write-Log "[FILES] Files saved in script folder:" "Cyan"
 Write-Log "   • Backup: Windows_Optimization_Backup_$backupTimestamp.json" "White"
 Write-Log "   • Restore: RESTORE_Windows_Settings_$backupTimestamp.ps1" "White"
 Write-Log "   • Location: $PSScriptRoot" "Gray"
 Write-Log ""
-Write-Log "💡 To undo changes later, right-click the RESTORE script → 'Run with PowerShell'" "Yellow"
+Write-Log "[TIP] To undo changes later, right-click the RESTORE script → 'Run with PowerShell'" "Yellow"
 Write-Log ""
 Write-Log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" "Gray"
 Write-Log ""
@@ -763,11 +763,11 @@ function Clean-Directory {
     param([string]$Path, [string]$Description)
     
     if (-not (Test-Path $Path)) {
-        Write-Log "   ⏭️  Skipping $Description - Path not found" "Gray"
+        Write-Log "   SKIPPED: Skipping $Description - Path not found" "Gray"
         return
     }
     
-    Write-Log "   🔍 Scanning $Description..." "Cyan"
+    Write-Log "   [SCAN] Scanning $Description..." "Cyan"
     $sizeBefore = 0
     $filesRemoved = 0
     $filesSkipped = 0
@@ -796,11 +796,11 @@ function Clean-Directory {
             Write-Log "   SUCCESS: Cleaned $filesRemoved items - $sizeInMB MB" "Green"
         }
         if ($filesSkipped -gt 0) {
-            Write-Log "   ⏭️  Skipped: $filesSkipped items (in use)" "Yellow"
+            Write-Log "   SKIPPED: Skipped: $filesSkipped items (in use)" "Yellow"
         }
         
     } catch {
-        Write-Log "   ⚠️  Some files were in use (this is normal)" "Yellow"
+        Write-Log "   WARNING: Some files were in use (this is normal)" "Yellow"
         $script:errorCount++
     }
     Write-Log ""
@@ -830,13 +830,13 @@ function Clean-Directory {
 
     if (temp.recycle) {
         section += `
-Write-Log "🗑️  Emptying Recycle Bin..." "Cyan"
+Write-Log "[DELETE] Emptying Recycle Bin..." "Cyan"
 try {
     Clear-RecycleBin -Force ${whatIf} -ErrorAction Stop
-    Write-Log "   ✓ Recycle Bin emptied" "Green"
+    Write-Log "   OK: Recycle Bin emptied" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Log "   ⚠️  Could not empty recycle bin: $($_.Exception.Message)" "Yellow"
+    Write-Log "   WARNING: Could not empty recycle bin: $($_.Exception.Message)" "Yellow"
 }
 `;
     }
@@ -856,13 +856,13 @@ Write-Log ""
 
     if (privacy.telemetry) {
         section += `
-Write-Log "🔒 Minimizing Telemetry..." "Cyan"
+Write-Log "[SECURE] Minimizing Telemetry..." "Cyan"
 try {
     Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" -Name "AllowTelemetry" -Value 0 ${whatIf} -ErrorAction Stop
-    Write-Log "   ✓ Telemetry set to minimum" "Green"
+    Write-Log "   OK: Telemetry set to minimum" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Log "   ⚠️  Could not modify telemetry settings" "Yellow"
+    Write-Log "   WARNING: Could not modify telemetry settings" "Yellow"
     $script:errorCount++
 }
 `;
@@ -870,16 +870,16 @@ try {
 
     if (privacy.ads) {
         section += `
-Write-Log "🔒 Disabling Advertising ID..." "Cyan"
+Write-Log "[SECURE] Disabling Advertising ID..." "Cyan"
 try {
     if (-not (Test-Path "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo")) {
         New-Item -Path "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo" -Force ${whatIf} | Out-Null
     }
     Set-ItemProperty -Path "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo" -Name "Enabled" -Value 0 ${whatIf} -ErrorAction Stop
-    Write-Log "   ✓ Advertising ID disabled" "Green"
+    Write-Log "   OK: Advertising ID disabled" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Log "   ⚠️  Could not disable advertising ID" "Yellow"
+    Write-Log "   WARNING: Could not disable advertising ID" "Yellow"
     $script:errorCount++
 }
 `;
@@ -887,16 +887,16 @@ try {
 
     if (privacy.cortana) {
         section += `
-Write-Log "🔒 Disabling Cortana..." "Cyan"
+Write-Log "[SECURE] Disabling Cortana..." "Cyan"
 try {
     if (-not (Test-Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search")) {
         New-Item -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search" -Force ${whatIf} | Out-Null
     }
     Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search" -Name "AllowCortana" -Value 0 ${whatIf} -ErrorAction Stop
-    Write-Log "   ✓ Cortana disabled" "Green"
+    Write-Log "   OK: Cortana disabled" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Log "   ⚠️  Could not disable Cortana" "Yellow"
+    Write-Log "   WARNING: Could not disable Cortana" "Yellow"
     $script:errorCount++
 }
 `;
@@ -904,13 +904,13 @@ try {
 
     if (privacy.location) {
         section += `
-Write-Log "🔒 Disabling Location Tracking..." "Cyan"
+Write-Log "[SECURE] Disabling Location Tracking..." "Cyan"
 try {
     Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\location" -Name "Value" -Value "Deny" ${whatIf} -ErrorAction Stop
-    Write-Log "   ✓ Location tracking disabled" "Green"
+    Write-Log "   OK: Location tracking disabled" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Log "   ⚠️  Could not disable location tracking" "Yellow"
+    Write-Log "   WARNING: Could not disable location tracking" "Yellow"
     $script:errorCount++
 }
 `;
@@ -931,13 +931,13 @@ Write-Log ""
 
     if (perf.visual) {
         section += `
-Write-Log "🎯 Optimizing Visual Effects..." "Cyan"
+Write-Log "[TARGET] Optimizing Visual Effects..." "Cyan"
 try {
     Set-ItemProperty -Path "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects" -Name "VisualFXSetting" -Value 2 ${whatIf} -ErrorAction Stop
-    Write-Log "   ✓ Visual effects set to best performance" "Green"
+    Write-Log "   OK: Visual effects set to best performance" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Log "   ⚠️  Could not modify visual effects" "Yellow"
+    Write-Log "   WARNING: Could not modify visual effects" "Yellow"
     $script:errorCount++
 }
 `;
@@ -945,16 +945,16 @@ try {
 
     if (perf.gamemode) {
         section += `
-Write-Log "🎯 Enabling Game Mode..." "Cyan"
+Write-Log "[TARGET] Enabling Game Mode..." "Cyan"
 try {
     if (-not (Test-Path "HKCU:\\Software\\Microsoft\\GameBar")) {
         New-Item -Path "HKCU:\\Software\\Microsoft\\GameBar" -Force ${whatIf} | Out-Null
     }
     Set-ItemProperty -Path "HKCU:\\Software\\Microsoft\\GameBar" -Name "AutoGameModeEnabled" -Value 1 ${whatIf} -ErrorAction Stop
-    Write-Log "   ✓ Game Mode enabled" "Green"
+    Write-Log "   OK: Game Mode enabled" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Log "   ⚠️  Could not enable Game Mode" "Yellow"
+    Write-Log "   WARNING: Could not enable Game Mode" "Yellow"
     $script:errorCount++
 }
 `;
@@ -962,14 +962,14 @@ try {
 
     if (perf.superfetch) {
         section += `
-Write-Log "🎯 Disabling Superfetch (for SSD)..." "Cyan"
+Write-Log "[TARGET] Disabling Superfetch (for SSD)..." "Cyan"
 try {
     Set-Service -Name "SysMain" -StartupType Disabled ${whatIf} -ErrorAction Stop
     Stop-Service -Name "SysMain" -Force ${whatIf} -ErrorAction SilentlyContinue
-    Write-Log "   ✓ Superfetch disabled" "Green"
+    Write-Log "   OK: Superfetch disabled" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Log "   ⚠️  Could not disable Superfetch" "Yellow"
+    Write-Log "   WARNING: Could not disable Superfetch" "Yellow"
     $script:errorCount++
 }
 `;
@@ -977,13 +977,13 @@ try {
 
     if (perf.hibernation) {
         section += `
-Write-Log "🎯 Disabling Hibernation..." "Cyan"
+Write-Log "[TARGET] Disabling Hibernation..." "Cyan"
 try {
     powercfg -h off
-    Write-Log "   ✓ Hibernation disabled (hiberfil.sys deleted)" "Green"
+    Write-Log "   OK: Hibernation disabled (hiberfil.sys deleted)" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Log "   ⚠️  Could not disable hibernation" "Yellow"
+    Write-Log "   WARNING: Could not disable hibernation" "Yellow"
     $script:errorCount++
 }
 `;
@@ -1004,14 +1004,14 @@ Write-Log ""
 
     if (services.diagtrack) {
         section += `
-Write-Log "⚙️  Disabling Diagnostics Tracking Service..." "Cyan"
+Write-Log "[SERVICE] Disabling Diagnostics Tracking Service..." "Cyan"
 try {
     Set-Service -Name "DiagTrack" -StartupType Disabled ${whatIf} -ErrorAction Stop
     Stop-Service -Name "DiagTrack" -Force ${whatIf} -ErrorAction SilentlyContinue
-    Write-Log "   ✓ DiagTrack service disabled" "Green"
+    Write-Log "   OK: DiagTrack service disabled" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Log "   ⚠️  Could not modify DiagTrack service" "Yellow"
+    Write-Log "   WARNING: Could not modify DiagTrack service" "Yellow"
     $script:errorCount++
 }
 `;
@@ -1019,13 +1019,13 @@ try {
 
     if (services.sysmain) {
         section += `
-Write-Log "⚙️  Setting Superfetch to Manual..." "Cyan"
+Write-Log "[SERVICE] Setting Superfetch to Manual..." "Cyan"
 try {
     Set-Service -Name "SysMain" -StartupType Manual ${whatIf} -ErrorAction Stop
-    Write-Log "   ✓ SysMain (Superfetch) set to Manual" "Green"
+    Write-Log "   OK: SysMain (Superfetch) set to Manual" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Log "   ⚠️  Could not modify SysMain service" "Yellow"
+    Write-Log "   WARNING: Could not modify SysMain service" "Yellow"
     $script:errorCount++
 }
 `;
@@ -1033,13 +1033,13 @@ try {
 
     if (services.wsearch) {
         section += `
-Write-Log "⚙️  Setting Windows Search to Manual..." "Cyan"
+Write-Log "[SERVICE] Setting Windows Search to Manual..." "Cyan"
 try {
     Set-Service -Name "WSearch" -StartupType Manual ${whatIf} -ErrorAction Stop
-    Write-Log "   ✓ Windows Search set to Manual (saves CPU/disk)" "Green"
+    Write-Log "   OK: Windows Search set to Manual (saves CPU/disk)" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Log "   ⚠️  Could not modify Windows Search service" "Yellow"
+    Write-Log "   WARNING: Could not modify Windows Search service" "Yellow"
     $script:errorCount++
 }
 `;
@@ -1060,14 +1060,14 @@ Write-Log ""
 
     if (disk.winsxs) {
         section += `
-Write-Log "💾 Cleaning Component Store (WinSxS)..." "Cyan"
+Write-Log "[DISK] Cleaning Component Store (WinSxS)..." "Cyan"
 Write-Log "   ⏱️  This may take 5-10 minutes..." "Gray"
 try {
     $result = Dism.exe /Online /Cleanup-Image /StartComponentCleanup /ResetBase
-    Write-Log "   ✓ Component Store cleaned" "Green"
+    Write-Log "   OK: Component Store cleaned" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Log "   ⚠️  Could not clean component store" "Yellow"
+    Write-Log "   WARNING: Could not clean component store" "Yellow"
     $script:errorCount++
 }
 `;
@@ -1075,7 +1075,7 @@ try {
 
     if (disk.updates) {
         section += `
-Write-Log "💾 Removing Old Windows Updates..." "Cyan"
+Write-Log "[DISK] Removing Old Windows Updates..." "Cyan"
 try {
     $updatePath = "C:\\Windows\\SoftwareDistribution\\Download"
     if (Test-Path $updatePath) {
@@ -1087,7 +1087,7 @@ try {
         $script:itemsCleaned++
     }
 } catch {
-    Write-Log "   ⚠️  Could not remove old updates" "Yellow"
+    Write-Log "   WARNING: Could not remove old updates" "Yellow"
     $script:errorCount++
 }
 `;
@@ -1095,7 +1095,7 @@ try {
 
     if (disk.logs) {
         section += `
-Write-Log "💾 Clearing Old System Logs..." "Cyan"
+Write-Log "[DISK] Clearing Old System Logs..." "Cyan"
 try {
     Get-EventLog -LogName * | ForEach-Object {
         try {
@@ -1104,10 +1104,10 @@ try {
             # Some logs can't be cleared - skip them
         }
     }
-    Write-Log "   ✓ System logs cleared" "Green"
+    Write-Log "   OK: System logs cleared" "Green"
     $script:itemsCleaned++
 } catch {
-    Write-Log "   ⚠️  Could not clear all logs" "Yellow"
+    Write-Log "   WARNING: Could not clear all logs" "Yellow"
     $script:errorCount++
 }
 `;
@@ -1124,7 +1124,7 @@ Write-Log "║                  STARTUP ANALYSIS                         ║" "G
 Write-Log "╚═══════════════════════════════════════════════════════════╝" "Green"
 Write-Log ""
 
-Write-Log "⚡ Scanning startup items..." "Cyan"
+Write-Log "[STARTUP] Scanning startup items..." "Cyan"
 
 `;
 
@@ -1210,8 +1210,8 @@ $html += @"
 
 $html | Out-File -FilePath $reportPath -Encoding UTF8
 
-Write-Log "   ✓ Report created: $reportPath" "Green"
-Write-Log "   📄 Opening report in browser..." "Cyan"
+Write-Log "   OK: Report created: $reportPath" "Green"
+Write-Log "   [FILE] Opening report in browser..." "Cyan"
 Start-Process $reportPath
 
 $script:itemsCleaned++
@@ -1257,7 +1257,7 @@ if (-not $isAdmin) {
     Write-Log "║                    ADMIN REQUIRED!                        ║" "Red"
     Write-Log "╚═══════════════════════════════════════════════════════════╝" "Red"
     Write-Log ""
-    Write-Log "⚠️  This script MUST be run as Administrator to create scheduled tasks!" "Yellow"
+    Write-Log "WARNING: This script MUST be run as Administrator to create scheduled tasks!" "Yellow"
     Write-Log ""
     Write-Log "How to fix:" "Cyan"
     Write-Log "  1. Close this window" "Gray"
@@ -1279,17 +1279,17 @@ Write-Log ""
 $scriptPath = "$env:ProgramData\\WindowsOptimization\\WeeklyMaintenance.ps1"
 $scriptDir = Split-Path $scriptPath -Parent
 
-Write-Log "📁 Creating script directory..." "Cyan"
+Write-Log "[FILES] Creating script directory..." "Cyan"
 if (-not (Test-Path $scriptDir)) {
     New-Item -Path $scriptDir -ItemType Directory -Force | Out-Null
 }
 
-Write-Log "💾 Saving optimization script..." "Cyan"
+Write-Log "[DISK] Saving optimization script..." "Cyan"
 @'
 ${scriptContent}
 '@ | Out-File -FilePath $scriptPath -Encoding UTF8 -Force
 
-Write-Log "   ✓ Script saved to: $scriptPath" "Green"
+Write-Log "   OK: Script saved to: $scriptPath" "Green"
 Write-Log ""
 
 # Create scheduled task
@@ -1302,7 +1302,7 @@ $taskDescription = "Automatically runs selected Windows optimizations every Sund
 $existingTask = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
 if ($existingTask) {
     Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
-    Write-Log "   ℹ️  Removed existing task" "Gray"
+    Write-Log "   [INFO] Removed existing task" "Gray"
 }
 
 # Create new task
@@ -1313,17 +1313,17 @@ $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoi
 
 try {
     Register-ScheduledTask -TaskName $taskName -Description $taskDescription -Action $action -Trigger $trigger -Principal $principal -Settings $settings -ErrorAction Stop | Out-Null
-    Write-Log "   ✓ Task created successfully!" "Green"
+    Write-Log "   OK: Task created successfully!" "Green"
     
     # Verify task was created
     $verifyTask = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
     if ($verifyTask) {
-        Write-Log "   ✓ Task verified in Task Scheduler" "Green"
-        Write-Log "   ✓ Next run: $(($verifyTask | Get-ScheduledTaskInfo).NextRunTime)" "Green"
+        Write-Log "   OK: Task verified in Task Scheduler" "Green"
+        Write-Log "   OK: Next run: $(($verifyTask | Get-ScheduledTaskInfo).NextRunTime)" "Green"
     }
 } catch {
-    Write-Log "   ❌ Failed to create task: $($_.Exception.Message)" "Red"
-    Write-Log "   ℹ️  You may need to run this script as Administrator" "Yellow"
+    Write-Log "   ERROR: Failed to create task: $($_.Exception.Message)" "Red"
+    Write-Log "   [INFO] You may need to run this script as Administrator" "Yellow"
 }
 
 Write-Log ""
@@ -1331,15 +1331,15 @@ Write-Log "╔══════════════════════
 Write-Log "║                    SETUP COMPLETE!                        ║" "Green"
 Write-Log "╚═══════════════════════════════════════════════════════════╝" "Green"
 Write-Log ""
-Write-Log "📋 SCHEDULED TASK DETAILS:" "Cyan"
+Write-Log "[BACKUP] SCHEDULED TASK DETAILS:" "Cyan"
 Write-Log ""
-Write-Log "   ✅ Task Name: Windows Weekly Optimization" "White"
+Write-Log "   SUCCESS: Task Name: Windows Weekly Optimization" "White"
 Write-Log "   📅 Schedule: Every Sunday at 2:00 AM" "White"
-Write-Log "   📁 Script: $scriptPath" "White"
+Write-Log "   [FILES] Script: $scriptPath" "White"
 Write-Log ""
 Write-Log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" "Gray"
 Write-Log ""
-Write-Log "💡 TO MANAGE THIS TASK:" "Yellow"
+Write-Log "[TIP] TO MANAGE THIS TASK:" "Yellow"
 Write-Log ""
 Write-Log "   1. Press Win+R" "Gray"
 Write-Log "   2. Type: taskschd.msc" "Gray"
@@ -1362,7 +1362,7 @@ Read-Host "Press ENTER to close this window"
 // ============================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('✅ Windows 11 Optimization Portal - Ready');
+    console.log('SUCCESS: Windows 11 Optimization Portal - Ready');
     
     // Close modal when clicking outside
     document.getElementById('scriptModal')?.addEventListener('click', function(e) {
