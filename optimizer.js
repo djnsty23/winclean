@@ -142,23 +142,23 @@ function showBatScriptModal(batFilename, batScript, selected) {
             <div><strong>Your Optimizer is Ready!</strong><br>Custom script generated with ${totalSelected} optimizations.</div>
         </div>
         <div class="instructions-box">
-            <h4>What You're Getting:</h4>
+            <h4>📦 What You're Getting:</h4>
             <div style="margin: 1rem 0; padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                 <strong style="font-size: 1.1rem;">3 Files (Downloaded Together)</strong><br>
                 <small>
-                <strong>START_HERE_Windows_Optimizer.bat</strong> - Run this one!<br>
-                Windows_Optimizer_OneTime.ps1 (auto-used by BAT)<br>
-                Windows_Optimizer_Scheduled.ps1 (auto-used by BAT)<br>
+                🎯 <strong>START_HERE_Windows_Optimizer.bat</strong> ← Run this one!<br>
+                📄 Windows_Optimizer_OneTime.ps1 (auto-used by BAT)<br>
+                📄 Windows_Optimizer_Scheduled.ps1 (auto-used by BAT)<br>
                 <br>
-                <strong>New:</strong> System repair (DISM+SFC) & browser cache cleanup!
+                ✨ <strong>New:</strong> System repair (DISM+SFC) & browser cache cleanup!
                 </small>
             </div>
             
-            <h4 style="margin-top: 1.5rem;">How to Use:</h4>
+            <h4 style="margin-top: 1.5rem;">🚀 How to Use:</h4>
             <ol style="line-height: 1.8;">
                 <li><strong>Download all files</strong> (3 files will download automatically)</li>
                 <li><strong>Keep all 3 files together</strong> in the same folder</li>
-                <li><strong>Right-click START_HERE_Windows_Optimizer.bat</strong> > <strong>Run as Administrator</strong></li>
+                <li><strong>Right-click START_HERE_Windows_Optimizer.bat</strong> → <strong>Run as Administrator</strong></li>
                 <li><strong>Choose from the menu:</strong>
                     <ul style="margin-top: 0.5rem;">
                         <li>[1] Run optimization now - Creates backup & logs</li>
@@ -171,16 +171,16 @@ function showBatScriptModal(batFilename, batScript, selected) {
             </ol>
             
             <div style="margin-top: 1rem; padding: 1rem; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 4px;">
-                <strong>IMPORTANT:</strong> Run ONLY the .bat file - the .ps1 files are used automatically!
+                <strong>⚠️ IMPORTANT:</strong> Run ONLY the .bat file - the .ps1 files are used automatically!
             </div>
             
             <div style="margin-top: 0.5rem; padding: 1rem; background: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 4px;">
-                <strong>Files & Logs:</strong> Backups, restore points, and logs are saved in the same folder as your BAT file for easy access.
+                <strong>📁 Files & Logs:</strong> Backups, restore points, and logs are saved in the same folder as your BAT file for easy access.
             </div>
         </div>
         <div style="margin-top: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
             <button class="btn btn-generate" style="flex: 1;" onclick="downloadAllOptimizerFiles()">
-                Download All Files
+                📥 Download All Files
             </button>
             <button class="btn btn-preview" onclick="closeModal()">
                 Cancel
@@ -207,7 +207,7 @@ function downloadAllOptimizerFiles() {
     }, 600);
     
     closeModal();
-    showNotification('3 files downloaded! Right-click START_HERE_Windows_Optimizer.bat and Run as Admin.', 'success');
+    showNotification('✅ 3 files downloaded! Right-click START_HERE_Windows_Optimizer.bat and Run as Admin.', 'success');
 }
 
 function downloadPreviewScript() {
@@ -234,12 +234,12 @@ function showInstructionsModal(filename, scriptContent, type) {
                     <li><strong>Locate the file</strong> in your Downloads folder (<code>${filename}</code>)</li>
                     <li><strong>[SECURE] UNBLOCK THE FILE (Important!):</strong>
                         <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
-                            <li>Right-click the .ps1 file > <strong>Properties</strong></li>
-                            <li>At the bottom, check <strong>Unblock</strong></li>
+                            <li>Right-click the .ps1 file → <strong>Properties</strong></li>
+                            <li>At the bottom, check <strong>☑ Unblock</strong></li>
                             <li>Click <strong>OK</strong></li>
                         </ul>
                     </li>
-                    <li><strong>Now right-click the file</strong> > Select <strong>"Run with PowerShell"</strong> (or "Run as Administrator")</li>
+                    <li><strong>Now right-click the file</strong> → Select <strong>"Run with PowerShell"</strong> (or "Run as Administrator")</li>
                     <li>A black window will appear - <strong>WAIT for it to complete</strong></li>
                     <li><strong>Notepad opens automatically</strong> with a complete log of what happened</li>
                 </ol>
@@ -266,7 +266,7 @@ function showInstructionsModal(filename, scriptContent, type) {
                 <ol>
                     <li><strong>Download the script</strong> by clicking the button below</li>
                     <li><strong>Locate the file</strong> in your Downloads folder (<code>${filename}</code>)</li>
-                    <li><strong>Right-click the file</strong> > Select <strong>"Run with PowerShell"</strong></li>
+                    <li><strong>Right-click the file</strong> → Select <strong>"Run with PowerShell"</strong></li>
                     <li>Click <strong>"Yes"</strong> when prompted for administrator access</li>
                     <li>The script will create a <strong>weekly task</strong> that runs every Sunday at 2 AM</li>
                     <li>To manage it later, press <strong>Win+R</strong>, type <code>taskschd.msc</code>, and look for <strong>"Windows Weekly Optimization"</strong></li>
@@ -287,7 +287,7 @@ function showInstructionsModal(filename, scriptContent, type) {
         ${instructions}
         <div style="margin-top: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
             <button class="btn btn-generate" style="flex: 1;" onclick="downloadScriptAndClose('${filename}')">
-                Download Script
+                📥 Download Script
             </button>
             <button class="btn btn-preview" onclick="closeModal()">
                 Cancel
@@ -522,80 +522,31 @@ if "%taskHidden%"=="1" (
     set "visibilityText=Visible Window"
 )
 
-:: Create a temporary PowerShell script to avoid argument escaping issues
-set "tempPS=%TEMP%\\CreateScheduledTask_%RANDOM%.ps1"
-
-:: Verify the scheduled script exists
-if not exist "%SCHEDULED_SCRIPT%" (
-    echo ============================================
-    echo  ERROR: SCRIPT FILE NOT FOUND
-    echo ============================================
-    echo.
-    echo The scheduled script was not found:
-    echo %SCHEDULED_SCRIPT%
-    echo.
-    echo Please ensure all 3 files are in the same folder:
-    echo  - START_HERE_Windows_Optimizer.bat
-    echo  - Windows_Optimizer_OneTime.ps1
-    echo  - Windows_Optimizer_Scheduled.ps1
-    echo.
-    pause
-    goto MENU
-)
-
-:: Build the PowerShell script content
-(
-echo $ErrorActionPreference = 'Stop'
-echo try {
-echo     $scriptPath = "%SCHEDULED_SCRIPT%"
-echo     $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-ExecutionPolicy Bypass -File `"$scriptPath`"
-echo.
 if "%triggerType%"=="DAILY" (
-echo     $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00
+    if "%taskHidden%"=="1" (
+        powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden:$true; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"
+    ) else (
+        powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"
+    )
 )
+
 if "%triggerType%"=="WEEKLY" (
-echo     $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At %hour%:00
+    if "%taskHidden%"=="1" (
+        powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden:$true; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"
+    ) else (
+        powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"
+    )
 )
+
 if "%triggerType%"=="MONTHLY" (
-echo     $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00
+    if "%taskHidden%"=="1" (
+        powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden:$true; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"
+    ) else (
+        powershell.exe -ExecutionPolicy Bypass -Command "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '%psArgs%'; $trigger = New-ScheduledTaskTrigger -Daily -At %hour%:00; $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable; Register-ScheduledTask -TaskName '%taskName%' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"
+    )
 )
-echo.
-echo     $principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\\$env:USERNAME" -RunLevel Highest
-echo.
-if "%taskHidden%"=="1" (
-echo     $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 2) -Hidden
-) else (
-echo     $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 2)
-)
-echo.
-echo     Register-ScheduledTask -TaskName "%taskName%" -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force ^| Out-Null
-echo     Write-Host "SUCCESS"
-echo     exit 0
-echo } catch {
-echo     Write-Host "ERROR: $_"
-echo     exit 1
-echo }
-) > "%tempPS%"
 
-:: Execute the PowerShell script and capture output
-for /f "delims=" %%i in ('powershell.exe -ExecutionPolicy Bypass -File "%tempPS%" 2^>^&1') do set PS_OUTPUT=%%i
-
-:: Clean up temp file
-del "%tempPS%" >nul 2>&1
-
-:: Capture the exit code immediately
-set TASK_RESULT=%errorlevel%
-
-:: Verify task was actually created
-schtasks /query /tn "%taskName%" >nul 2>&1
 if %errorlevel% equ 0 (
-    set TASK_EXISTS=1
-) else (
-    set TASK_EXISTS=0
-)
-
-:: Show result based on verification
-if "%TASK_EXISTS%"=="1" (
     echo ============================================
     echo  SCHEDULED TASK CREATED SUCCESSFULLY!
     echo ============================================
@@ -604,53 +555,33 @@ if "%TASK_EXISTS%"=="1" (
     echo Frequency: %triggerType%
     echo Time: %hour%:00
     echo Visibility: %visibilityText%
-    echo Run As: %USERDOMAIN%\\%USERNAME%
+    echo Script: %SCHEDULED_SCRIPT%
     echo.
-    echo Script Location:
-    echo %SCHEDULED_SCRIPT%
-    echo.
-    echo Log Location:
+    echo Logs will be saved to:
     echo %SCRIPT_DIR%
     echo.
-    echo Next Run: Check Task Scheduler for exact time
+    echo Your PC will now be automatically maintained!
     echo.
     echo ============================================
     echo  HOW TO MANAGE THIS TASK
     echo ============================================
     echo.
-    echo To check, run, or modify:
+    echo To check or modify:
     echo  1. Press Win+R
     echo  2. Type: taskschd.msc
     echo  3. Find "WindowsOptimizerMaintenance"
-    echo  4. Right-click and select "Run" to test now
     echo.
     echo To stop automatic maintenance:
-    echo  - Right-click the task in Task Scheduler
-    echo  - Select "Disable" (pause) or "Delete" (remove)
+    echo  - Right-click the task
+    echo  - Select "Disable" or "Delete"
     echo.
-    echo.
-    pause
-    goto MENU
+) else (
+    echo ============================================
+    echo  ERROR CREATING TASK
+    echo ============================================
+    echo Failed to create task. Check Task Scheduler.
 )
 
-:: If we get here, task creation failed
-echo ============================================
-echo  ERROR CREATING TASK
-echo ============================================
-echo.
-echo Failed to create task. Debugging info:
-echo  - PowerShell output: %PS_OUTPUT%
-echo  - PowerShell exit code: %TASK_RESULT%
-echo  - Task exists check: %TASK_EXISTS%
-echo  - Trigger type: %triggerType%
-echo  - Hour: %hour%
-echo  - Hidden: %taskHidden%
-echo.
-echo Please check Task Scheduler manually:
-echo  1. Press Win+R
-echo  2. Type: taskschd.msc
-echo  3. Look for "WindowsOptimizerMaintenance"
-echo.
 echo.
 pause
 goto MENU
