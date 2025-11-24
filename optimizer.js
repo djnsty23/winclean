@@ -573,12 +573,6 @@ if %errorlevel% equ 0 (
     set TASK_EXISTS=0
 )
 
-echo.
-echo [DEBUG] PowerShell output: %PS_OUTPUT%
-echo [DEBUG] Exit code: %TASK_RESULT%
-echo [DEBUG] Task exists: %TASK_EXISTS%
-echo.
-
 :: Show result based on verification
 if "%TASK_EXISTS%"=="1" (
     echo ============================================
@@ -609,25 +603,29 @@ if "%TASK_EXISTS%"=="1" (
     echo  - Right-click the task
     echo  - Select "Disable" or "Delete"
     echo.
-) else (
-    echo ============================================
-    echo  ERROR CREATING TASK
-    echo ============================================
     echo.
-    echo Failed to create task. Debugging info:
-    echo  - PowerShell exit code: %TASK_RESULT%
-    echo  - Task exists: %TASK_EXISTS%
-    echo  - Trigger type: %triggerType%
-    echo  - Hour: %hour%
-    echo  - Hidden: %taskHidden%
-    echo.
-    echo Please check Task Scheduler manually:
-    echo  1. Press Win+R
-    echo  2. Type: taskschd.msc
-    echo  3. Look for "WindowsOptimizerMaintenance"
-    echo.
+    pause
+    goto MENU
 )
 
+:: If we get here, task creation failed
+echo ============================================
+echo  ERROR CREATING TASK
+echo ============================================
+echo.
+echo Failed to create task. Debugging info:
+echo  - PowerShell output: %PS_OUTPUT%
+echo  - PowerShell exit code: %TASK_RESULT%
+echo  - Task exists check: %TASK_EXISTS%
+echo  - Trigger type: %triggerType%
+echo  - Hour: %hour%
+echo  - Hidden: %taskHidden%
+echo.
+echo Please check Task Scheduler manually:
+echo  1. Press Win+R
+echo  2. Type: taskschd.msc
+echo  3. Look for "WindowsOptimizerMaintenance"
+echo.
 echo.
 pause
 goto MENU
