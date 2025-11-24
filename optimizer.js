@@ -270,10 +270,23 @@ function buildPowerShellScript(selected, previewMode, scheduleMode, createBackup
 #   3. If it closes instantly, select "Run as Administrator" instead
 # ============================================
 
+# FORCE WINDOW TO STAY OPEN ON ERROR
+$ErrorActionPreference = "Continue"
+$Host.UI.RawUI.WindowTitle = "Windows Optimization Script - ${mode} Mode"
+
+# Wrap ENTIRE script in try-catch to capture ALL errors
+try {
+
 # CREATE LOG FILE FIRST (before anything can fail)
 $logFile = "$env:USERPROFILE\\Desktop\\Windows_Optimization_Log_$(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss').txt"
 
+Write-Host ""
+Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "  Windows 11 Optimization Script - ${mode} Mode" -ForegroundColor Cyan
+Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host ""
 Write-Host "Creating log file..." -ForegroundColor Cyan
+
 try {
     "═══════════════════════════════════════════════════════════" | Out-File -FilePath $logFile -Encoding UTF8 -Force
     "Windows 11 Optimization Script - ${mode} MODE" | Add-Content -Path $logFile
@@ -282,14 +295,15 @@ try {
     "═══════════════════════════════════════════════════════════" | Add-Content -Path $logFile
     "" | Add-Content -Path $logFile
     Write-Host "✓ Log file created at: $logFile" -ForegroundColor Green
+    Write-Host ""
 } catch {
     Write-Host "❌ ERROR: Could not create log file!" -ForegroundColor Red
     Write-Host "   Location: $logFile" -ForegroundColor Yellow
     Write-Host "   Error: $($_.Exception.Message)" -ForegroundColor Red
     Write-Host ""
-    Write-Host "Press any key to exit..." -ForegroundColor Yellow
-    pause
-    exit 1
+    Write-Host "Script will continue but won't be logged..." -ForegroundColor Yellow
+    Write-Host ""
+    Start-Sleep -Seconds 3
 }
 
 # Define logging function
@@ -434,8 +448,57 @@ Write-Log "═══════════════════════
 Write-Log "Script completed. Window will stay open." "Cyan"
 Write-Log "═══════════════════════════════════════════════════════════" "Cyan"
 Write-Host ""
+
+} catch {
+    # CRITICAL ERROR HANDLER - Shows ALL errors before closing
+    Write-Host ""
+    Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
+    Write-Host "║                   CRITICAL ERROR!                         ║" -ForegroundColor Red
+    Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "The script encountered a fatal error:" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "ERROR MESSAGE:" -ForegroundColor Red
+    Write-Host $_.Exception.Message -ForegroundColor White
+    Write-Host ""
+    Write-Host "ERROR LOCATION:" -ForegroundColor Red
+    Write-Host $_.InvocationInfo.PositionMessage -ForegroundColor White
+    Write-Host ""
+    Write-Host "FULL ERROR DETAILS:" -ForegroundColor Red
+    Write-Host ($_ | Format-List * -Force | Out-String) -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "════════════════════════════════════════════════════════════" -ForegroundColor Red
+    Write-Host ""
+    
+    # Try to save error to desktop
+    try {
+        $errorFile = "$env:USERPROFILE\\Desktop\\Windows_Optimization_ERROR_$(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss').txt"
+        @"
+WINDOWS OPTIMIZATION SCRIPT ERROR LOG
+Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
+
+ERROR MESSAGE:
+$($_.Exception.Message)
+
+ERROR LOCATION:
+$($_.InvocationInfo.PositionMessage)
+
+FULL ERROR DETAILS:
+$($_ | Format-List * -Force | Out-String)
+
+STACK TRACE:
+$($_.ScriptStackTrace)
+"@ | Out-File -FilePath $errorFile -Encoding UTF8
+        Write-Host "✅ Error details saved to: $errorFile" -ForegroundColor Green
+        Start-Process notepad.exe $errorFile
+    } catch {
+        Write-Host "⚠️  Could not save error log to file" -ForegroundColor Yellow
+    }
+}
+
+Write-Host ""
 Write-Host "Press any key to exit..." -ForegroundColor Yellow
-pause
+$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 `;
 
     return script;
@@ -544,10 +607,11 @@ try {
 Write-Log "   📝 Generating restore script..." "Gray"
 
 $restoreScript = @'
-#Requires -RunAsAdministrator
 # ============================================
 # RESTORE Windows Settings
 # Backup created: TIMESTAMP_PLACEHOLDER
+# ============================================
+# IMPORTANT: Run as Administrator for full functionality
 # ============================================
 
 # Define Write-Log function FIRST
@@ -1164,16 +1228,41 @@ function buildScheduledTaskScript(selected) {
     // Save the optimization script first
     const scriptContent = baseScript.replace(/Read-Host "Press Enter to exit"/g, '# Auto-exit for scheduled task');
     
-    const taskScript = `#Requires -RunAsAdministrator
-# ============================================
+    const taskScript = `# ============================================
 # Weekly Maintenance Task Creator
 # Generated: ${new Date().toLocaleString()}
 # ============================================
+# IMPORTANT: Must be run as Administrator to create scheduled tasks
+# ============================================
+
+# FORCE WINDOW TO STAY OPEN ON ERROR
+$ErrorActionPreference = "Continue"
+$Host.UI.RawUI.WindowTitle = "Weekly Maintenance Task Creator"
 
 # Define Write-Log function for this wrapper script
 function Write-Log {
     param([string]$Message, [string]$Color = "White")
     Write-Host $Message -ForegroundColor $Color
+}
+
+# Check if running as Administrator
+$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+if (-not $isAdmin) {
+    Write-Log ""
+    Write-Log "╔═══════════════════════════════════════════════════════════╗" "Red"
+    Write-Log "║                    ADMIN REQUIRED!                        ║" "Red"
+    Write-Log "╚═══════════════════════════════════════════════════════════╝" "Red"
+    Write-Log ""
+    Write-Log "⚠️  This script MUST be run as Administrator to create scheduled tasks!" "Yellow"
+    Write-Log ""
+    Write-Log "How to fix:" "Cyan"
+    Write-Log "  1. Close this window" "Gray"
+    Write-Log "  2. Right-click this script file" "Gray"
+    Write-Log "  3. Select 'Run as Administrator'" "Gray"
+    Write-Log ""
+    Write-Host "Press any key to exit..." -ForegroundColor Yellow
+    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+    exit 1
 }
 
 Write-Log ""
